@@ -2,12 +2,12 @@ import { TCompany } from '../common/common.interface';
 import { TSensor } from '../sensor/sensor.interface';
 
 export type TMachine = {
-  status: 'abnormal' | 'normal';
-  category: 'washing-machine' | 'general-machine';
+  status: 'abnormal' | 'normal'; // ?????????
+  category: 'washing-machine' | 'general-machine'; // ???????
   name: string;
   generalMachine?: {
-    homeName: string;
-    homeType: string;
+    homeName: string; //  ??????
+    homeType: string; // ??????
   };
   company: TCompany;
   type: string;

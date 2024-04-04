@@ -5,7 +5,7 @@ export type TSensor = {
   price: number;
   status: 'in-stock' | 'sold-out';
   sensorType: 'temperature' | 'vibration';
-  seller: string; // objectId of ServiceProviderBranch  or ServiceProviderCompany
+  seller: string; // objectId of ServiceProviderBranch  or ServiceProviderCompany or Showa company?
 };
 export type TAttachedSensor = {
   sensor: string; // objectId of TSensor

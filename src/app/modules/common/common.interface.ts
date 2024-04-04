@@ -24,7 +24,7 @@ export type TWallet = {
   cards: [{ card: TCard; isDeleted: boolean }];
   balance: number; //
   point: number; //
-  showaMB: number; //
+  showaMB: number; // ?????????
 };
 
 export type TPayment = {
