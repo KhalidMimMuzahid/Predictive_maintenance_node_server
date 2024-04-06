@@ -11,6 +11,7 @@ export type TAddress = {
 };
 
 export type TCard = {
+  cardType?: 'debit' | 'credit'; // or something else
   cardName: string; // name of the card like visa or master
   cardNumber: number; // number of the card
   cardHolderName: string; // name of the card holder
@@ -19,45 +20,11 @@ export type TCard = {
   country: string; //
   cvc_cvv: string; //
 };
-export type TWallet = {
-  user: string; // it user is ObjectId of the user model
-  cards: [{ card: TCard; isDeleted: boolean }];
-  balance: number; //
-  point: number; //
-  showaMB: number; // ?????????
-};
 
 export type TPayment = {
   billingAddress: TAddress;
 };
 
-export type TEngineer = {
-  current: {
-    designation: string;
-    company: string; // objectId of the ServiceProviderCompany
-    branch: string; // objectId of the ServiceProviderBranch model
-    joiningDate: Date;
-  };
-  ratings: {
-    rate: number; // 0 to 5
-    feedback: [
-      {
-        comment: string;
-        rate: number;
-        user: string; // objectId of the User
-      },
-    ];
-  };
-  history: [
-    {
-      designation: string;
-      company: string; // objectId of the ServiceProviderCompany
-      branch: string; // objectId of the ServiceProviderBranch model
-      joiningDate: Date;
-      endingDate: Date;
-    },
-  ];
-};
 // id registration
 
 export type TTeam = {
@@ -72,10 +39,10 @@ export type TTeam = {
 };
 
 export type TCompany = {
-  category: 'shop' | 'company';
-  name: string;
-  type: string;
-  address: TAddress;
+  category: 'home' | 'shop' | 'company' | 'others';
+  name?: string;
+  type?: string; // type of shop oor company
+  address: TAddress; // where the company is located
 };
 
 // -------------------- ROUGH SHEET ---------------------

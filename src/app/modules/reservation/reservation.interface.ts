@@ -8,16 +8,22 @@ export type TReservationRequest = {
   location: TAddress; // where this machine is located
   isSensorConnected: boolean; // machineType as figma; true if sensor is sensor-connected, false if not sensor-non-connected
   problem: {
-    issues: [string]; // all issues title one by one
+    issues: [{ title: string; issue: string }]; // all issues title one by one
     problemDescription: string;
-    images: [{ image: string; comment: string }];
+    images: [{ image: string; title?: string; comment: string }];
   };
   schedule: {
-    category: 'on-demand' | 'within-one-week' | 'within-two-week';
+    category:
+      | 'on-demand'
+      | 'within-one-week'
+      | 'within-two-week'
+      | 'custom-date-picked';
     date: Date;
     schedules: [Date]; // every schedule will be stored here , if you re schedule this request 5 times, this array will hold five different date
   };
-  feedBack: {
+
+  // we may transfer this feedback type to invoice interface
+  feedback: {
     user: string; //ObjectId for User Model;
     ratings: number;
     message: string;
@@ -26,7 +32,7 @@ export type TReservationRequest = {
   allBids: [
     {
       bidder: string; // objectId  of ServiceProviderCompany or ServiceProviderBranch or what ?
-      bidAmount: number; // price for the bid
+      biddingAmount: number; // price for the bid
     },
   ];
 

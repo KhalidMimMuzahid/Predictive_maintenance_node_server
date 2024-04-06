@@ -38,6 +38,7 @@ export type TServiceProviderBranch = {
   status: 'pending' | 'success' | 'blocked';
   type: string;
   branchName: string;
+  serviceProviderCompany: string; // objectId of ServiceProviderCompany model
   email: string;
   contactNo: string;
   language?: {
