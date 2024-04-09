@@ -1,6 +1,6 @@
 export type TInvoice = {
   invoiceNo: string; // customized unique number
-  reservationRequest: string; // objectId of ReservationRequest model
+  reservationRequest: string; // objectId of ReservationRequest  model
   bidWinner: string; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
   invoiceGroup: string; // objectId of InvoiceGroup model
   user: string; // objectId of the user model; who raise this reservation
