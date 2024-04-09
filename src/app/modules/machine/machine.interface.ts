@@ -22,5 +22,5 @@ export type TMachine = {
   brand: string; // as mentioned in figma; brand name of the machine
   model: string; // as mentioned in figma; model name of the machine
   environment: 'indoor' | 'outdoor'; // as mentioned in figma  like  "indoor" or "outdoor"
-  sensors?: [string]; // objectId of TAttachedSensor model
+  sensors?: string[]; // objectId of TAttachedSensor model
 };

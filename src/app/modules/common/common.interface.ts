@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 export type TAddress = {
   street: string;
   city: string;
@@ -23,19 +25,18 @@ export type TCard = {
 
 export type TPayment = {
   billingAddress: TAddress;
+  //more information
 };
 
 // id registration
 
 export type TTeam = {
   teamName: string;
-  createdBy: string; // objectId of User Model who is engineer at the same service provhmmider company
+  createdBy: Types.ObjectId; // objectId of User Model who is engineer at the same service provider company
   createdAt: Date;
-  members: [
-    {
-      member: string; // objectId of User Model who is engineer at the same service provider company
-    },
-  ];
+  members: {
+    member: Types.ObjectId; // objectId of User Model who is engineer at the same service provider company
+  }[];
 };
 
 export type TCompany = {
@@ -44,5 +45,3 @@ export type TCompany = {
   type?: string; // type of shop oor company
   address: TAddress; // where the company is located
 };
-
-// -------------------- ROUGH SHEET ---------------------

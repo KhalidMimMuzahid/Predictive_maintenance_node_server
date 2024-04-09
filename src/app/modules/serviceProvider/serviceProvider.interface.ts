@@ -30,8 +30,8 @@ export type TServiceProviderCompany = {
     email: string;
   };
 
-  registrationDocument: [{ photoUrl: string; title: string }]; //
-  branches?: [string]; // objectId of ServiceProviderBranch model
+  registrationDocument: { photoUrl: string; title: string }[]; //
+  branches?: string[]; // objectId of ServiceProviderBranch model
 };
 // vendor
 export type TServiceProviderBranch = {
@@ -48,5 +48,5 @@ export type TServiceProviderBranch = {
   address: TAddress;
   departmentInCharge: string; //  ????????
   personInChargeName: string; //  ????????
-  services: [string]; //or 'dish-washing-machine'or 'container-washing-machine'or 'pallet-washing-machine'or 'parts-washing-machine'or 'sushi-maker'or 'refrigerator'or 'air-conditioner'or 'laundry-machine' or custom chosen
+  services: string[]; //or 'dish-washing-machine'or 'container-washing-machine'or 'pallet-washing-machine'or 'parts-washing-machine'or 'sushi-maker'or 'refrigerator'or 'air-conditioner'or 'laundry-machine' or custom chosen
 };

@@ -19,4 +19,6 @@ export type TTransaction = {
   transactionFee: number; //
   totalAmount: number; // total amount
   status: 'pending' | 'success' | 'failure'; //  success or approved?? which sounds good?
+
+  isDeleted: boolean; // by default false
 };
