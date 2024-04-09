@@ -21,7 +21,7 @@ export type TServiceProviderCompany = {
     address: TAddress;
     departmentInCharge: string; // ???????
     personInChargeName: string; // ???????
-    card: TCard;
+    card: TCard; // should i transfer this card to wallet for service provide company???
   };
   emergencyContact: {
     departmentInCharge: string;
@@ -32,21 +32,4 @@ export type TServiceProviderCompany = {
 
   registrationDocument: { photoUrl: string; title: string }[]; //
   branches?: string[]; // objectId of ServiceProviderBranch model
-};
-// vendor
-export type TServiceProviderBranch = {
-  status: 'pending' | 'success' | 'blocked';
-  type: string;
-  branchName: string;
-  serviceProviderCompany: string; // objectId of ServiceProviderCompany model
-  email: string;
-  contactNo: string;
-  language?: {
-    katakana?: { branchName: string };
-    korean?: { branchName: string };
-  };
-  address: TAddress;
-  departmentInCharge: string; //  ????????
-  personInChargeName: string; //  ????????
-  services: string[]; //or 'dish-washing-machine'or 'container-washing-machine'or 'pallet-washing-machine'or 'parts-washing-machine'or 'sushi-maker'or 'refrigerator'or 'air-conditioner'or 'laundry-machine' or custom chosen
 };
