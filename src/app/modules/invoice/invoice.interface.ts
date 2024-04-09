@@ -1,9 +1,11 @@
+import { Types } from 'mongoose';
+
 export type TInvoice = {
   invoiceNo: string; // customized unique number
-  reservationRequest: string; // objectId of ReservationRequest  model
-  bidWinner: string; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
-  invoiceGroup: string; // objectId of InvoiceGroup model
-  user: string; // objectId of the user model; who raise this reservation
+  reservationRequest: Types.ObjectId; // objectId of ReservationRequest  model
+  bidWinner: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
+  invoiceGroup: Types.ObjectId; // objectId of InvoiceGroup model
+  user: Types.ObjectId; // objectId of the user model; who raise this reservation
   additionalProducts?: {
     products: {
       productName: string;
@@ -18,8 +20,8 @@ export type TInvoice = {
     totalAmount: number;
   };
   feedback: {
-    reservation: string; // objectId of reservation Request model,
-    user: string; //ObjectId for User Model;
+    reservation: Types.ObjectId; // objectId of reservation Request model,
+    user: Types.ObjectId; //ObjectId for User Model;
     ratings: number;
     comment: string;
   };
@@ -28,13 +30,13 @@ export type TInvoice = {
 };
 export type TInvoiceGroup = {
   invoiceGroupNo: string; // customized unique number
-  reservationRequestGroup: string; // objectId of ReservationRequestGroup model
-  invoices: string[]; // objectId of  invoice model
-  bidWinner: string; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
+  reservationRequestGroup: Types.ObjectId; // objectId of ReservationRequestGroup model
+  invoices: Types.ObjectId[]; // objectId of  invoice model
+  bidWinner: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
   taskAssignee: {
     taskName: string;
     taskDescription: string;
-    engineer: string; // objectId of a Engineer who is working for this company
+    engineer: Types.ObjectId; // objectId of a Engineer who is working for this company
     taskStatus: 'pending' | 'accepted' | 'completed';
     comments: string[]; // ??????
   }[];
