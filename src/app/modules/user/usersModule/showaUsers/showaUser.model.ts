@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
-import { TLanguage, TUser } from './user.interface';
-import { AddressSchema } from '../common/common.model';
+import { AddressSchema } from '../../../common/common.model';
+import { TLanguage, TUser } from '../../user.interface';
 const IntersectionSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, required: true },
   address: { type: AddressSchema, required: true },

@@ -1,27 +1,15 @@
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { TWallet } from './wallet.interface';
+import { CardSchema } from '../common/common.model';
 
 export const WalletSchema = new Schema<TWallet>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  cards: [
-    {
-      card: {
-        type: Schema.Types.Mixed, // Adjust type accordingly
-        required: true,
-      },
-      isDeleted: {
-        type: Boolean,
-        default: false,
-      },
-    },
-  ],
+  cards: { type: [CardSchema], required: true },
   stripeCustomerId: {
     type: String,
-    required: true,
   },
   bankAccount: {
     type: Schema.Types.Mixed, // Adjust type accordingly
-    required: true,
   },
   balance: {
     type: Number,
@@ -36,3 +24,4 @@ export const WalletSchema = new Schema<TWallet>({
     required: true,
   },
 });
+export const Wallet = mongoose.model<TWallet>('Wallet', WalletSchema);

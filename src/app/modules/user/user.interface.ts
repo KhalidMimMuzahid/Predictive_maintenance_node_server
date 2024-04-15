@@ -19,24 +19,28 @@ export type TLanguage = {
 };
 export type TUser = {
   uid: string;
-  uniqueNumberId?: string; // why we need this; cause we have already two different identifiers
+  // uniqueNumberId?: string; // why we need this; cause we have already two different identifiers
   name: { firstName: string; lastName: string };
   language?: TLanguage;
   // fullName: firstName + " " + lastName // this fullName field will be virtual
   email: string;
-  phone: string;
+
+  phone?: string;
+
   occupation?: string;
-  dateOfBirth: string;
-  photoUrl: string;
+
+  dateOfBirth: Date;
   gender: 'male' | 'female' | 'prefer-not-answer';
+
+  photoUrl?: string;
 
   role: TRole;
 
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
-  addresses: ({ isDeleted: boolean } & TAddress)[];
+  addresses?: { isDeleted: boolean; address: TAddress }[];
   // stripeId: string;
-  wallet: string; // it user is ObjectId of the Wallet model
-  status: 'in-progress' | 'blocked' | 'approved';
+  wallet?: Types.ObjectId; // it user is ObjectId of the Wallet model
+  status: 'in-progress' | 'restricted' | 'approved';
 
   isDeleted: boolean; // by default false
   engineer?: Types.ObjectId; // objectId of Engineer model; if this user is engineer only when this field will be created

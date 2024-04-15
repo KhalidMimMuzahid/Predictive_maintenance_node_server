@@ -7,7 +7,7 @@ const validateRequest = (schema: AnyZodObject) => {
       //validation check
       //if everything allright then next() -->
 
-      await schema.parseAsync({ body: req.body });
+      await schema.parseAsync(req.body);
 
       return next();
     } catch (error) {
