@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TAddress } from '../common/common.interface';
+import { TAddress } from '../../../common/common.interface';
 export type TRole =
   // root user
   | 'showa-user'
