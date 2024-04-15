@@ -43,7 +43,7 @@ const UserSchema: Schema = new Schema<TUser>({
   },
   //   canAccess: [{ type: String, enum: ['xx', 'yy', 'zz'] }],
   addresses: { type: [AddressSchema], required: true },
-  stripeId: { type: String, required: true },
+  // stripeId: { type: String, required: true },
   wallet: { type: String, required: true },
   status: {
     type: String,

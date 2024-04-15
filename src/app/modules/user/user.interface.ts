@@ -34,7 +34,7 @@ export type TUser = {
 
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   addresses: ({ isDeleted: boolean } & TAddress)[];
-  stripeId: string;
+  // stripeId: string;
   wallet: string; // it user is ObjectId of the Wallet model
   status: 'in-progress' | 'blocked' | 'approved';
 
