@@ -6,42 +6,41 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
   reservationRequest: {
     type: Schema.Types.ObjectId,
     ref: 'ReservationRequest',
-    required: true,
+    // required: true,
   },
   bidWinner: {
     type: Schema.Types.ObjectId,
-    required: true,
+    // required: true,
     ref: 'ReservationRequest',
   },
   invoiceGroup: {
     type: Schema.Types.ObjectId,
     ref: 'InvoiceGroup',
-    required: true,
+    // required: true,
   },
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   additionalProducts: {
     products: [
       {
-        productName: { type: String, required: true },
-        quantity: { type: Number, required: true },
+        productName: { type: String, },
+        quantity: { type: Number, },
         tax: { type: Number, default: 0 },
         price: {
-          amount: { type: Number, required: true },
-          currency: { type: String, required: true },
+          amount: { type: Number, },
+          currency: { type: String, },
         },
       },
     ],
-    totalAmount: { type: Number, required: true },
+    totalAmount: { type: Number, },
   },
   feedback: {
     reservation: {
       type: Schema.Types.ObjectId,
       ref: 'ReservationRequest',
-      required: true,
     },
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    ratings: { type: Number, required: true },
-    comment: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', },
+    ratings: { type: Number, },
+    comment: { type: String, },
   },
   isDeleted: { type: Boolean, default: false },
 });
