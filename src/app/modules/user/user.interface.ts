@@ -29,7 +29,7 @@ export type TUser = {
   dateOfBirth: string;
   photoUrl: string;
   gender: 'male' | 'female' | 'prefer-not-answer';
-  stripeCustomerId: string; // we need it? cause we have a wallet to  handle all transaction and bank account
+
   role: TRole;
 
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?

@@ -35,7 +35,7 @@ const UserSchema: Schema = new Schema<TUser>({
     enum: ['male', 'female', 'prefer-not-answer'],
     required: true,
   },
-  stripeCustomerId: { type: String, required: true },
+
   role: {
     type: String,
     required: true,
