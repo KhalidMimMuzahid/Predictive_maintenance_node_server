@@ -12,6 +12,7 @@ const router: Router = express.Router();
 // router.use("/branch-manager", branchManagerRoutes)
 
 const subModuleRoutes: { path: string; route: express.Router }[] = [
+  // { path: '/showa-user', route: routes  },
   { path: '/service-provider-admin', route: adminRoutes },
 ];
 
