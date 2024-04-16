@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { TEngineer } from './engineer.interface';
 
 export const EngineerSchema: Schema = new Schema<TEngineer>({
@@ -45,3 +45,5 @@ export const EngineerSchema: Schema = new Schema<TEngineer>({
     },
   ],
 });
+
+export const Engineer = mongoose.model<TEngineer>('Engineer', EngineerSchema);
