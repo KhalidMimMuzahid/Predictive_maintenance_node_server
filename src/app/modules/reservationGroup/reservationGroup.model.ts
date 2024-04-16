@@ -15,11 +15,10 @@ const ReservationRequestGroupSchema: Schema =
       },
     ],
     postBiddingProcess: {
-      bidWinner: { type: Schema.Types.ObjectId, required: true },
+      bidWinner: { type: Schema.Types.ObjectId },
       invoiceGroup: {
         type: Schema.Types.ObjectId,
         ref: 'InvoiceGroup',
-        required: true,
       },
     },
   });

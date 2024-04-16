@@ -34,8 +34,8 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
     totalAmount: { type: Number, },
   },
   feedback: {
-    ratings: { type: Number, required: true },
-    comment: { type: String, required: true },
+    ratings: { type: Number },
+    comment: { type: String },
   },
   isDeleted: { type: Boolean, default: false },
 });

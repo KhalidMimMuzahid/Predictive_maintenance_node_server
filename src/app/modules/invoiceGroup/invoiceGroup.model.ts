@@ -9,7 +9,7 @@ export const InvoiceGroupSchema: Schema<TInvoiceGroup> = new Schema({
     required: true,
   },
   invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
-  bidWinner: { type: Schema.Types.ObjectId, required: true, ref: '' },
+  bidWinner: { type: Schema.Types.ObjectId, ref: '' },
   taskAssignee: [
     {
       taskName: { type: String, required: true },

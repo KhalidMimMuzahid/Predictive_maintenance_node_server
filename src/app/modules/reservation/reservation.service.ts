@@ -1,21 +1,31 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { TReservationRequest } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
-import { User } from '../user/user.model';
 import AppError from '../../errors/AppError';
 import { v4 as uuidv4 } from 'uuid';
 import { Invoice } from '../invoice/invoice.model';
 
 const createReservationRequestIntoDB = async (payload: TReservationRequest) => {
-  const invoice = new Invoice({ user: payload.user, invoiceNo: uuidv4() });
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const invoice = new Invoice({ user: payload.user, invoiceNo: uuidv4() });
 
-  const reservation = new ReservationRequest(payload);
-  reservation.invoice = invoice._id;
-  const result = await reservation.save();
-  invoice.reservationRequest = result._id;
-  await invoice.save();
+    const reservation = new ReservationRequest(payload);
+    reservation.invoice = invoice._id;
+    const result = await reservation.save({ session: session });
+    invoice.reservationRequest = result._id;
+    await invoice.save({ session: session });
 
-  return result;
+    await session.commitTransaction();
+    await session.endSession();
+
+    return result;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 
 const getMyReservationsService = async (uid: String) => {
