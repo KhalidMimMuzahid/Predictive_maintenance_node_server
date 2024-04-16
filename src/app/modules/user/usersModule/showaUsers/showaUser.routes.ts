@@ -10,4 +10,6 @@ router.post(
   validateRequest(showaUserValidation.userCreateValidationSchema),
   showaUserControllers.createShowaUser,
 );
+
+router.get('/sign-in', showaUserControllers.createShowaUser);
 export const showaUserRoutes = router;

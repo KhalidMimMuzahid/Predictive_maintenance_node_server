@@ -13,4 +13,5 @@ export default {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   saltRound: process.env.BCRYPT_SALT_ROUND,
   defaultPass: process.env.DEFAULT_PASS,
+  privateKey: process.env.PRIVATE_KEY,
 };

@@ -5,7 +5,8 @@ export type TInvoiceGroup = {
   reservationRequestGroup: Types.ObjectId; // objectId of ReservationRequestGroup model
   invoices: Types.ObjectId[]; // objectId of  invoice model
   bidWinner: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
-  taskAssignee: {
+
+  taskAssignee?: {
     taskName: string;
     taskDescription: string;
     engineer: Types.ObjectId; // objectId of a Engineer who is working for this company

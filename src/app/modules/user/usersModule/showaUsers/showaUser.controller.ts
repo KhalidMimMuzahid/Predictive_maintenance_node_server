@@ -19,6 +19,23 @@ const createShowaUser: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+
+const signIn: RequestHandler = catchAsync(async (req, res) => {
+  const { rootUser, showaUser } = req.body;
+  const result = await showaUserServices.createShowaUserIntoDB(
+    rootUser,
+    showaUser,
+  );
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User created successfully',
+    data: result,
+  });
+});
+
 export const showaUserControllers = {
   createShowaUser,
+  signIn,
 };

@@ -1,4 +1,5 @@
-import { Types } from 'mongoose';
+/* eslint-disable no-unused-vars */
+import { Model, Types } from 'mongoose';
 export type TRole =
   // root user
   | 'showa-user'
@@ -26,3 +27,8 @@ export type TUser = {
   showaUser?: Types.ObjectId;
   isDeleted: boolean; // by default false
 };
+
+export interface UserModel extends Model<TUser> {
+  isUidExists(uid: string): Promise<TUser | null>;
+  isEmailExists(email: string): Promise<TUser | null>;
+}

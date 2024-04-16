@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { TUser } from './user.interface';
+import { TUser, UserModel } from './user.interface';
 
 const roles = [
   'showa-user',
@@ -11,11 +11,11 @@ const roles = [
   'service-provider-branch-manager',
   'service-provider-support-stuff',
 ];
-const UserSchema: Schema = new Schema<TUser>({
+const UserSchema = new Schema<TUser, UserModel>({
   uid: { type: String, required: true, unique: true },
   // uniqueNumberId: { type: String },
 
-  email: { type: String, required: true },
+  email: { type: String, required: true , unique: true},
 
   role: {
     type: String,
@@ -41,13 +41,34 @@ const UserSchema: Schema = new Schema<TUser>({
   },
   isDeleted: { type: Boolean, required: true, default: false },
 });
-UserSchema.virtual('fullName').get(function () {
-  return this?.name?.firstName + ' ' + this?.name?.lastName;
-});
 
+// methods
+UserSchema.statics.isUidExists = async (uid: string) => {
+  const existingUser = User.findOne({ uid });
+  return existingUser;
+};
+UserSchema.statics.isEmailExists = async (email: string) => {
+  const existingUser = User.findOne({ email });
+  return existingUser;
+};
+// //virtual
+// UserSchema.virtual('fullName').get(function () {
+//   return this?.name?.firstName + ' ' + this?.name?.lastName;
+// });
+// middleware
 UserSchema.pre('find', function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
 });
+
+// UserSchema.pre('', async function (next) {
+//   const query = this.getQuery();
+//   const isStudentExists = await Student.isUserExists(query?.id);
+//   if (!isStudentExists) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'student not found');
+//   }
+
+//   next();
+// });
 // Create and export the model
-export const User = mongoose.model<TUser>('User', UserSchema);
+export const User = mongoose.model<TUser, UserModel>('User', UserSchema);

@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 
 export type TInvoice = {
   invoiceNo: string; // customized unique number
+
   reservationRequest: Types.ObjectId; // objectId of ReservationRequest  model
   bidWinner: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
   invoiceGroup: Types.ObjectId; // objectId of InvoiceGroup model
@@ -19,9 +20,7 @@ export type TInvoice = {
     }[];
     totalAmount: number;
   };
-  feedback: {
-    reservation: Types.ObjectId; // objectId of reservation Request model,
-    user: Types.ObjectId; //ObjectId for User Model;
+  feedback?: {
     ratings: number;
     comment: string;
   };
