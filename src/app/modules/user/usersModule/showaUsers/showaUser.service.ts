@@ -79,7 +79,7 @@ const createShowaUserIntoDB = async (
     if (!updatedUser) {
       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
     }
-    const result = await User.findById(createdUser?._id).populate([
+    const user = await User.findById(createdUser?._id).populate([
       {
         path: 'showaUser',
         options: { strictPopulate: false },
@@ -91,14 +91,14 @@ const createShowaUserIntoDB = async (
       // },
     ]);
     const token = jwtFunc.generateToken(
-      updatedUser?.email as string,
-      updatedUser?._id.toString(),
-      updatedUser?.uid as string,
+      user?.email as string,
+      user?._id.toString(),
+      user?.uid as string,
     );
 
     await session.commitTransaction();
     await session.endSession();
-    return { user: result, token };
+    return { user, token };
   } catch (error) {
     // console.log({ error });
 
@@ -107,7 +107,30 @@ const createShowaUserIntoDB = async (
     throw error;
   }
 };
+const signIn = async (uid: string) => {
+  const user = await User.findOne({ uid }).populate([
+    {
+      path: 'showaUser',
+      options: { strictPopulate: false },
+    },
+    // // for no we no need wallet in this api; cause for get wallet we have another api
+    // {
+    //   path: 'wallet',
+    //   options: { strictPopulate: false },
+    // },
+  ]);
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+  }
+  const token = jwtFunc.generateToken(
+    user?.email as string,
+    user?._id.toString(),
+    user?.uid as string,
+  );
 
+  return { user, token };
+};
 export const showaUserServices = {
   createShowaUserIntoDB,
+  signIn,
 };

@@ -11,5 +11,5 @@ router.post(
   showaUserControllers.createShowaUser,
 );
 
-router.get('/sign-in', showaUserControllers.createShowaUser);
+router.get('/sign-in', showaUserControllers.signIn);
 export const showaUserRoutes = router;
