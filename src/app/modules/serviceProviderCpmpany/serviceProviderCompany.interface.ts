@@ -3,16 +3,22 @@ import { TAddress, TCard } from '../common/common.interface';
 export type TServiceProviderCompany = {
   status: 'pending' | 'success' | 'blocked';
   companyName: string;
-  photoUrl: string; // company  profile photo
-  //   representativeName: string;
+  photoUrl?: string; // company  profile photo
   address: TAddress;
+  representativeName: string; // it should be a reference of real user
   fax: string;
   corporateNo: string;
   phone: string;
   currency: // ?????????????
-  'us-dollar' | 'japan-yen' | 'korean-yen' | 'indian-rupee' | 'euro' | 'pound';
+  | 'us-dollar'
+    | 'japanese-yen'
+    | 'korean-yen'
+    | 'indian-rupee'
+    | 'euro'
+    | 'pound';
   capital: number; // ?????????
   invoiceRegistrationNo: string; // what is it ???????????
+  services: string[]; //or 'dish-washing-machine'or 'container-washing-machine'or 'pallet-washing-machine'or 'parts-washing-machine'or 'sushi-maker'or 'refrigerator'or 'air-conditioner'or 'laundry-machine' or custom chosen
   bank: {
     bankName: string;
     branchName: string;
