@@ -10,37 +10,49 @@ const createReservationRequestGroupService = async (ids: Array<String>) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const reservations = await ReservationRequest.find().where('_id').in(ids).session(session);
+    const reservations = await ReservationRequest.find()
+      .where('_id')
+      .in(ids)
+      .session(session);
     if (reservations?.length !== ids.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Some of the ids provided do not have an associated reservation request');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Some of the ids provided do not have an associated reservation request',
+      );
     }
     const groupArray = await ReservationRequestGroup.create(
       [
         {
           reservationRequest: ids,
           groupId: uuidv4(),
-        }
-      ], 
-      { session: session }
+        },
+      ],
+      { session: session },
     );
-    const invoiceIds = reservations.map(reservation => reservation.invoice);
+    // const invoiceIds = reservations.map((reservation) => reservation.invoice);
 
     if (!groupArray?.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'failed to create reservation group');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'failed to create reservation group',
+      );
     }
-    const invoiceGroupArray = await InvoiceGroup.create(
-      [
-        {
-          invoiceGroupNo: uuidv4(),
-          reservationRequestGroup: groupArray[0]._id,
-          invoices: invoiceIds,      
-        }
-      ],
-      { session: session }
-    );
-    if (!invoiceGroupArray?.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'failed to create invoice group');
-    }
+    // const invoiceGroupArray = await InvoiceGroup.create(
+    //   [
+    //     {
+    //       invoiceGroupNo: uuidv4(),
+    //       reservationRequestGroup: groupArray[0]._id,
+    //       invoices: invoiceIds,
+    //     },
+    //   ],
+    //   { session: session },
+    // );
+    // if (!invoiceGroupArray?.length) {
+    //   throw new AppError(
+    //     httpStatus.BAD_REQUEST,
+    //     'failed to create invoice group',
+    //   );
+    // }
     await session.commitTransaction();
     await session.endSession();
 
@@ -52,11 +64,21 @@ const createReservationRequestGroupService = async (ids: Array<String>) => {
   }
 };
 
-const addBidService = async (bid: { bidder: mongoose.Types.ObjectId, biddingAmount: number }, resGroupId: String) => {
+const addBidService = async (
+  bid: {
+    biddingUser: mongoose.Types.ObjectId;
+    bidder: mongoose.Types.ObjectId;
+    biddingAmount: number;
+  },
+  resGroupId: String,
+) => {
   try {
     const resGroup = await ReservationRequestGroup.findById(resGroupId);
     if (!resGroup) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'No reservation request group with this id');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'No reservation request group with this id',
+      );
     }
     resGroup.allBids.push(bid);
     const updatedResGroup = await resGroup.save();
@@ -66,9 +88,7 @@ const addBidService = async (bid: { bidder: mongoose.Types.ObjectId, biddingAmou
   }
 };
 
-
-
 export const reservationGroupServices = {
   createReservationRequestGroupService,
-  addBidService
+  addBidService,
 };
