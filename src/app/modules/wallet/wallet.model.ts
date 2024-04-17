@@ -3,7 +3,17 @@ import { TWallet } from './wallet.interface';
 import { CardSchema } from '../common/common.model';
 
 export const WalletSchema = new Schema<TWallet>({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  ownerType: {
+    type: String,
+    enum: ['user', 'serviceProviderCompany'],
+    required: true,
+  },
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
+
+  serviceProviderCompany: {
+    type: Schema.Types.ObjectId,
+    ref: 'ServiceProviderCompany',
+  },
   cards: { type: [CardSchema], required: true },
   stripeCustomerId: {
     type: String,

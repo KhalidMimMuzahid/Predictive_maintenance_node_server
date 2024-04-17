@@ -23,7 +23,7 @@ ServiceProviderAdminSchema.pre('find', function (next) {
   next();
 });
 // Create and export the model
-export const ShowaUser = mongoose.model<TServiceProviderAdmin>(
+export const ServiceProviderAdmin = mongoose.model<TServiceProviderAdmin>(
   'ServiceProviderAdmin',
   ServiceProviderAdminSchema,
 );

@@ -6,11 +6,13 @@ import httpStatus from 'http-status';
 
 const createServiceProviderAdmin: RequestHandler = catchAsync(
   async (req, res) => {
-    const { rootUser, serviceProviderAdmin } = req.body;
+    const { rootUser, serviceProviderAdmin, serviceProviderCompany } = req.body;
+
     const result =
       await serviceProviderAdminServices.createServiceProviderAdminIntoDB(
         rootUser,
         serviceProviderAdmin,
+        serviceProviderCompany,
       );
     // send response
     sendResponse(res, {
