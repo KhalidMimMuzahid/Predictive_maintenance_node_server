@@ -2,19 +2,19 @@ import httpStatus from 'http-status';
 import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
-// import { reservationServices } from './reservation.service';
+import { machineServices } from './machine.service';
 
-// const createWashingMachine: RequestHandler = catchAsync(async (req, res) => {
-//   const reservationData = req.body;
-//   // const result = await reservationServices.createReservationRequestIntoDB(reservationData);
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Reservation Request created successfully',
-//     data: result,
-//   });
-// });
+const createWashingMachine: RequestHandler = catchAsync(async (req, res) => {
+  const machineData = req.body;
+  const result = await machineServices.addMachineService(machineData);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine added successfully',
+    data: result,
+  });
+});
 
 // const getMyReservations: RequestHandler = catchAsync(async (req, res) => {
 //   const { uid } = req.params;

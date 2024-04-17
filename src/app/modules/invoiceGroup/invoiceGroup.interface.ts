@@ -6,13 +6,12 @@ export type TInvoiceGroup = {
   invoices: Types.ObjectId[]; // objectId of  invoice model
   bidWinner: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
 
-  taskAssignee?: {
-    taskName: string;
-    taskDescription: string;
-    engineer: Types.ObjectId; // objectId of a Engineer who is working for this company
-    taskStatus: 'pending' | 'accepted' | 'completed';
-    comments: string[]; // ??????
-  }[];
+  // taskAssignees?: {
+  //   invoice: Types.ObjectId; // objectId of invoice model
+  //   engineer?: Types.ObjectId; // objectId of the engineer; after assigning this task to engineer , this field will be added
+  //   taskStatus: 'pending' | 'accepted' | 'completed';
+  //   comments?: string[]; // ??????
+  // }[];
 
   //   report: {
   //     // maintenance report
