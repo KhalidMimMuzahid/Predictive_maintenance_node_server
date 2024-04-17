@@ -33,9 +33,20 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
     ],
     totalAmount: { type: Number, required: true },
   },
-  feedback: {
+  feedbackByUser: {
     ratings: { type: Number, required: true },
     comment: { type: String, required: true },
+  },
+  taskAssignee: {
+    engineer: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    taskStatus: {
+      type: String,
+      enum: ['pending', 'accepted', 'completed'],
+    },
+    comments: [String],
   },
   isDeleted: { type: Boolean, default: false },
 });

@@ -10,23 +10,23 @@ export const InvoiceGroupSchema: Schema<TInvoiceGroup> = new Schema({
   },
   invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
   bidWinner: { type: Schema.Types.ObjectId, required: true, ref: '' },
-  taskAssignee: [
-    {
-      taskName: { type: String, required: true },
-      taskDescription: { type: String, required: true },
-      engineer: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Engineer',
-      },
-      taskStatus: {
-        type: String,
-        enum: ['pending', 'accepted', 'completed'],
-        required: true,
-      },
-      comments: [{ type: String }],
-    },
-  ],
+  // taskAssignee: [
+  //   {
+  //     taskName: { type: String, required: true },
+  //     taskDescription: { type: String, required: true },
+  //     engineer: {
+  //       type: Schema.Types.ObjectId,
+  //       required: true,
+  //       ref: 'Engineer',
+  //     },
+  //     taskStatus: {
+  //       type: String,
+  //       enum: ['pending', 'accepted', 'completed'],
+  //       required: true,
+  //     },
+  //     comments: [{ type: String }],
+  //   },
+  // ],
   isDeleted: { type: Boolean, default: false },
 });
 InvoiceGroupSchema.pre('find', function (next) {

@@ -7,6 +7,7 @@ export type TInvoice = {
   bidWinner: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
   invoiceGroup: Types.ObjectId; // objectId of InvoiceGroup model
   user: Types.ObjectId; // objectId of the user model; who raise this reservation
+
   additionalProducts?: {
     products: {
       productName: string;
@@ -20,11 +21,16 @@ export type TInvoice = {
     }[];
     totalAmount: number;
   };
-  feedback?: {
+
+  feedbackByUser?: {
     ratings: number;
     comment: string;
   };
-
+  taskAssignee: {
+    engineer?: Types.ObjectId; // objectId of the engineer; after assigning this task to engineer , this field will be added
+    taskStatus: 'pending' | 'accepted' | 'completed';
+    comments?: string[]; // ??????
+  };
   isDeleted: boolean; // by default false
 };
 

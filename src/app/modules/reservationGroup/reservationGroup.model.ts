@@ -10,11 +10,21 @@ const ReservationRequestGroupSchema: Schema =
     ],
     allBids: [
       {
+        biddingUser: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
         bidder: { type: Schema.Types.ObjectId, required: true },
         biddingAmount: { type: Number, required: true },
       },
     ],
     postBiddingProcess: {
+      biddingUser: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
       bidWinner: { type: Schema.Types.ObjectId, required: true },
       invoiceGroup: {
         type: Schema.Types.ObjectId,
