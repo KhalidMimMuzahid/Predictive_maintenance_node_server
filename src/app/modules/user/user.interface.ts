@@ -23,9 +23,9 @@ export type TUser = {
   // stripeId: string;
   wallet?: Types.ObjectId; // it user is ObjectId of the Wallet model
   status: 'in-progress' | 'restricted' | 'approved';
-  engineer?: Types.ObjectId; // objectId of Engineer model; if this user is engineer only when this field will be created
   showaUser?: Types.ObjectId;
-  serviceProviderAdmin: Types.ObjectId;
+  serviceProviderAdmin?: Types.ObjectId;
+  engineer?: Types.ObjectId; // objectId of Engineer model; if this user is engineer only when this field will be created
   isDeleted: boolean; // by default false
 };
 
