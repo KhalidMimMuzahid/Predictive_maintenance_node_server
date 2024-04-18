@@ -1,6 +1,10 @@
+import { Types } from 'mongoose';
 import { TAddress, TCard } from '../common/common.interface';
 
 export type TServiceProviderCompany = {
+  serviceProviderAdmin: Types.ObjectId; // objectId of user, who is admin/owner of this company
+  // serviceProviderSubAdmins: Types.ObjectId[];
+  serviceProviderEngineers: Types.ObjectId[]; // objectId of User, who is admin/owner of this company
   status: 'pending' | 'success' | 'blocked';
   companyName: string;
   photoUrl?: string; // company  profile photo
@@ -29,6 +33,7 @@ export type TServiceProviderCompany = {
     personInChargeName: string; // ???????
     card: TCard; // should i transfer this card to wallet for service provide company???
   };
+  wallet: Types.ObjectId; // objectId of wallet for this company; i made it because of future need
   emergencyContact: {
     departmentInCharge: string;
     personInChargeName: string;

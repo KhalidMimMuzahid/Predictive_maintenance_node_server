@@ -6,3 +6,5 @@ export type TGenericErrorResponse = {
   message: string;
   errorSources: TErrorSources;
 };
+
+export type TAuth = { email: string; _id: string; uid: string };

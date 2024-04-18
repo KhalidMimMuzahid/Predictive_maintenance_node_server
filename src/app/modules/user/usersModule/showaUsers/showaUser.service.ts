@@ -41,6 +41,7 @@ const createShowaUserIntoDB = async (
     const createdWalletArray = await Wallet.create(
       [
         {
+          ownerType: 'user',
           user: createdUser?._id,
           cards: [],
           balance: 0,
@@ -79,6 +80,9 @@ const createShowaUserIntoDB = async (
     if (!updatedUser) {
       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
     }
+
+    await session.commitTransaction();
+    await session.endSession();
     const user = await User.findById(createdUser?._id).populate([
       {
         path: 'showaUser',
@@ -95,9 +99,6 @@ const createShowaUserIntoDB = async (
       user?._id.toString(),
       user?.uid as string,
     );
-
-    await session.commitTransaction();
-    await session.endSession();
     return { user, token };
   } catch (error) {
     // console.log({ error });

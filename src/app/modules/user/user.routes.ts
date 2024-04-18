@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import { adminRoutes } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.routes';
 import { showaUserRoutes } from './usersModule/showaUsers/showaUser.routes';
+import { userControllers } from './user.controller';
 
 const router: Router = express.Router();
 
@@ -21,8 +22,6 @@ subModuleRoutes.forEach((route) => router.use(route.path, route.route));
 //   validateRequest(userValidation.userCreateValidationSchema),
 //   userControllers.createUser,
 // );
-// router.get('/test', async (req, res) => {
-//   res.json({ message: "It's testing" });
-// });
+router.get('/get-user', userControllers.getUserBy_id);
 // End --------------------------------- XXXXX ----------------------------
 export const userRoutes = router;

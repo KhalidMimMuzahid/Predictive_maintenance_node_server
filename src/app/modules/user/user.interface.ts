@@ -25,6 +25,7 @@ export type TUser = {
   status: 'in-progress' | 'restricted' | 'approved';
   engineer?: Types.ObjectId; // objectId of Engineer model; if this user is engineer only when this field will be created
   showaUser?: Types.ObjectId;
+  serviceProviderAdmin: Types.ObjectId;
   isDeleted: boolean; // by default false
 };
 

@@ -15,7 +15,7 @@ const UserSchema = new Schema<TUser, UserModel>({
   uid: { type: String, required: true, unique: true },
   // uniqueNumberId: { type: String },
 
-  email: { type: String, required: true , unique: true},
+  email: { type: String, required: true, unique: true },
 
   role: {
     type: String,
@@ -38,6 +38,10 @@ const UserSchema = new Schema<TUser, UserModel>({
   showaUser: {
     type: Schema.Types.ObjectId,
     ref: 'ShowaUser',
+  },
+  serviceProviderAdmin: {
+    type: Schema.Types.ObjectId,
+    ref: 'ServiceProviderAdmin',
   },
   isDeleted: { type: Boolean, required: true, default: false },
 });
