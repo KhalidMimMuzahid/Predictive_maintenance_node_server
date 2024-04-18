@@ -30,7 +30,7 @@ const signIn: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'User created successfully',
+    message: 'User signing in successfully',
     data: result,
   });
 });
