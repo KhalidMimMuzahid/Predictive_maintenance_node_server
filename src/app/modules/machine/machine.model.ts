@@ -3,7 +3,7 @@ import { CompanySchema } from '../common/common.model';
 import { TMachine } from './machine.interface';
 
 export const MachineSchema: Schema = new Schema({
-  machineNo: { type: String, required: true },
+  machineNo: { type: String, required: true, unique: true },
   status: { type: String, enum: ['abnormal', 'normal'], required: true },
   category: {
     type: String,
@@ -24,5 +24,12 @@ export const MachineSchema: Schema = new Schema({
   model: { type: String, required: true },
   environment: { type: String, enum: ['indoor', 'outdoor'], required: true },
   sensors: [{ type: Schema.Types.ObjectId, ref: 'AttachedSensor' }],
+  deleted: { type: Boolean, default: false },
 });
+
+MachineSchema.pre('find', function (next) {
+  this.find({ deleted: { $ne: true } });
+  next();
+});
+
 export const Machine = mongoose.model<TMachine>('Invoice', MachineSchema);

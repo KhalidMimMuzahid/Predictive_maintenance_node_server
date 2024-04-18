@@ -12,9 +12,12 @@ const router: Router = express.Router();
 
 // Start ------------------------------- XXXXX ----------------------------
 // those routers are for root user role routes
-router.post('/washing', machineController.createWashingMachine);
-router.get('/:uid', machineController.getMyReservations);
-router.get('/status/:uid/:status', machineController.getMyReservationsByStatus);
-router.get('/status/:status', machineController.getReservationsByStatus);
+router.post('/', machineController.createWashingMachine);
+router.get('/washing-machine/user/:uid', machineController.getMyWashingMachine);
+router.get('/general-machine/user/:uid', machineController.getMyGeneralMachine);
+router.get('/:id', machineController.getMachine);
+router.delete('/', machineController.deleteMachine);
+router.put('/status', machineController.changeStatus);
+router.put('/sensor', machineController.addSensor);
 // End --------------------------------- XXXXX ----------------------------
-export const reservationRoutes = router;
+export const machineRoutes = router;
