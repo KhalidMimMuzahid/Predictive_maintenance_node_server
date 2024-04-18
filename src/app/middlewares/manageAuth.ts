@@ -4,6 +4,7 @@ import { jwtFunc } from '../utils/jwtFunction';
 import AppError from '../errors/AppError';
 import httpStatus from 'http-status';
 import url from 'url';
+import { TAuth } from '../interface/error';
 export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
   try {
     const parsedUrl = url.parse(req?.url);
@@ -14,7 +15,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
     } else {
       const bearerToken = req.headers['authorization']?.split(' ')[1];
 
-      let auth;
+      let auth: TAuth;
       try {
         auth = jwtFunc?.decodeToken(bearerToken as string);
       } catch (error) {
