@@ -13,8 +13,8 @@ const router: Router = express.Router();
 // Start ------------------------------- XXXXX ----------------------------
 // those routers are for root user role routes
 router.post('/', reservationController.createReservationRequest);
-router.get('/:uid', reservationController.getMyReservations);
-router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);
+router.get('/', reservationController.getMyReservations);
+router.get('/status/:status', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
 // End --------------------------------- XXXXX ----------------------------
 export const reservationRoutes = router;
