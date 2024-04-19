@@ -1,5 +1,6 @@
-export type TErrorSources = { path: string | number; message: string }[];
+import { Types } from 'mongoose';
 
+export type TErrorSources = { path: string | number; message: string }[];
 
 export type TGenericErrorResponse = {
   statusCode: number;
@@ -7,4 +8,8 @@ export type TGenericErrorResponse = {
   errorSources: TErrorSources;
 };
 
-export type TAuth = { email: string; _id: string; uid: string };
+export type TAuth = {
+  email: string;
+  _id: string | Types.ObjectId;
+  uid: string;
+};

@@ -1,12 +1,11 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import { ReservationRequestGroup } from './reservationGroup.model';
 import AppError from '../../errors/AppError';
 import { v4 as uuidv4 } from 'uuid';
 import { ReservationRequest } from '../reservation/reservation.model';
 import httpStatus from 'http-status';
-import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
 
-const createReservationRequestGroupService = async (ids: Array<String>) => {
+const createReservationRequestGroupService = async (ids: Array<string>) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -70,22 +69,18 @@ const addBidService = async (
     bidder: mongoose.Types.ObjectId;
     biddingAmount: number;
   },
-  resGroupId: String,
+  resGroupId: string,
 ) => {
-  try {
-    const resGroup = await ReservationRequestGroup.findById(resGroupId);
-    if (!resGroup) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'No reservation request group with this id',
-      );
-    }
-    resGroup.allBids.push(bid);
-    const updatedResGroup = await resGroup.save();
-    return updatedResGroup;
-  } catch (error) {
-    throw error;
+  const resGroup = await ReservationRequestGroup.findById(resGroupId);
+  if (!resGroup) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'No reservation request group with this id',
+    );
   }
+  resGroup.allBids.push(bid);
+  const updatedResGroup = await resGroup.save();
+  return updatedResGroup;
 };
 
 export const reservationGroupServices = {

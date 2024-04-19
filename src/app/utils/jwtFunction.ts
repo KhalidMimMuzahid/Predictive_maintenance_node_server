@@ -1,5 +1,14 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
+import { Types } from 'mongoose';
+
+declare module 'jsonwebtoken' {
+  export interface JwtPayload {
+    email: string;
+    _id: string | Types.ObjectId;
+    uid: string;
+  }
+}
 
 const generateToken = (email: string, _id: string = '', uid: string = '') => {
   const token = jwt.sign({ email, _id, uid }, config?.privateKey as string, {
@@ -9,7 +18,7 @@ const generateToken = (email: string, _id: string = '', uid: string = '') => {
   return token;
 };
 const decodeToken = (token: string) => {
-  const decoded = jwt.verify(token, config.privateKey as string);
+  const decoded = jwt.verify(token, config.privateKey as string) as JwtPayload;
   return decoded;
 };
 
