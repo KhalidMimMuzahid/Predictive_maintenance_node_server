@@ -16,6 +16,7 @@ export const SensorModuleSchema = new Schema<TSensorModule, SensorModuleModel>({
     enum: ['module-1', 'module-2', 'module-3', 'module-4'],
     required: true,
   },
+  isDeleted: { type: Boolean, required: true, default: false },
 });
 
 SensorModuleSchema.statics.isMacAddressExists = async (macAddress: string) => {

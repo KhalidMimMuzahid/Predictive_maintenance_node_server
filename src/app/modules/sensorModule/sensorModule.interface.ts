@@ -12,6 +12,7 @@ export type TSensorModule = {
   // sensorType: 'vibration' | 'temperature'; // we no need this field
   moduleType: 'module-1' | 'module-2' | 'module-3' | 'module-4';
   // seller: string; // seller is always Showa company; thats why we no need this seller field for now
+  isDeleted: boolean;
 };
 
 export interface SensorModuleModel extends Model<TSensorModule> {

@@ -1,8 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
-import { TAttachedSensor } from './sensorAttached.interface';
+import { TAttachedSensor } from './sensorModuleAttached.interface';
 
 const AttachedSensorSchema: Schema = new Schema<TAttachedSensor>({
-  sensor: { type: Schema.Types.ObjectId, ref: 'Sensor', required: true },
+  sensorModule: { type: Schema.Types.ObjectId, ref: 'Sensor', required: true },
   machine: { type: Schema.Types.ObjectId, ref: 'Machine' },
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   purpose: { type: String },

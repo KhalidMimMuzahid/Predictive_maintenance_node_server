@@ -22,13 +22,13 @@ export type TModule4 = {
 };
 export type TModule = TModule1 | TModule2 | TModule3 | TModule4;
 export type TAttachedSensor = {
-  sensor: Types.ObjectId; // objectId of TSensor
+  sensorModule: Types.ObjectId; // objectId of TSensor
   machine: Types.ObjectId; // objectId of Machine model  ; if machine field is not empty , that means this machine is connected to this sensor
   user: Types.ObjectId; // objectId of User model who purchase this sensor
   purpose?: string; // showa admin can set this value when it will be installed in the machine by showa admin/engineer
   sectionName?: string; // showa admin can set this value
   isSwitchedOn: boolean; // when the sensor is active then it's value is true
-  currentSubscription: Types.ObjectId; // objectId of Subscription model
+  currentSubscription?: Types.ObjectId; // objectId of Subscription model
   module: 'module-1' | 'module-2' | 'module-3' | 'module-4';
   sensorData: TModule[];
 };

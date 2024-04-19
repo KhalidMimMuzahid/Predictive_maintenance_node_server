@@ -5,8 +5,8 @@ import AppError from '../../errors/AppError';
 import { v4 as uuidv4 } from 'uuid';
 import { Invoice } from '../invoice/invoice.model';
 import httpStatus from 'http-status';
-import { TAttachedSensor } from '../sensorAttached/sensorAttached.interface';
-import { AttachedSensor } from '../sensorAttached/sensorAttached.model';
+import { TAttachedSensor } from '../sensorModuleAttached/sensorModuleAttached.interface';
+import { AttachedSensor } from '../sensorModuleAttached/sensorModuleAttached.model';
 
 const addMachineService = async (payload: TMachine) => {
   try {
