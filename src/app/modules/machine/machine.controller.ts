@@ -3,6 +3,7 @@ import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { machineServices } from './machine.service';
+import { TAuth } from '../../interface/error';
 
 const createWashingMachine: RequestHandler = catchAsync(async (req, res) => {
   const machineData = req.body;
@@ -17,8 +18,9 @@ const createWashingMachine: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getMyWashingMachine: RequestHandler = catchAsync(async (req, res) => {
-  const { uid } = req.params;
-  const results = await machineServices.getMyWashingMachineService(uid);
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const results = await machineServices.getMyWashingMachineService(auth._id);
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -29,8 +31,9 @@ const getMyWashingMachine: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getMyGeneralMachine: RequestHandler = catchAsync(async (req, res) => {
-  const { uid } = req.params;
-  const results = await machineServices.getMyGeneralMachineService(uid);
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const results = await machineServices.getMyGeneralMachineService(auth._id);
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
