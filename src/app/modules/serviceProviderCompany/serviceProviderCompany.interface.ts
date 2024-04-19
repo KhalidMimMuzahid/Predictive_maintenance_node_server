@@ -5,7 +5,7 @@ export type TServiceProviderCompany = {
   serviceProviderAdmin: Types.ObjectId; // objectId of user, who is admin/owner of this company
   // serviceProviderSubAdmins: Types.ObjectId[];
   serviceProviderEngineers: Types.ObjectId[]; // objectId of User, who is admin/owner of this company
-  status: 'pending' | 'success' | 'blocked';
+  status: 'pending' | 'success' | 'suspended';
   companyName: string;
   photoUrl?: string; // company  profile photo
   address: TAddress;

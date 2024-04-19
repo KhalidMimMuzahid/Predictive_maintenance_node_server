@@ -23,5 +23,6 @@ subModuleRoutes.forEach((route) => router.use(route.path, route.route));
 //   userControllers.createUser,
 // );
 router.get('/get-user', userControllers.getUserBy_id);
+router.get('/get-all-showa-customers', userControllers.getAllShowaCustomers);
 // End --------------------------------- XXXXX ----------------------------
 export const userRoutes = router;

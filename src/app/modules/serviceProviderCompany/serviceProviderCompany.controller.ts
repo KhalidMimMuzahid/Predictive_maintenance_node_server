@@ -25,4 +25,5 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
+  // getAllServiceProviderCompanies
 };
