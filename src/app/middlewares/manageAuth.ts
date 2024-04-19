@@ -4,7 +4,7 @@ import { jwtFunc } from '../utils/jwtFunction';
 import AppError from '../errors/AppError';
 import httpStatus from 'http-status';
 import url from 'url';
-import { TAuth } from '../interface/error';
+import { Types } from 'mongoose';
 export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
   try {
     const parsedUrl = url.parse(req?.url);
@@ -15,9 +15,9 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
     } else {
       const bearerToken = req.headers['authorization']?.split(' ')[1];
 
-      let auth: TAuth;
+      let auth;
       try {
-        auth = jwtFunc?.decodeToken(bearerToken as string);
+        auth = await jwtFunc?.decodeToken(bearerToken as string);
       } catch (error) {
         throw new AppError(
           httpStatus.FORBIDDEN,
@@ -33,12 +33,13 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
           'Your access token is expired or unauthorized user detected. \n please sign-in agin',
         );
       }
+      auth._id = new Types.ObjectId(auth?._id);
 
-      // set auth info inside of headers
       req.headers.auth = auth;
       return next();
     }
   } catch (error) {
+    // console.log({ error });
     return next(error);
   }
 });
