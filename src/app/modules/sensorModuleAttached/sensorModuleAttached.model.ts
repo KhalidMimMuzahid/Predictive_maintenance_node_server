@@ -1,9 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
-import { TAttachedSensor } from './sensorModuleAttached.interface';
+import { TSensorModuleAttached } from './sensorModuleAttached.interface';
 
-const AttachedSensorSchema: Schema = new Schema<TAttachedSensor>({
+const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>({
   sensorModule: { type: Schema.Types.ObjectId, ref: 'Sensor', required: true },
   machine: { type: Schema.Types.ObjectId, ref: 'Machine' },
+  macAddress: { type: String, unique: true, required: true },
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   purpose: { type: String },
   sectionName: { type: String },
@@ -11,10 +12,10 @@ const AttachedSensorSchema: Schema = new Schema<TAttachedSensor>({
   currentSubscription: {
     type: Schema.Types.ObjectId,
     ref: 'Subscription',
-    required: true,
+    // required: true,
   },
 
-  module: {
+  moduleType: {
     type: String,
     enum: ['module-1', 'module-2', 'module-3', 'module-4'],
     required: true,
@@ -22,7 +23,7 @@ const AttachedSensorSchema: Schema = new Schema<TAttachedSensor>({
   sensorData: [Schema.Types.Mixed],
 });
 
-export const AttachedSensor = mongoose.model<TAttachedSensor>(
-  'AttachedSensor',
-  AttachedSensorSchema,
+export const SensorModuleAttached = mongoose.model<TSensorModuleAttached>(
+  'SensorModuleAttached',
+  SensorModuleAttachedSchema,
 );

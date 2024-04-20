@@ -7,7 +7,7 @@ export type TSensorModule = {
   addedBy: Types.ObjectId; // objectId of user who add this sensor
   name: string;
   macAddress: string;
-  price: number;
+  // price: number;
   status: 'in-stock' | 'sold-out';
   // sensorType: 'vibration' | 'temperature'; // we no need this field
   moduleType: 'module-1' | 'module-2' | 'module-3' | 'module-4';

@@ -1,20 +1,25 @@
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import { TMachine } from './machine.interface';
 import { Machine } from './machine.model';
 import AppError from '../../errors/AppError';
-import { v4 as uuidv4 } from 'uuid';
-import { Invoice } from '../invoice/invoice.model';
 import httpStatus from 'http-status';
-import { TAttachedSensor } from '../sensorModuleAttached/sensorModuleAttached.interface';
-import { AttachedSensor } from '../sensorModuleAttached/sensorModuleAttached.model';
+import { checkMachineData } from './machine.utils';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 
-const addMachineService = async (payload: TMachine) => {
-  try {
-    const machine = await Machine.create(payload);
-    return machine;
-  } catch (error) {
-    throw error;
-  }
+const addNonConnectedMachineInToDB = async (payload: TMachine) => {
+  checkMachineData(payload); // we are validation machine data for handling washing/general machine data according to it's category
+  const machineData = payload;
+  machineData.status = 'normal';
+  const lastAddedMachine = await Machine.findOne(
+    { user: machineData?.user },
+    { machineNo: 1 },
+  ).sort({ _id: -1 });
+  machineData.machineNo = padNumberWithZeros(
+    Number(lastAddedMachine?.machineNo || '0000') + 1,
+    4,
+  );
+  const machine = await Machine.create(payload);
+  return machine;
 };
 
 const getMyWashingMachineService = async (uid: String) => {
@@ -127,7 +132,7 @@ const addSensorService = async (payload: TAttachedSensor, id: String) => {
 };
 
 export const machineServices = {
-  addMachineService,
+  addNonConnectedMachineInToDB,
   getMyWashingMachineService,
   getMyGeneralMachineService,
   getMachineService,

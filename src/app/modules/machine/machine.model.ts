@@ -1,8 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
-import { CompanySchema } from '../common/common.model';
+import { CompanySchema, IsDeletedSchema } from '../common/common.model';
 import { TMachine } from './machine.interface';
 
-export const MachineSchema: Schema = new Schema({
+export const MachineSchema: Schema = new Schema<TMachine>({
   machineNo: { type: String, required: true, unique: true },
   status: { type: String, enum: ['abnormal', 'normal'], required: true },
   category: {
@@ -23,13 +23,19 @@ export const MachineSchema: Schema = new Schema({
   brand: { type: String, required: true },
   model: { type: String, required: true },
   environment: { type: String, enum: ['indoor', 'outdoor'], required: true },
-  sensors: [{ type: Schema.Types.ObjectId, ref: 'AttachedSensor' }],
-  deleted: { type: Boolean, default: false },
+  sensorModulesAttached: [
+    { type: Schema.Types.ObjectId, ref: 'SensorModuleAttached' },
+  ],
+  isDeleted: {
+    type: IsDeletedSchema,
+    required: true,
+    default: { value: false },
+  },
 });
 
 MachineSchema.pre('find', function (next) {
-  this.find({ deleted: { $ne: true } });
+  this.find({ 'isDeleted.value': { $ne: true } });
   next();
 });
 
-export const Machine = mongoose.model<TMachine>('Invoice', MachineSchema);
+export const Machine = mongoose.model<TMachine>('Machine', MachineSchema);

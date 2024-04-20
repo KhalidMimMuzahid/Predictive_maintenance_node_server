@@ -1,19 +1,39 @@
-const addSensorModule: RequestHandler = catchAsync(async (req, res) => {
+import { RequestHandler } from 'express';
+import { sensorAttachedModuleServices } from './sensorModuleAttached.service';
+import catchAsync from '../../utils/catchAsync';
+import { TAuth } from '../../interface/error';
+import sendResponse from '../../utils/sendResponse';
+import httpStatus from 'http-status';
+import { TSensorModuleAttached } from './sensorModuleAttached.interface';
+import AppError from '../../errors/AppError';
+
+const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  const sensorModule: TSensorModule = req?.body;
+  const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
-  sensorModule.addedBy = auth._id;
+  sensorModuleAttached.user = auth._id;
+  const macAddress: string = req?.query?.macAddress as string;
 
-  const result = await sensorModuleServices.addSensorModuleIntoDB(sensorModule);
+  if (!macAddress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'macAddress is required to to purchase sensor module',
+    );
+  }
+  const result =
+    await sensorAttachedModuleServices.addSensorAttachedModuleIntoDB(
+      macAddress,
+      sensorModuleAttached,
+    );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'sensorModule has added successfully',
+    message: 'sensorModule has purchased successfully',
     data: result,
   });
 });
 
 export const sensorModuleAttachedControllers = {
-  addSensorModule,
+  addSensorAttachedModule,
 };

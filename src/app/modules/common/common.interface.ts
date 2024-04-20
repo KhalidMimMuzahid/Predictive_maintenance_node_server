@@ -45,3 +45,7 @@ export type TCompany = {
   type?: string; // type of shop oor company
   address: TAddress; // where the company is located
 };
+export type TIsDeleted = {
+  value: boolean;
+  deletedBy?: Types.ObjectId; // objectId of user; who delete this machine
+};

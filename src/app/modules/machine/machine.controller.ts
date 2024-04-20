@@ -3,10 +3,15 @@ import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { machineServices } from './machine.service';
+import { TMachine } from './machine.interface';
+import { TAuth } from '../../interface/error';
 
-const createWashingMachine: RequestHandler = catchAsync(async (req, res) => {
-  const machineData = req.body;
-  const result = await machineServices.addMachineService(machineData);
+const addNonConnectedMachine: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const machineData: Partial<TMachine> = req.body;
+  machineData.user = auth?._id;
+  const result =
+    await machineServices.addNonConnectedMachineInToDB(machineData);
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -89,7 +94,7 @@ const addSensor: RequestHandler = catchAsync(async (req, res) => {
 });
 
 export const machineController = {
-  createWashingMachine,
+  addNonConnectedMachine,
   getMyWashingMachine,
   getMyGeneralMachine,
   getMachine,
