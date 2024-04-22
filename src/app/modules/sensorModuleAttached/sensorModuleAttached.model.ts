@@ -3,11 +3,12 @@ import { TSensorModuleAttached } from './sensorModuleAttached.interface';
 
 const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>({
   sensorModule: { type: Schema.Types.ObjectId, ref: 'Sensor', required: true },
+  isAttached: { type: Boolean, required: true, default: false },
   machine: { type: Schema.Types.ObjectId, ref: 'Machine' },
   macAddress: { type: String, unique: true, required: true },
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   purpose: { type: String },
-  sectionName: { type: String },
+  sectionName: { type: String, required: true },
   isSwitchedOn: { type: Boolean, required: true },
   currentSubscription: {
     type: Schema.Types.ObjectId,

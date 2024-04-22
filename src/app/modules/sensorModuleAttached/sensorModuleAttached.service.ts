@@ -4,6 +4,7 @@ import { SensorModule } from '../sensorModule/sensorModule.model';
 import { TSensorModuleAttached } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
 
+
 const addSensorAttachedModuleIntoDB = async (
   macAddress: string,
   sensorModuleAttached: Partial<TSensorModuleAttached>,
@@ -48,6 +49,8 @@ const addSensorAttachedModuleIntoDB = async (
   }
   return createdSensorModuleAttached;
 };
+
+
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB,
 };

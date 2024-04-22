@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { createAddressValidationSchema } from '../common/common.validation';
+import { createSensorModuleAttachedSchema } from '../sensorModuleAttached/sensorModuleAttached.validation';
 
 export const createCompanyValidationSchema = z.object({
   category: z.enum(['home', 'shop', 'company', 'others']),
@@ -30,4 +31,11 @@ export const createMachineValidationSchema = z.object({
 });
 const createNonConnectedMachineValidationSchema = createMachineValidationSchema;
 
-export const machineValidation = { createNonConnectedMachineValidationSchema };
+const createConnectedMachineValidationSchema = z.object({
+  machine: createMachineValidationSchema,
+  sensorModuleAttached: createSensorModuleAttachedSchema,
+});
+export const machineValidation = {
+  createNonConnectedMachineValidationSchema,
+  createConnectedMachineValidationSchema,
+};
