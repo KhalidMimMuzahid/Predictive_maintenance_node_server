@@ -7,13 +7,19 @@ import AppError from '../../../../errors/AppError';
 
 const createServiceProviderAdmin: RequestHandler = catchAsync(
   async (req, res) => {
-    const { rootUser, serviceProviderAdmin, serviceProviderCompany } = req.body;
+    const {
+      rootUser,
+      serviceProviderAdmin,
+      serviceProviderCompany,
+      serviceProviderBranch,
+    } = req.body;
 
     const result =
       await serviceProviderAdminServices.createServiceProviderAdminIntoDB(
         rootUser,
         serviceProviderAdmin,
         serviceProviderCompany,
+        serviceProviderBranch,
       );
     // send response
     sendResponse(res, {

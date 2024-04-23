@@ -42,5 +42,5 @@ export type TServiceProviderCompany = {
   };
 
   registrationDocument: { photoUrl: string; title: string }[]; //
-  branches?: string[]; // objectId of ServiceProviderBranch model
+  branches?: Types.ObjectId[]; // objectId of ServiceProviderBranch model
 };

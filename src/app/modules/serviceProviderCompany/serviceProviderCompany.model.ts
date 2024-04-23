@@ -98,7 +98,7 @@ export const serviceProviderCompanySchema = new Schema<TServiceProviderCompany>(
         title: String,
       },
     ],
-    branches: [String],
+    branches: [{ type: Schema.Types.ObjectId, ref: 'ServiceProviderBranch' }],
   },
 );
 

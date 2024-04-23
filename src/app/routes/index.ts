@@ -7,6 +7,7 @@ import { machineRoutes } from '../modules/machine/machine.routes';
 import { serviceProviderCompanyRoutes } from '../modules/serviceProviderCompany/serviceProviderCompany.routes';
 import { sensorModuleRoutes } from '../modules/sensorModule/sensorModule.routes';
 import { sensorModuleAttachedRoutes } from '../modules/sensorModuleAttached/sensorModuleAttached.routes';
+import { serviceProviderBranchRoutes } from '../modules/serviceProviderBranch/serviceProviderBranch.routes';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ const moduleRoutes: any[] = [
   { path: '/reservations-group', route: reservationGroupRoutes },
   { path: '/machine', route: machineRoutes },
   { path: '/service-provider-company', route: serviceProviderCompanyRoutes },
+  { path: '/service-provider-branch', route: serviceProviderBranchRoutes },
   { path: '/sensor-module', route: sensorModuleRoutes },
   { path: '/sensor-module-attached', route: sensorModuleAttachedRoutes },
 ];
