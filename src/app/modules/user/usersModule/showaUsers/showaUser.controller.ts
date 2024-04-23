@@ -4,6 +4,7 @@ import catchAsync from '../../../../utils/catchAsync';
 import { showaUserServices } from './showaUser.service';
 import sendResponse from '../../../../utils/sendResponse';
 import AppError from '../../../../errors/AppError';
+import { TAuth } from '../../../../interface/error';
 
 const createShowaUser: RequestHandler = catchAsync(async (req, res) => {
   const { rootUser, showaUser } = req.body;
@@ -35,7 +36,21 @@ const signIn: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const updateAddress: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const { address } = req.body;
+  const result = await showaUserServices.updateAddress(auth.uid, address);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Showa user address updated successfully',
+    data: result,
+  });
+});
+
 export const showaUserControllers = {
   createShowaUser,
   signIn,
+  updateAddress,
 };

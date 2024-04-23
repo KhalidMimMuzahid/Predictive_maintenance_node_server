@@ -7,6 +7,7 @@ import { TShowaUser } from './showaUser.interface';
 import { ShowaUser } from './showaUser.model';
 import { jwtFunc } from '../../../../utils/jwtFunction';
 import mongoose from 'mongoose';
+import { TAddress } from '../../../common/common.interface';
 
 const createShowaUserIntoDB = async (
   rootUser: Partial<TUser>,
@@ -131,7 +132,26 @@ const signIn = async (uid: string) => {
 
   return { user, token };
 };
+
+const updateAddress = async (uid: string, addressPayload: TAddress) => {
+  const user = await User.findOne({ uid });
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+  }
+  const showaUser = await ShowaUser.findById(user.showaUser);
+  if (!showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no showa user founded with this id',
+    );
+  }
+  showaUser.addresses?.push({ isDeleted: false, address: addressPayload });
+  const updatedShowaUser = await showaUser.save();
+
+  return { updatedShowaUser };
+};
 export const showaUserServices = {
   createShowaUserIntoDB,
   signIn,
+  updateAddress,
 };

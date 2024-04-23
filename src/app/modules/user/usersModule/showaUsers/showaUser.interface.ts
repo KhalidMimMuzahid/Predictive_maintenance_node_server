@@ -3,7 +3,7 @@ import { TAddress, TIsDeleted } from '../../../common/common.interface';
 
 export type TLanguage = {
   katakana?: { name: { firstName: string; lastName: string } };
-  korean?: { name: { firstName: string; lastName: string } };
+  kanji?: { name: { firstName: string; lastName: string } };
 };
 
 export type TShowaUser = {
