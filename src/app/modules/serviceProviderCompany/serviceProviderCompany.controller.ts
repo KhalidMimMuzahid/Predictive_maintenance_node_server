@@ -9,7 +9,6 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-    console.log({ auth });
     const result =
       await serviceProviderCompanyServices.getServiceProviderCompanyForAdmin(
         auth?._id,
@@ -26,4 +25,5 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
+  // getAllServiceProviderCompanies
 };

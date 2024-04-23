@@ -1,5 +1,12 @@
 import { Schema } from 'mongoose';
-import { TAddress, TCard, TCompany, TPayment, TTeam } from './common.interface';
+import {
+  TAddress,
+  TCard,
+  TCompany,
+  TIsDeleted,
+  TPayment,
+  TTeam,
+} from './common.interface';
 
 export const AddressSchema: Schema = new Schema<TAddress>({
   street: { type: String, required: true },
@@ -52,4 +59,8 @@ export const CompanySchema: Schema = new Schema<TCompany>({
   name: { type: String, required: true },
   type: { type: String, required: true },
   address: { type: AddressSchema, required: true },
+});
+export const IsDeletedSchema = new Schema<TIsDeleted>({
+  value: { type: Boolean, default: false, required: true },
+  deletedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 });

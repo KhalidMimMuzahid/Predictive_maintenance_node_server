@@ -10,4 +10,4 @@ router.post(
   serviceProviderAdminControllers.createServiceProviderAdmin,
 );
 router.get('/sign-in', serviceProviderAdminControllers.signIn);
-export const adminRoutes = router;
+export const serviceProviderAdminRoutes = router;

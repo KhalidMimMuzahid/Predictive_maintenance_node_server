@@ -20,11 +20,11 @@ const createShowaUserIntoDB = async (
   // checking if the user is already created with this user or not
   const isUidExists = await User.isUidExists(rootUser?.uid as string);
   if (isUidExists) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'uid is already in use');
+    throw new AppError(httpStatus.BAD_REQUEST, 'uid has already in used');
   }
   const isEmailExists = await User.isEmailExists(rootUser?.email as string);
   if (isEmailExists) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'email is already in use');
+    throw new AppError(httpStatus.BAD_REQUEST, 'email has already in used');
   }
 
   // creating the session

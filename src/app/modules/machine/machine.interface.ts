@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TCompany } from '../common/common.interface';
+import { TCompany, TIsDeleted } from '../common/common.interface';
 
 export type TMachine = {
   machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"
@@ -9,7 +9,7 @@ export type TMachine = {
 
   // userType: 'showa-user'; // default value 'showa-user'; for future we may need, if showa-user and other user type like organization or anything
   user: Types.ObjectId; // objectId of User model
-  usedFor?: TCompany; // shop or company info ; special case:for general machine we store machine-type field as mentioned in figma, to   category: 'home' | 'others';
+  usedFor?: TCompany; // shop or company info ;
 
   generalMachine?: {
     homeName?: string; //  ??????
@@ -23,6 +23,11 @@ export type TMachine = {
   brand: string; // as mentioned in figma; brand name of the machine
   model: string; // as mentioned in figma; model name of the machine
   environment: 'indoor' | 'outdoor'; // as mentioned in figma  like  "indoor" or "outdoor"
-  sensors?: Types.ObjectId[];
-  deleted: boolean; // objectId of TAttachedSensor model
+  sensorModulesAttached?: Types.ObjectId[]; // objectId of SensorModuleAttached
+  isDeleted: TIsDeleted;
+  // objectId of TAttachedSensor model
 };
+
+
+
+

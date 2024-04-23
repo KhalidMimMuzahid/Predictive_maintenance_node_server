@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TAddress } from '../../../common/common.interface';
+import { TAddress, TIsDeleted } from '../../../common/common.interface';
 
 export type TLanguage = {
   katakana?: { name: { firstName: string; lastName: string } };
@@ -18,5 +18,5 @@ export type TShowaUser = {
   photoUrl?: string;
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   addresses?: { isDeleted: boolean; address: TAddress }[];
-  isDeleted: boolean; // by default false
+  isDeleted: TIsDeleted;
 };

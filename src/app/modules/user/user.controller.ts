@@ -22,6 +22,18 @@ const getUserBy_id: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllShowaCustomers: RequestHandler = catchAsync(async (req, res) => {
+  const result = await userServices.getAllShowaCustomersFromDB();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Customers retrieved successfully',
+    data: result,
+  });
+});
+
 export const userControllers = {
   getUserBy_id,
+  getAllShowaCustomers,
 };

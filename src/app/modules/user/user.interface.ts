@@ -1,17 +1,18 @@
 /* eslint-disable no-unused-vars */
 import { Model, Types } from 'mongoose';
+import { TIsDeleted } from '../common/common.interface';
 export type TRole =
   // root user
-  | 'showa-user'
+  | 'showaUser'
   // showa user
-  | 'showa-admin'
-  | 'showa-sub-admin'
+  | 'showaAdmin'
+  | 'showaSubAdmin'
   //service provider user
-  | 'service-provider-admin'
-  | 'service-provider-sub-admin'
-  | 'service-provider-engineer'
-  | 'service-provider-branch-manager'
-  | 'service-provider-support-stuff';
+  | 'serviceProviderAdmin'
+  | 'serviceProviderSubAdmin'
+  | 'serviceProviderEngineer'
+  | 'serviceProviderBranchManager'
+  | 'serviceProviderSupportStuff';
 
 export type TUser = {
   uid: string;
@@ -22,11 +23,11 @@ export type TUser = {
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   // stripeId: string;
   wallet?: Types.ObjectId; // it user is ObjectId of the Wallet model
-  status: 'in-progress' | 'restricted' | 'approved';
+  status: 'in-progress' | 'approved' | 'suspended';
   showaUser?: Types.ObjectId;
   serviceProviderAdmin?: Types.ObjectId;
-  engineer?: Types.ObjectId; // objectId of Engineer model; if this user is engineer only when this field will be created
-  isDeleted: boolean; // by default false
+  serviceProviderEngineer?: Types.ObjectId; // objectId of ServiceProviderEngineer model; if this user is engineer only when this field will be created
+  isDeleted: TIsDeleted;
 };
 
 export interface UserModel extends Model<TUser> {

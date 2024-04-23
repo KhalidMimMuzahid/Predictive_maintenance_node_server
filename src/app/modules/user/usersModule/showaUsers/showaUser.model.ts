@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { AddressSchema } from '../../../common/common.model';
+import { AddressSchema, IsDeletedSchema } from '../../../common/common.model';
 import { TLanguage, TShowaUser } from './showaUser.interface';
 const IntersectionSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, required: true },
@@ -36,14 +36,18 @@ const ShowaUserSchema: Schema = new Schema<TShowaUser>({
   },
   photoUrl: { type: String },
   addresses: { type: [IntersectionSchema] },
-  isDeleted: { type: Boolean, required: true, default: false },
+  isDeleted: {
+    type: IsDeletedSchema,
+    required: true,
+    default: { value: false },
+  },
 });
 ShowaUserSchema.virtual('fullName').get(function () {
   return this?.name?.firstName + ' ' + this?.name?.lastName;
 });
 
 ShowaUserSchema.pre('find', function (next) {
-  this.find({ isDeleted: { $ne: true } });
+  this.find({ 'isDeleted.value': { $ne: true } });
   next();
 });
 // Create and export the model

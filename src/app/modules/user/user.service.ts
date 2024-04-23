@@ -14,6 +14,17 @@ const getUserBy_id = async (_id: string) => {
 
   return user;
 };
+const getAllShowaCustomersFromDB = async () => {
+  const showaCustomers = await User.find({ role: 'showa-user' }).populate([
+    {
+      path: 'showaUser',
+      options: { strictPopulate: false },
+    },
+  ]);
+
+  return showaCustomers;
+};
 export const userServices = {
   getUserBy_id,
+  getAllShowaCustomersFromDB,
 };

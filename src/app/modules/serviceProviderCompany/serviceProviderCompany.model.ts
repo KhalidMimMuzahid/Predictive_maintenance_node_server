@@ -15,7 +15,7 @@ export const serviceProviderCompanySchema = new Schema<TServiceProviderCompany>(
   {
     status: {
       type: String,
-      enum: ['pending', 'success', 'blocked'],
+      enum: ['pending', 'success', 'suspended'],
       required: true,
     },
     serviceProviderAdmin: {
@@ -98,7 +98,7 @@ export const serviceProviderCompanySchema = new Schema<TServiceProviderCompany>(
         title: String,
       },
     ],
-    branches: [String],
+    branches: [{ type: Schema.Types.ObjectId, ref: 'ServiceProviderBranch' }],
   },
 );
 

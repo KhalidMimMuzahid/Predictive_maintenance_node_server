@@ -3,10 +3,9 @@ import {
   createAddressValidationSchema,
   createCardValidationSchema,
 } from '../../../common/common.validation';
-const rootUserCreateValidationSchema = z.object({
-  uid: z.string(),
-  email: z.string().email(),
-});
+import { ServiceProviderBranchCreateValidationSchema } from '../../../serviceProviderBranch/serviceProviderBranch.validation';
+import { rootUserCreateValidationSchema } from '../../user.validation';
+
 const serviceProviderAdminCreateValidationSchema = z.object({
   name: z.object({
     firstName: z.string(),
@@ -65,6 +64,7 @@ const userCreateValidationSchema = z.object({
   rootUser: rootUserCreateValidationSchema,
   serviceProviderAdmin: serviceProviderAdminCreateValidationSchema,
   serviceProviderCompany: serviceProviderCompanyCreateValidationSchema,
+  serviceProviderBranch: ServiceProviderBranchCreateValidationSchema.optional(),
 });
 
 export const serviceProviderAdminValidation = { userCreateValidationSchema };

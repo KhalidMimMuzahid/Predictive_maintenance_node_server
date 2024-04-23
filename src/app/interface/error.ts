@@ -8,8 +8,4 @@ export type TGenericErrorResponse = {
   errorSources: TErrorSources;
 };
 
-export type TAuth = {
-  email: string;
-  _id: string | Types.ObjectId;
-  uid: string;
-};
+export type TAuth = { email: string; _id: Types.ObjectId; uid: string };
