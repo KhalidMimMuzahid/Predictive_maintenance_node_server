@@ -33,7 +33,6 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
           'Your access token is expired or unauthorized user detected. \n please sign-in agin',
         );
       }
-      auth._id = new Types.ObjectId(auth?._id);
 
       auth._id = new Types.ObjectId(auth?._id);
       // console.log({ auth });
