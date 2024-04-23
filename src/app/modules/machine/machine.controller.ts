@@ -3,15 +3,11 @@ import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { machineServices } from './machine.service';
-<<<<<<< HEAD
-import { TAuth } from '../../interface/error';
-=======
 import { TMachine } from './machine.interface';
 import { TAuth } from '../../interface/error';
 import AppError from '../../errors/AppError';
 import { Types } from 'mongoose';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
->>>>>>> 12ab0619eb4a71c040f35f8bdc58f4192d08d1d7
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
@@ -30,33 +26,6 @@ const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   },
 );
 
-<<<<<<< HEAD
-const getMyWashingMachine: RequestHandler = catchAsync(async (req, res) => {
-  // const { uid } = req.params;
-  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  const results = await machineServices.getMyWashingMachineService(auth._id);
-  // send response
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'My washing machines',
-    data: results,
-  });
-});
-
-const getMyGeneralMachine: RequestHandler = catchAsync(async (req, res) => {
-  // const { uid } = req.params;
-  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  const results = await machineServices.getMyGeneralMachineService(auth._id);
-  // send response
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'My general machines',
-    data: results,
-  });
-});
-=======
 const addSensorConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -73,7 +42,6 @@ const addSensorConnectedMachine: RequestHandler = catchAsync(
       );
     }
     machineData.user = auth?._id;
->>>>>>> 12ab0619eb4a71c040f35f8bdc58f4192d08d1d7
 
     sensorModuleAttached.user = auth._id;
 

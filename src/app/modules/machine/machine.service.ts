@@ -10,9 +10,6 @@ import httpStatus from 'http-status';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { SensorModule } from '../sensorModule/sensorModule.model';
 
-<<<<<<< HEAD
-const addMachineService = async (payload: TMachine) => {
-=======
 const addNonConnectedMachineInToDB = async (payload: TMachine) => {
   checkMachineData(payload); // we are validation machine data for handling washing/general machine data according to it's category
 
@@ -26,72 +23,10 @@ const addNonConnectedMachineInToDB = async (payload: TMachine) => {
     Number(lastAddedMachine?.machineNo || '0000') + 1,
     4,
   );
->>>>>>> 12ab0619eb4a71c040f35f8bdc58f4192d08d1d7
   const machine = await Machine.create(payload);
   return machine;
 };
 
-<<<<<<< HEAD
-const getMyWashingMachineService = async (uid: string | Types.ObjectId) => {
-  console.log(`user id fetched from req header: ${uid.toString()}`);
-  const washingMachines = await Machine.find({
-    user: uid,
-    category: 'washing-machine',
-  });
-  return washingMachines;
-};
-
-const getMyGeneralMachineService = async (uid: string | Types.ObjectId) => {
-  const generalMachines = await Machine.find({
-    user: uid,
-    category: 'general-machine',
-  });
-  return generalMachines;
-};
-
-const getMachineService = async (id: string) => {
-  const machine = await Machine.findById(id);
-  if (!machine) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'There is no machine with this id!',
-    );
-  }
-  return machine;
-};
-
-const deleteMachineService = async (id: string) => {
-  const machine = await Machine.findById(id);
-  if (!machine) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'There is no machine with this id!',
-    );
-  }
-  machine.deleted = true;
-  const deletedMachine = await machine.save();
-  return deletedMachine;
-};
-
-const changeStatusService = async (id: string) => {
-  const machine = await Machine.findById(id);
-  if (!machine) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'There is no machine with this id!',
-    );
-  }
-  if (machine.status === 'normal') {
-    machine.status = 'abnormal';
-  } else {
-    machine.status = 'normal';
-  }
-  const updatedMachine = await machine.save();
-  return updatedMachine;
-};
-
-const addSensorService = async (payload: TAttachedSensor, id: string) => {
-=======
 const addSensorConnectedMachineInToDB = async (payload: {
   sensorModuleMacAddress: string;
   machineData: TMachine;
@@ -126,7 +61,6 @@ const addSensorConnectedMachineInToDB = async (payload: {
 
   sensorModule.status = 'sold-out';
 
->>>>>>> 12ab0619eb4a71c040f35f8bdc58f4192d08d1d7
   const session = await mongoose.startSession();
 
   try {
