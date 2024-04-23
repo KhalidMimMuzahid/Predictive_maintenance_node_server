@@ -1,7 +1,9 @@
 import express, { Router } from 'express';
-import { adminRoutes } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.routes';
+
 import { showaUserRoutes } from './usersModule/showaUsers/showaUser.routes';
 import { userControllers } from './user.controller';
+import { serviceProviderAdminRoutes } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.routes';
+import { serviceProviderEngineerRoutes } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.routes';
 
 const router: Router = express.Router();
 
@@ -9,7 +11,8 @@ const router: Router = express.Router();
 // those routers are for special user role routes
 const subModuleRoutes: { path: string; route: express.Router }[] = [
   { path: '/showa-user', route: showaUserRoutes },
-  { path: '/service-provider-admin', route: adminRoutes },
+  { path: '/service-provider-admin', route: serviceProviderAdminRoutes },
+  { path: '/service-provider-engineer', route: serviceProviderEngineerRoutes },
 ];
 
 subModuleRoutes.forEach((route) => router.use(route.path, route.route));

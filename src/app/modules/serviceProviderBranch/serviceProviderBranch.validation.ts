@@ -6,8 +6,8 @@ import {
 
 // Define Zod schema
 export const ServiceProviderBranchCreateValidationSchema = z.object({
-  status: z.enum(['pending', 'success', 'blocked']),
-  type: z.string(),
+  //   status: z.enum(['pending', 'success', 'blocked']),
+  //   type: z.string(),
   branchName: z.string(),
   department: z.string(),
   serviceProviderCompany: z.string(), // Assuming ObjectId is represented as a string

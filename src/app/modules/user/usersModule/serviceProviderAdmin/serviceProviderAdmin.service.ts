@@ -17,7 +17,7 @@ const createServiceProviderAdminIntoDB = async (
   serviceProviderBranch: Partial<TServiceProviderBranch>,
 ) => {
   //create a user object
-  rootUser.role = 'service-provider-admin';
+  rootUser.role = 'serviceProviderAdmin';
   // rootUser.isDeleted= false // we no need to set it ; cause we have already set it as a default value in mongoose model
   // rootUser.status =  'approved'  // same as above
 

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { createAddressValidationSchema } from '../../../common/common.validation';
+import { rootUserCreateValidationSchema } from '../../user.validation';
 
 // Define validation schema for TLanguage
 const languageSchema = z.object({
@@ -21,11 +22,7 @@ const languageSchema = z.object({
     .optional(),
 });
 
-// Define validation schema for TUser
-const rootUserCreateValidationSchema = z.object({
-  uid: z.string(),
-  email: z.string().email(),
-});
+
 const showaUserCreateValidationSchema = z.object({
   name: z.object({
     firstName: z.string(),

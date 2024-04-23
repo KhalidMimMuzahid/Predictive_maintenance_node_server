@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { TServiceProviderAdmin } from './serviceProviderAdmin.interface';
+import { IsDeletedSchema } from '../../../common/common.model';
 
 const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>({
   user: {
@@ -12,14 +13,18 @@ const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>({
     required: true,
   },
 
-  isDeleted: { type: Boolean, required: true, default: false },
+  isDeleted: {
+    type: IsDeletedSchema,
+    required: true,
+    default: { value: false },
+  },
 });
 ServiceProviderAdminSchema.virtual('fullName').get(function () {
   return this?.name?.firstName + ' ' + this?.name?.lastName;
 });
 
 ServiceProviderAdminSchema.pre('find', function (next) {
-  this.find({ isDeleted: { $ne: true } });
+  this.find({ 'isDeleted.value': { $ne: true } });
   next();
 });
 // Create and export the model

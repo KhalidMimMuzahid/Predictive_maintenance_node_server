@@ -1,15 +1,16 @@
 import mongoose, { Schema } from 'mongoose';
 import { TUser, UserModel } from './user.interface';
+import { IsDeletedSchema } from '../common/common.model';
 
 const roles = [
-  'showa-user',
-  'showa-admin',
-  'showa-sub-admin',
-  'service-provider-admin',
-  'service-provider-sub-admin',
-  'service-provider-engineer',
-  'service-provider-branch-manager',
-  'service-provider-support-stuff',
+  'showaUser',
+  'showaAdmin',
+  'showaSubAdmin',
+  'serviceProviderAdmin',
+  'serviceProviderSubAdmin',
+  'serviceProviderEngineer',
+  'serviceProviderBranchManager',
+  'serviceProviderSupportStuff',
 ];
 const UserSchema = new Schema<TUser, UserModel>({
   uid: { type: String, required: true, unique: true },
@@ -21,19 +22,19 @@ const UserSchema = new Schema<TUser, UserModel>({
     type: String,
     required: true,
     enum: roles,
-    default: 'showa-user',
+    default: 'showaUser',
   },
   wallet: { type: Schema.Types.ObjectId, ref: 'Wallet' },
 
   status: {
     type: String,
-    enum: ['in-progress', 'approved', 'restricted'],
+    enum: ['in-progress', 'approved', 'suspended'],
     required: true,
     default: 'approved',
-  },
-  engineer: {
+  }, // only showa-admin can change the status
+  serviceProviderEngineer: {
     type: Schema.Types.ObjectId,
-    ref: 'Engineer',
+    ref: 'ServiceProviderEngineer',
   },
   showaUser: {
     type: Schema.Types.ObjectId,
@@ -43,7 +44,11 @@ const UserSchema = new Schema<TUser, UserModel>({
     type: Schema.Types.ObjectId,
     ref: 'ServiceProviderAdmin',
   },
-  isDeleted: { type: Boolean, required: true, default: false },
+  isDeleted: {
+    type: IsDeletedSchema,
+    required: true,
+    default: { value: false },
+  },
 });
 
 // methods
@@ -61,7 +66,7 @@ UserSchema.statics.isEmailExists = async (email: string) => {
 // });
 // middleware
 UserSchema.pre('find', function (next) {
-  this.find({ isDeleted: { $ne: true } });
+  this.find({ 'isDeleted.value': { $ne: true } });
   next();
 });
 

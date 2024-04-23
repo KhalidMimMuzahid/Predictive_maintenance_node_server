@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { TIsDeleted } from '../../../common/common.interface';
 
 export type TServiceProviderAdmin = {
   user: Types.ObjectId;
@@ -14,5 +15,5 @@ export type TServiceProviderAdmin = {
   // // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   // addresses?: { isDeleted: boolean; address: TAddress }[];
 
-  isDeleted: boolean; // by default false
+  isDeleted: TIsDeleted;
 };

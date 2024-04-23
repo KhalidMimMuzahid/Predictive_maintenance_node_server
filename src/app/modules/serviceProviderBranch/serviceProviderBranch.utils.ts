@@ -63,14 +63,15 @@ export const createServiceProviderBranch = async ({
   const createdWalletForServiceProviderBranch =
     createdWalletArrayForServiceProviderBranch[0];
 
-  const updatedServiceProviderBranch = ServiceProviderBranch.findByIdAndUpdate(
-    createdServiceProviderBranch?._id,
-    {
-      wallet: createdWalletForServiceProviderBranch?._id,
-    },
-    { new: true, session: session },
-  );
-
+  const updatedServiceProviderBranch =
+    await ServiceProviderBranch.findByIdAndUpdate(
+      createdServiceProviderBranch?._id,
+      {
+        wallet: createdWalletForServiceProviderBranch?._id,
+      },
+      { new: true, session: session },
+    );
+  console.log({ updatedServiceProviderBranch });
   if (!updatedServiceProviderBranch) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -79,7 +80,7 @@ export const createServiceProviderBranch = async ({
   }
 
   const updatedServiceProviderCompany =
-    ServiceProviderCompany.findByIdAndUpdate(
+    await ServiceProviderCompany.findByIdAndUpdate(
       serviceProviderCompany,
       {
         $addToSet: { branches: createdServiceProviderBranch?._id },
@@ -92,5 +93,5 @@ export const createServiceProviderBranch = async ({
       'failed to create service provider branch',
     );
   }
-  //   return { x: 'y' };
+  return { x: 'y' };
 };
