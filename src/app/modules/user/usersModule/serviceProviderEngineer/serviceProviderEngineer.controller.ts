@@ -42,7 +42,7 @@ const approveAndAssignEngineerInToBranch: RequestHandler = catchAsync(
       );
     }
     const serviceProviderEngineer = req?.query?.serviceProviderEngineer;
-    const serviceProviderBranch = req?.query?.serviceProviderBranch;
+    const serviceProviderBranch = req?.query?.serviceProviderBranch; // you you are not sending this info from front end; means you just want to approve this engineer currentState status; if you provide this info, means you want to approve and also assign this engineer to a specific branch
 
     if (!serviceProviderEngineer) {
       throw new AppError(
