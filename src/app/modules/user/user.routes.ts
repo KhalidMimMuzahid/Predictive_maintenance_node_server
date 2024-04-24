@@ -30,6 +30,7 @@ subModuleRoutes.forEach((route) => router.use(route.path, route.route));
 //   validateRequest(userValidation.userCreateValidationSchema),
 //   userControllers.createUser,
 // );
+router.get('/sign-in', userControllers.signIn);
 router.get('/get-user', userControllers.getUserBy_id);
 router.get('/get-all-showa-customers', userControllers.getAllShowaCustomers);
 // End --------------------------------- XXXXX ----------------------------

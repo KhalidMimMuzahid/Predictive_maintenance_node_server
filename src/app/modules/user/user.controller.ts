@@ -5,6 +5,21 @@ import AppError from '../../errors/AppError';
 import sendResponse from '../../utils/sendResponse';
 import { userServices } from './user.service';
 
+
+const signIn: RequestHandler = catchAsync(async (req, res) => {
+  const uid = req?.query?.uid;
+  if (!uid) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'uid is required to sign in');
+  }
+  const result = await userServices.signIn(uid as string);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User signing in successfully',
+    data: result,
+  });
+});
 const getUserBy_id: RequestHandler = catchAsync(async (req, res) => {
   const _id = req?.query?._id;
 
@@ -34,6 +49,7 @@ const getAllShowaCustomers: RequestHandler = catchAsync(async (req, res) => {
 });
 
 export const userControllers = {
+  signIn,
   getUserBy_id,
   getAllShowaCustomers,
 };

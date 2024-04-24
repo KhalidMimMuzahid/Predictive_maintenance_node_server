@@ -9,5 +9,4 @@ router.post(
   validateRequest(serviceProviderAdminValidation.userCreateValidationSchema),
   serviceProviderAdminControllers.createServiceProviderAdmin,
 );
-router.get('/sign-in', serviceProviderAdminControllers.signIn);
 export const serviceProviderAdminRoutes = router;

@@ -109,29 +109,6 @@ const createShowaUserIntoDB = async (
     throw error;
   }
 };
-const signIn = async (uid: string) => {
-  const user = await User.findOne({ uid }).populate([
-    {
-      path: 'showaUser',
-      options: { strictPopulate: false },
-    },
-    // // for no we no need wallet in this api; cause for get wallet we have another api
-    // {
-    //   path: 'wallet',
-    //   options: { strictPopulate: false },
-    // },
-  ]);
-  if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
-  }
-  const token = jwtFunc.generateToken(
-    user?.email as string,
-    user?._id.toString(),
-    user?.uid as string,
-  );
-
-  return { user, token };
-};
 
 const updateAddress = async (uid: string, addressPayload: TAddress) => {
   const user = await User.findOne({ uid });
@@ -152,6 +129,5 @@ const updateAddress = async (uid: string, addressPayload: TAddress) => {
 };
 export const showaUserServices = {
   createShowaUserIntoDB,
-  signIn,
   updateAddress,
 };

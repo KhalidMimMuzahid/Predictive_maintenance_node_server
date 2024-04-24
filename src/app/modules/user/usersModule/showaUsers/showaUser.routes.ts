@@ -13,5 +13,4 @@ router.post(
 
 router.patch('/address', showaUserControllers.updateAddress);
 
-router.get('/sign-in', showaUserControllers.signIn);
 export const showaUserRoutes = router;

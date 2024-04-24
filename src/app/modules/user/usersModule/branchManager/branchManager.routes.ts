@@ -11,5 +11,4 @@ router.post(
   ),
   serviceProviderBranchManagerControllers.createServiceProviderBranchManager,
 );
-// router.get('/sign-in', serviceProviderAdminControllers.signIn);
 export const serviceProviderBranchManagerRoutes = router;
