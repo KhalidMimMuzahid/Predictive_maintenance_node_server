@@ -9,4 +9,8 @@ router.post(
   validateRequest(serviceProviderEngineerValidation.userCreateValidationSchema),
   serviceProviderEngineerControllers.createServiceProviderEngineer,
 );
+router.patch(
+  '/approve-and-assign-into-branch',
+  serviceProviderEngineerControllers.approveAndAssignEngineerInToBranch,
+);
 export const serviceProviderEngineerRoutes = router;

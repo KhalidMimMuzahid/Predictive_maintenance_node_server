@@ -11,6 +11,8 @@ import { jwtFunc } from '../../../../utils/jwtFunction';
 import { Wallet } from '../../../wallet/wallet.model';
 import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceProviderCompany.model';
 import { ServiceProviderEngineer } from './serviceProviderEngineer.model';
+import { TAuth } from '../../../../interface/error';
+import { ServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.model';
 
 const createServiceProviderEngineerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
@@ -142,6 +144,7 @@ const createServiceProviderEngineerIntoDB = async ({
       user?.email as string,
       user?._id.toString(),
       user?.uid as string,
+      user?.role as string,
     );
 
     return { user, token };
@@ -154,6 +157,110 @@ const createServiceProviderEngineerIntoDB = async ({
   }
 };
 
+const approveServiceProviderEngineerIntoDB = async (
+  auth: TAuth,
+  serviceProviderEngineer: string,
+  serviceProviderBranch: string,
+) => {
+  let serviceProviderEngineer_id: Types.ObjectId;
+  try {
+    serviceProviderEngineer_id = new Types.ObjectId(serviceProviderEngineer);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of serviceProviderEngineer you provided is invalid',
+    );
+  }
+  const serviceProviderEngineerData = await ServiceProviderEngineer.findById(
+    serviceProviderEngineer_id,
+  );
+
+  if (!serviceProviderEngineerData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderEngineer must be provided to approved engineer',
+    );
+  } else if (
+    serviceProviderEngineerData?.currentState?.status === 'suspended'
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderEngineer is suspended now',
+    );
+  } else if (
+    serviceProviderEngineerData?.currentState?.status === 'approved' &&
+    !serviceProviderBranch
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderEngineer ha already been approved',
+    );
+  } else if (serviceProviderEngineerData?.currentState?.serviceProviderBranch) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderEngineer has already ben approved and assigned in a branch',
+    );
+  }
+  let companyInfo;
+
+  if (auth.role === 'serviceProviderAdmin') {
+    companyInfo = await ServiceProviderCompany.findOne({
+      serviceProviderAdmin: auth._id,
+    });
+  } else if (auth.role === 'serviceProviderSubAdmin') {
+    // if this request is requested by service provider sub admin, then any how find the companyInfo of this subAdmin
+  }
+
+  if (!companyInfo) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are  admin of any company');
+  }
+
+  if (
+    serviceProviderEngineerData?.currentState?.serviceProviderCompany?.toString() !==
+    companyInfo?._id?.toString()
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not admin/subAdmin of the company the engineer belongs to',
+    );
+  }
+
+  if (serviceProviderBranch) {
+    let serviceProviderBranch_id: Types.ObjectId;
+    try {
+      serviceProviderBranch_id = new Types.ObjectId(serviceProviderBranch);
+    } catch (error) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '_id of serviceProviderBranch you provided is invalid',
+      );
+    }
+
+    const serviceProviderBranchInfo = await ServiceProviderBranch.findById(
+      serviceProviderBranch_id,
+    );
+
+    if (
+      serviceProviderBranchInfo?.serviceProviderCompany?.toString() !==
+      serviceProviderEngineerData?.currentState?.serviceProviderCompany?.toString()
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '_id of branch you provided is not a branch of your company',
+      );
+    }
+
+    serviceProviderEngineerData.currentState.serviceProviderBranch =
+      serviceProviderBranch_id;
+  }
+  serviceProviderEngineerData.currentState.status = 'approved';
+
+  const updatedServiceProviderEngineerData =
+    await serviceProviderEngineerData.save();
+  return updatedServiceProviderEngineerData;
+};
+
 export const serviceProviderEngineerServices = {
   createServiceProviderEngineerIntoDB,
+  approveServiceProviderEngineerIntoDB,
 };

@@ -72,6 +72,7 @@ const createServiceProviderAdminIntoDB = async (
       user?.email as string,
       user?._id.toString(),
       user?.uid as string,
+      user?.role as string,
     );
 
     return { user, token };

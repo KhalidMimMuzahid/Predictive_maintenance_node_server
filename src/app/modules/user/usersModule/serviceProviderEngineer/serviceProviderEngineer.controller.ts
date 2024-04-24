@@ -4,7 +4,7 @@ import sendResponse from '../../../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../../../errors/AppError';
 import { serviceProviderEngineerServices } from './serviceProviderEngineer.service';
-
+import { TAuth } from '../../../../interface/error';
 const createServiceProviderEngineer: RequestHandler = catchAsync(
   async (req, res) => {
     const { rootUser, serviceProviderEngineer } = req.body;
@@ -31,6 +31,42 @@ const createServiceProviderEngineer: RequestHandler = catchAsync(
   },
 );
 
+const approveAndAssignEngineerInToBranch: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    if (auth.role !== 'serviceProviderAdmin') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'only service provider admin has access for this api',
+      );
+    }
+    const serviceProviderEngineer = req?.query?.serviceProviderEngineer;
+    const serviceProviderBranch = req?.query?.serviceProviderBranch;
+
+    if (!serviceProviderEngineer) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'engineer _id are required to assign engineer',
+      );
+    }
+
+    const result =
+      await serviceProviderEngineerServices.approveServiceProviderEngineerIntoDB(
+        auth as TAuth,
+        serviceProviderEngineer as string,
+        serviceProviderBranch as string,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Engineer has approved successfully',
+      data: result,
+    });
+  },
+);
 export const serviceProviderEngineerControllers = {
   createServiceProviderEngineer,
+  approveAndAssignEngineerInToBranch,
 };

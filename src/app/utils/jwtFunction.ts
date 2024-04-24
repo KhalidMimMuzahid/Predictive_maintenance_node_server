@@ -10,11 +10,20 @@ declare module 'jsonwebtoken' {
   }
 }
 
-const generateToken = (email: string, _id: string = '', uid: string = '') => {
-  const token = jwt.sign({ email, _id, uid }, config?.privateKey as string, {
-    algorithm: 'HS256',
-    expiresIn: '24h',
-  });
+const generateToken = (
+  email: string,
+  _id: string = '',
+  uid: string = '',
+  role: string = '',
+) => {
+  const token = jwt.sign(
+    { email, _id, uid, role },
+    config?.privateKey as string,
+    {
+      algorithm: 'HS256',
+      expiresIn: '24h',
+    },
+  );
   return token;
 };
 const decodeToken = (token: string) => {
