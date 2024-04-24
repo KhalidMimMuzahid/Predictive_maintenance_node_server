@@ -4,6 +4,7 @@ import { showaUserRoutes } from './usersModule/showaUsers/showaUser.routes';
 import { userControllers } from './user.controller';
 import { serviceProviderAdminRoutes } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.routes';
 import { serviceProviderEngineerRoutes } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.routes';
+import { serviceProviderBranchManagerRoutes } from './usersModule/branchManager/branchManager.routes';
 
 const router: Router = express.Router();
 
@@ -13,6 +14,10 @@ const subModuleRoutes: { path: string; route: express.Router }[] = [
   { path: '/showa-user', route: showaUserRoutes },
   { path: '/service-provider-admin', route: serviceProviderAdminRoutes },
   { path: '/service-provider-engineer', route: serviceProviderEngineerRoutes },
+  {
+    path: '/service-provider-branch-manager',
+    route: serviceProviderBranchManagerRoutes,
+  },
 ];
 
 subModuleRoutes.forEach((route) => router.use(route.path, route.route));

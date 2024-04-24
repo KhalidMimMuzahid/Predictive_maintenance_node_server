@@ -3,26 +3,26 @@ import AppError from '../../../../errors/AppError';
 import { TUser } from '../../user.interface';
 import { User } from '../../user.model';
 import {
-  TCurrentStateForEngineer,
-  TServiceProviderEngineer,
-} from './serviceProviderEngineer.interface';
+  TCurrentStateForBranchManager,
+  TServiceProviderBranchManager,
+} from './branchManager.interface';
 import mongoose, { Types } from 'mongoose';
-import { jwtFunc } from '../../../../utils/jwtFunction';
-import { Wallet } from '../../../wallet/wallet.model';
 import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceProviderCompany.model';
-import { ServiceProviderEngineer } from './serviceProviderEngineer.model';
+import { Wallet } from '../../../wallet/wallet.model';
+import { ServiceProviderBranchManager } from './branchManager.model';
+import { jwtFunc } from '../../../../utils/jwtFunction';
 
-const createServiceProviderEngineerIntoDB = async ({
+const createServiceProviderBranchManagerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
   rootUser,
-  serviceProviderEngineer,
+  serviceProviderBranchManager,
 }: {
   serviceProviderCompany: string;
   rootUser: Partial<TUser>;
-  serviceProviderEngineer: TServiceProviderEngineer;
+  serviceProviderBranchManager: TServiceProviderBranchManager;
 }) => {
   //create a user object
-  rootUser.role = 'serviceProviderEngineer';
+  rootUser.role = 'serviceProviderBranchManager';
   // rootUser.isDeleted= false // we no need to set it ; cause we have already set it as a default value in mongoose model
   // rootUser.status =  'approved'  // same as above
 
@@ -89,31 +89,35 @@ const createServiceProviderEngineerIntoDB = async ({
     }
     const createdWalletForUser = createdWalletArrayForUser[0];
 
-    serviceProviderEngineer.user = createdUser?._id;
-    const currentState: TCurrentStateForEngineer = {
+    serviceProviderBranchManager.user = createdUser?._id;
+
+    const currentState: TCurrentStateForBranchManager = {
       status: 'in-progress',
-      designation: 'Engineer',
+      designation: 'Branch Manager',
       serviceProviderCompany: serviceProviderCompany_id,
       // joiningDate: ""
     };
-    serviceProviderEngineer.currentState = currentState;
+    serviceProviderBranchManager.currentState = currentState;
 
-    const createdServiceProviderEngineerArray =
-      await ServiceProviderEngineer.create([serviceProviderEngineer], {
-        session: session,
-      });
-    if (!createdServiceProviderEngineerArray?.length) {
+    const createdServiceProviderBranchManagerArray =
+      await ServiceProviderBranchManager.create(
+        [serviceProviderBranchManager],
+        {
+          session: session,
+        },
+      );
+    if (!createdServiceProviderBranchManagerArray?.length) {
       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
     }
 
-    const createdServiceProviderEngineer =
-      createdServiceProviderEngineerArray[0];
+    const createdServiceProviderBranchManager =
+      createdServiceProviderBranchManagerArray[0];
 
     const updatedUser = await User.findByIdAndUpdate(
       createdUser?._id,
       {
         wallet: createdWalletForUser?._id,
-        serviceProviderEngineer: createdServiceProviderEngineer?._id,
+        serviceProviderBranchManager: createdServiceProviderBranchManager?._id,
       },
       { new: true, session: session },
     );
@@ -128,7 +132,7 @@ const createServiceProviderEngineerIntoDB = async ({
 
     const user = await User.findById(createdUser?._id).populate([
       {
-        path: 'serviceProviderEngineer',
+        path: 'serviceProviderBranchManager',
         options: { strictPopulate: false },
       },
 
@@ -154,6 +158,6 @@ const createServiceProviderEngineerIntoDB = async ({
   }
 };
 
-export const serviceProviderEngineerServices = {
-  createServiceProviderEngineerIntoDB,
+export const serviceProviderBranchManagerServices = {
+  createServiceProviderBranchManagerIntoDB,
 };
