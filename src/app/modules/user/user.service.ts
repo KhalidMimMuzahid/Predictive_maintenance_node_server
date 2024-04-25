@@ -14,6 +14,18 @@ const getUserBy_id = async (_id: string) => {
 
   return user;
 };
+
+const getUserWalletInfo = async (uid: string) => {
+  const user = await User.findOne({ uid: uid }).populate([
+    {
+      path: 'wallet',
+      options: { strictPopulate: false },
+    },
+  ]);
+
+  return user;
+};
+
 const getAllShowaCustomersFromDB = async () => {
   const showaCustomers = await User.find({ role: 'showa-user' }).populate([
     {
@@ -27,4 +39,5 @@ const getAllShowaCustomersFromDB = async () => {
 export const userServices = {
   getUserBy_id,
   getAllShowaCustomersFromDB,
+  getUserWalletInfo,
 };

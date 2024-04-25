@@ -49,8 +49,35 @@ const updateAddress: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const updateProfile: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const result = await showaUserServices.updateProfile(auth.uid, req.body);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Showa user profile updated successfully',
+    data: result,
+  });
+});
+
+const uploadProfilePhoto: RequestHandler = catchAsync(async (req, res) => {
+  // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const { fileKey, fileType } = req.body;
+  const result = await showaUserServices.getSignedUrl(fileKey, fileType);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Showa user address updated successfully',
+    data: result,
+  });
+});
+
 export const showaUserControllers = {
   createShowaUser,
   signIn,
   updateAddress,
+  uploadProfilePhoto,
+  updateProfile,
 };
