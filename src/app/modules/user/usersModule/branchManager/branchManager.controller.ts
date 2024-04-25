@@ -5,6 +5,7 @@ import httpStatus from 'http-status';
 import { serviceProviderBranchManagerServices } from './branchManager.service';
 import sendResponse from '../../../../utils/sendResponse';
 import { TAuth } from '../../../../interface/error';
+import { checkUserAccessApi } from '../../../../utils/checkUserAccessApi';
 
 const createServiceProviderBranchManager: RequestHandler = catchAsync(
   async (req, res) => {
@@ -35,12 +36,9 @@ const approveAndAssignBranchManagerInToBranch: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-    if (auth.role !== 'serviceProviderAdmin') {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'only service provider admin has access for this api',
-      );
-    }
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
     const serviceProviderBranchManager =
       req?.query?.serviceProviderBranchManager;
     const serviceProviderBranch = req?.query?.serviceProviderBranch; // you you are not sending this info from front end; means you just want to approve this engineer currentState status; if you provide this info, means you want to approve and also assign this engineer to a specific branch
