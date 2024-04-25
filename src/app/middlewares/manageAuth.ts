@@ -10,7 +10,11 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
     const parsedUrl = url.parse(req?.url);
     const pathname: string = parsedUrl?.pathname as string;
 
-    if (pathname?.endsWith('sign-up') || pathname?.endsWith('sign-in')) {
+    if (
+      pathname?.endsWith('sign-up') ||
+      pathname?.endsWith('sign-in') ||
+      pathname?.endsWith('upload-photo')
+    ) {
       return next();
     } else {
       const bearerToken = req.headers['authorization']?.split(' ')[1];
