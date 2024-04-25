@@ -11,6 +11,8 @@ import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceP
 import { Wallet } from '../../../wallet/wallet.model';
 import { ServiceProviderBranchManager } from './branchManager.model';
 import { jwtFunc } from '../../../../utils/jwtFunction';
+import { TAuth } from '../../../../interface/error';
+import { ServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.model';
 
 const createServiceProviderBranchManagerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
@@ -158,7 +160,118 @@ const createServiceProviderBranchManagerIntoDB = async ({
     throw error;
   }
 };
+const approveServiceProviderBranchManagerIntoDB = async (
+  auth: TAuth,
+  serviceProviderBranchManager: string,
+  serviceProviderBranch: string,
+) => {
+  let serviceProviderBranchManager_id: Types.ObjectId;
+  try {
+    serviceProviderBranchManager_id = new Types.ObjectId(
+      serviceProviderBranchManager,
+    );
+  } catch (error) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of serviceProviderBranchManager you provided is invalid',
+    );
+  }
+  const serviceProviderBranchManagerData =
+    await ServiceProviderBranchManager.findById(
+      serviceProviderBranchManager_id,
+    );
+
+  if (!serviceProviderBranchManagerData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderBranchManager must be provided to approved Branch Manager',
+    );
+  } else if (
+    serviceProviderBranchManagerData?.currentState?.status === 'suspended'
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderBranchManager is suspended now',
+    );
+  } else if (
+    serviceProviderBranchManagerData?.currentState?.status === 'approved' &&
+    !serviceProviderBranch
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderBranchManager ha already been approved',
+    );
+  } else if (
+    serviceProviderBranchManagerData?.currentState?.serviceProviderBranch
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderEngineer has already ben approved and assigned in a branch',
+    );
+  }
+  let companyInfo;
+
+  if (auth.role === 'serviceProviderAdmin') {
+    companyInfo = await ServiceProviderCompany.findOne({
+      serviceProviderAdmin: auth._id,
+    });
+  } else if (auth.role === 'serviceProviderSubAdmin') {
+    // if this request is requested by service provider sub admin, then any how find the companyInfo of this subAdmin
+  }
+
+  if (!companyInfo) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not admin of any company',
+    );
+  }
+
+  if (
+    serviceProviderBranchManagerData?.currentState?.serviceProviderCompany?.toString() !==
+    companyInfo?._id?.toString()
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not admin/subAdmin of the company the branch manager belongs to',
+    );
+  }
+
+  if (serviceProviderBranch) {
+    let serviceProviderBranch_id: Types.ObjectId;
+    try {
+      serviceProviderBranch_id = new Types.ObjectId(serviceProviderBranch);
+    } catch (error) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '_id of serviceProviderBranch you provided is invalid',
+      );
+    }
+
+    const serviceProviderBranchInfo = await ServiceProviderBranch.findById(
+      serviceProviderBranch_id,
+    );
+
+    if (
+      serviceProviderBranchInfo?.serviceProviderCompany?.toString() !==
+      serviceProviderBranchManagerData?.currentState?.serviceProviderCompany?.toString()
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '_id of branch you provided is not a branch of your company',
+      );
+    }
+
+    serviceProviderBranchManagerData.currentState.serviceProviderBranch =
+      serviceProviderBranch_id;
+  }
+  serviceProviderBranchManagerData.currentState.status = 'approved';
+
+  const updatedServiceProviderBranchManagerData =
+    await serviceProviderBranchManagerData.save();
+  return updatedServiceProviderBranchManagerData;
+};
 
 export const serviceProviderBranchManagerServices = {
   createServiceProviderBranchManagerIntoDB,
+  approveServiceProviderBranchManagerIntoDB,
 };

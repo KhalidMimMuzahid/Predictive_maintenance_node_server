@@ -11,4 +11,10 @@ router.post(
   ),
   serviceProviderBranchManagerControllers.createServiceProviderBranchManager,
 );
+
+
+router.patch(
+  '/approve-and-assign-into-branch',
+  serviceProviderBranchManagerControllers.approveAndAssignBranchManagerInToBranch,
+);
 export const serviceProviderBranchManagerRoutes = router;

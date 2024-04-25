@@ -212,7 +212,10 @@ const approveServiceProviderEngineerIntoDB = async (
   }
 
   if (!companyInfo) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'You are  admin of any company');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not admin of any company',
+    );
   }
 
   if (
