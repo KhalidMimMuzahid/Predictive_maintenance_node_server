@@ -3,7 +3,6 @@ import { RequestHandler } from 'express';
 import catchAsync from '../../../../utils/catchAsync';
 import { showaUserServices } from './showaUser.service';
 import sendResponse from '../../../../utils/sendResponse';
-import AppError from '../../../../errors/AppError';
 import { TAuth } from '../../../../interface/error';
 
 const createShowaUser: RequestHandler = catchAsync(async (req, res) => {
@@ -17,21 +16,6 @@ const createShowaUser: RequestHandler = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'User created successfully',
-    data: result,
-  });
-});
-
-const signIn: RequestHandler = catchAsync(async (req, res) => {
-  const uid = req?.query?.uid;
-  if (!uid) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'uid is required to sign in');
-  }
-  const result = await showaUserServices.signIn(uid as string);
-  // send response
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'User signing in successfully',
     data: result,
   });
 });
@@ -76,7 +60,6 @@ const uploadProfilePhoto: RequestHandler = catchAsync(async (req, res) => {
 
 export const showaUserControllers = {
   createShowaUser,
-  signIn,
   updateAddress,
   uploadProfilePhoto,
   updateProfile,

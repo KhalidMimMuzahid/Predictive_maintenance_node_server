@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { TIsDeleted } from '../../../common/common.interface';
 
-export type TCurrentState = {
+export type TCurrentStateForEngineer = {
   status: 'in-progress' | 'approved' | 'suspended';
   designation: 'Engineer';
   serviceProviderCompany: Types.ObjectId; // objectId of the ServiceProviderCompany ;
@@ -13,7 +13,7 @@ export type TServiceProviderEngineer = {
 
   name: { firstName: string; lastName: string };
 
-  currentState: TCurrentState;
+  currentState: TCurrentStateForEngineer;
   isDeleted: TIsDeleted;
   // ratings: {
   //   rate: number; // 0 to 5

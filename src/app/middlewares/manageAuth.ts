@@ -31,7 +31,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
 
       delete auth.iat;
       delete auth.exp;
-      if (!auth?.email || !auth?._id || !auth?.uid) {
+      if (!auth?.email || !auth?._id || !auth?.uid || !auth?.role) {
         throw new AppError(
           httpStatus.FORBIDDEN,
           'Your access token is expired or unauthorized user detected. \n please sign-in agin',

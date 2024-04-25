@@ -1,26 +1,27 @@
 import { RequestHandler } from 'express';
 import catchAsync from '../../../../utils/catchAsync';
-import sendResponse from '../../../../utils/sendResponse';
-import httpStatus from 'http-status';
 import AppError from '../../../../errors/AppError';
-import { serviceProviderEngineerServices } from './serviceProviderEngineer.service';
+import httpStatus from 'http-status';
+import { serviceProviderBranchManagerServices } from './branchManager.service';
+import sendResponse from '../../../../utils/sendResponse';
 import { TAuth } from '../../../../interface/error';
 import { checkUserAccessApi } from '../../../../utils/checkUserAccessApi';
-const createServiceProviderEngineer: RequestHandler = catchAsync(
+
+const createServiceProviderBranchManager: RequestHandler = catchAsync(
   async (req, res) => {
-    const { rootUser, serviceProviderEngineer } = req.body;
+    const { rootUser, serviceProviderBranchManager } = req.body;
     const serviceProviderCompany: string = req.query
       .serviceProviderCompany as string;
     if (!serviceProviderCompany) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'serviceProviderCompany._id is required for signing up an engineer',
+        'serviceProviderCompany._id is required for signing up a branch manager',
       );
     }
 
     const result =
-      await serviceProviderEngineerServices.createServiceProviderEngineerIntoDB(
-        { serviceProviderCompany, rootUser, serviceProviderEngineer },
+      await serviceProviderBranchManagerServices.createServiceProviderBranchManagerIntoDB(
+        { serviceProviderCompany, rootUser, serviceProviderBranchManager },
       );
     // send response
     sendResponse(res, {
@@ -31,39 +32,40 @@ const createServiceProviderEngineer: RequestHandler = catchAsync(
     });
   },
 );
-
-const approveAndAssignEngineerInToBranch: RequestHandler = catchAsync(
+const approveAndAssignBranchManagerInToBranch: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
     // we are checking the permission of this api
     checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
-    const serviceProviderEngineer = req?.query?.serviceProviderEngineer;
+
+    const serviceProviderBranchManager =
+      req?.query?.serviceProviderBranchManager;
     const serviceProviderBranch = req?.query?.serviceProviderBranch; // you you are not sending this info from front end; means you just want to approve this engineer currentState status; if you provide this info, means you want to approve and also assign this engineer to a specific branch
 
-    if (!serviceProviderEngineer) {
+    if (!serviceProviderBranchManager) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'engineer _id are required to assign engineer',
+        'branch manager _id is required to assign branch manager',
       );
     }
 
     const result =
-      await serviceProviderEngineerServices.approveServiceProviderEngineerIntoDB(
+      await serviceProviderBranchManagerServices.approveServiceProviderBranchManagerIntoDB(
         auth as TAuth,
-        serviceProviderEngineer as string,
+        serviceProviderBranchManager as string,
         serviceProviderBranch as string,
       );
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'Engineer has approved successfully',
+      message: 'Branch Manager has approved successfully',
       data: result,
     });
   },
 );
-export const serviceProviderEngineerControllers = {
-  createServiceProviderEngineer,
-  approveAndAssignEngineerInToBranch,
+export const serviceProviderBranchManagerControllers = {
+  createServiceProviderBranchManager,
+  approveAndAssignBranchManagerInToBranch,
 };
