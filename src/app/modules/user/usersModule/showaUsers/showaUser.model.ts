@@ -9,7 +9,7 @@ const LanguageSchema: Schema = new Schema<TLanguage>({
   katakana: {
     name: { firstName: { type: String }, lastName: { type: String } },
   },
-  korean: {
+  kanji: {
     name: { firstName: { type: String }, lastName: { type: String } },
   },
 });

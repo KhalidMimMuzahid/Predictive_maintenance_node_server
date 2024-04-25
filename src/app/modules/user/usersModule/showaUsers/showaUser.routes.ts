@@ -11,5 +11,9 @@ router.post(
   showaUserControllers.createShowaUser,
 );
 
+router.patch('/address', showaUserControllers.updateAddress);
+router.put('/update-profile', showaUserControllers.updateProfile);
+
 router.get('/sign-in', showaUserControllers.signIn);
+router.post('/upload-photo', showaUserControllers.uploadProfilePhoto);
 export const showaUserRoutes = router;

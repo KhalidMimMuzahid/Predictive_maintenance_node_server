@@ -7,6 +7,8 @@ import { TShowaUser } from './showaUser.interface';
 import { ShowaUser } from './showaUser.model';
 import { jwtFunc } from '../../../../utils/jwtFunction';
 import mongoose from 'mongoose';
+import { TAddress } from '../../../common/common.interface';
+import S3 from 'aws-sdk/clients/s3';
 
 const createShowaUserIntoDB = async (
   rootUser: Partial<TUser>,
@@ -131,7 +133,86 @@ const signIn = async (uid: string) => {
 
   return { user, token };
 };
+
+const updateAddress = async (uid: string, addressPayload: TAddress) => {
+  const user = await User.findOne({ uid });
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+  }
+  const showaUser = await ShowaUser.findById(user.showaUser);
+  if (!showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no showa user founded with this id',
+    );
+  }
+  showaUser.addresses?.push({ isDeleted: false, address: addressPayload });
+  const updatedShowaUser = await showaUser.save();
+
+  return { updatedShowaUser };
+};
+
+const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
+  const user = await User.findOne({ uid });
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+  }
+  const showaUser = await ShowaUser.findById(user.showaUser);
+  if (!showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no showa user founded with this id',
+    );
+  }
+  if (userData.name) {
+    showaUser.name = userData.name;
+  }
+  if (userData.phone) {
+    showaUser.phone = userData.phone;
+  }
+  if (userData.gender) {
+    showaUser.gender = userData.gender;
+  }
+  if (userData.dateOfBirth) {
+    showaUser.dateOfBirth = userData.dateOfBirth;
+  }
+  if (userData.occupation) {
+    showaUser.occupation = userData.occupation;
+  }
+  if (userData.photoUrl) {
+    showaUser.photoUrl = userData.photoUrl;
+  }
+  const updatedShowaUser = await showaUser.save();
+
+  return { showaUser: updatedShowaUser };
+};
+
+const getSignedUrl = async (fileKey: string, fileType: string) => {
+  const client_s3 = new S3({
+    region: 'ap-northeast-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+    // s3ForcePathStyle: true,
+    signatureVersion: 'v4',
+  });
+
+  const fileParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileKey,
+    Expires: 600,
+    ContentType: fileType,
+    ACL: 'bucket-owner-full-control',
+  };
+
+  const url = await client_s3.getSignedUrlPromise('putObject', fileParams);
+
+  return { url };
+};
+
 export const showaUserServices = {
   createShowaUserIntoDB,
   signIn,
+  updateAddress,
+  getSignedUrl,
+  updateProfile,
 };

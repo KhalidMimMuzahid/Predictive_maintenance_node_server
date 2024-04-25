@@ -12,7 +12,7 @@ const languageSchema = z.object({
       }),
     })
     .optional(),
-  korean: z
+  kanji: z
     .object({
       name: z.object({
         firstName: z.string(),
@@ -21,7 +21,6 @@ const languageSchema = z.object({
     })
     .optional(),
 });
-
 
 const showaUserCreateValidationSchema = z.object({
   name: z.object({
@@ -38,10 +37,12 @@ const showaUserCreateValidationSchema = z.object({
 
   //   role: roleSchema, // user will not send this role info
   addresses: z.array(
-    z.object({
-      isDeleted: z.boolean(),
-      address: createAddressValidationSchema,
-    }),
+    z
+      .object({
+        isDeleted: z.boolean(),
+        address: createAddressValidationSchema,
+      })
+      .optional(),
   ),
 });
 const userCreateValidationSchema = z.object({
