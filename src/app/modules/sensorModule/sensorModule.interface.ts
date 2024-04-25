@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Model, Types } from 'mongoose';
+import { TIsDeleted } from '../common/common.interface';
 
 // sensor is actually not a sensor; its a module; each module can have multiple sensor;
 export type TSensorModule = {
@@ -12,7 +13,7 @@ export type TSensorModule = {
   // sensorType: 'vibration' | 'temperature'; // we no need this field
   moduleType: 'module-1' | 'module-2' | 'module-3' | 'module-4';
   // seller: string; // seller is always Showa company; thats why we no need this seller field for now
-  isDeleted: boolean;
+  isDeleted: TIsDeleted;
 };
 
 export interface SensorModuleModel extends Model<TSensorModule> {

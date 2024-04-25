@@ -30,14 +30,6 @@ export type TPayment = {
 
 // id registration
 
-export type TTeam = {
-  teamName: string;
-  createdBy: Types.ObjectId; // objectId of User Model who is engineer at the same service provider company
-  createdAt: Date;
-  members: {
-    member: Types.ObjectId; // objectId of User Model who is engineer at the same service provider company
-  }[];
-};
 
 export type TCompany = {
   category: 'home' | 'shop' | 'company' | 'others';

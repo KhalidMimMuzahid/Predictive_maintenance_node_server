@@ -5,7 +5,6 @@ import {
   TCompany,
   TIsDeleted,
   TPayment,
-  TTeam,
 } from './common.interface';
 
 export const AddressSchema: Schema = new Schema<TAddress>({
@@ -39,16 +38,7 @@ export const PaymentSchema: Schema = new Schema<TPayment>({
   // more fields can be defined here
 });
 
-export const TeamSchema: Schema = new Schema<TTeam>({
-  teamName: { type: String, required: true },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming 'User' is the model name for the User schema
-  createdAt: { type: Date, default: Date.now, required: true },
-  members: [
-    {
-      member: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming 'User' is the model name for the User schema
-    },
-  ],
-});
+
 
 export const CompanySchema: Schema = new Schema<TCompany>({
   category: {

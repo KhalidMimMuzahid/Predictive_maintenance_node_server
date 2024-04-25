@@ -8,6 +8,7 @@ import { serviceProviderCompanyRoutes } from '../modules/serviceProviderCompany/
 import { sensorModuleRoutes } from '../modules/sensorModule/sensorModule.routes';
 import { sensorModuleAttachedRoutes } from '../modules/sensorModuleAttached/sensorModuleAttached.routes';
 import { serviceProviderBranchRoutes } from '../modules/serviceProviderBranch/serviceProviderBranch.routes';
+import { teamOfEngineersRoutes } from '../modules/teamOfEngineers/teamOfEngineers.routes';
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ const moduleRoutes: any[] = [
   { path: '/service-provider-branch', route: serviceProviderBranchRoutes },
   { path: '/sensor-module', route: sensorModuleRoutes },
   { path: '/sensor-module-attached', route: sensorModuleAttachedRoutes },
+  { path: '/team-of-engineers', route: teamOfEngineersRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
