@@ -27,7 +27,7 @@ const getUserWalletInfo = async (uid: string) => {
 };
 
 const getAllShowaCustomersFromDB = async () => {
-  const showaCustomers = await User.find({ role: 'showa-user' }).populate([
+  const showaCustomers = await User.find({ role: 'showaUser' }).populate([
     {
       path: 'showaUser',
       options: { strictPopulate: false },
