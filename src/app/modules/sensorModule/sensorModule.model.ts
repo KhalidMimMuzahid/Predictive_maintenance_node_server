@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { SensorModuleModel, TSensorModule } from './sensorModule.interface';
+import { IsDeletedSchema } from '../common/common.model';
 
 export const SensorModuleSchema = new Schema<TSensorModule, SensorModuleModel>({
   // sensorModuleId: { type: String, required: true },
@@ -16,9 +17,20 @@ export const SensorModuleSchema = new Schema<TSensorModule, SensorModuleModel>({
     enum: ['module-1', 'module-2', 'module-3', 'module-4'],
     required: true,
   },
-  isDeleted: { type: Boolean, required: true, default: false },
+  isDeleted: {
+    type: IsDeletedSchema,
+    required: true,
+    default: { value: false },
+  },
 });
-
+SensorModuleSchema.pre('find', function (next) {
+  this.find({ 'isDeleted.value': { $ne: true } });
+  next();
+});
+SensorModuleSchema.pre('findOne', function (next) {
+  this.find({ 'isDeleted.value': { $ne: true } });
+  next();
+});
 SensorModuleSchema.statics.isMacAddressExists = async (macAddress: string) => {
   const existingSensorModule = SensorModule.findOne({ macAddress });
   return existingSensorModule;

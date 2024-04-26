@@ -15,6 +15,8 @@ router.post(
   validateRequest(machineValidation.createConnectedMachineValidationSchema),
   machineController.addSensorConnectedMachine,
 );
+
+
 router.patch(
   '/add-sensor-module-attached-to-machine',
   machineController.addSensorAttachedModuleInToMachine,

@@ -23,9 +23,11 @@ const addNonConnectedMachineInToDB = async (payload: TMachine) => {
     Number(lastAddedMachine?.machineNo || '0000') + 1,
     4,
   );
-  const machine = await Machine.create(payload);
+  const machine = await Machine.create(machineData);
   return machine;
 };
+
+
 
 const addSensorConnectedMachineInToDB = async (payload: {
   sensorModuleMacAddress: string;
