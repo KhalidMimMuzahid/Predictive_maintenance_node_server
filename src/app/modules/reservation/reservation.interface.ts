@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 export type TProblem = {
-  issues: { title: string; issue: string }[]; // all issues title one by one
+  issues: string[]; // all issues title one by one
   problemDescription?: string;
   images: { image: string; title?: string }[];
 };

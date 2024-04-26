@@ -1,18 +1,13 @@
 import { z } from 'zod';
 
 export const createProblemValidationSchema = z.object({
-  issues: z.array(
-    z.object({
-      title: z.string(),
-      issue: z.string(),
-    }),
-  ),
+  issues: z.array(z.string()),
   problemDescription: z.string().optional(),
   images: z
     .array(
       z.object({
         image: z.string(),
-        title: z.string(),
+        title: z.string().optional(),
       }),
     )
     .optional(),
@@ -29,7 +24,7 @@ export const createScheduleValidationSchema = z.object({
 });
 
 const createReservationValidationSchema = z.object({
-  problem: createScheduleValidationSchema,
+  problem: createProblemValidationSchema,
   schedule: createScheduleValidationSchema,
 });
 export const reservationValidation = {

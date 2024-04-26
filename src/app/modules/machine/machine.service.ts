@@ -90,6 +90,7 @@ const addSensorConnectedMachineInToDB = async (payload: {
     }
     const createdSensorModuleAttached = createdSensorModuleAttachedArray[0];
     // create machine
+    console.log({ createdSensorModuleAttached });
 
     machineData.sensorModulesAttached = [createdSensorModuleAttached?._id];
     machineData.status = 'normal';
@@ -112,15 +113,21 @@ const addSensorConnectedMachineInToDB = async (payload: {
       );
     }
     const machine = machineArray[0];
-    const updatedSensorModuleAttached =
-      await SensorModuleAttached.findByIdAndUpdate(
-        createdSensorModuleAttached?._id,
-        {
-          isAttached: true,
-          machine: machine?._id,
-        },
-        { new: true },
-      );
+    // const updatedSensorModuleAttached =
+    //   await SensorModuleAttached.findByIdAndUpdate(
+    //     createdSensorModuleAttached?._id,
+    //     {
+    //       isAttached: true,
+    //       machine: machine?._id,
+    //     },
+    //     { new: true },
+    //   );
+    createdSensorModuleAttached.isAttached = true;
+    createdSensorModuleAttached.machine = machine?._id;
+    const updatedSensorModuleAttached = await createdSensorModuleAttached.save({
+      validateBeforeSave: true,
+    });
+
     if (!updatedSensorModuleAttached) {
       throw new AppError(
         httpStatus.BAD_REQUEST,

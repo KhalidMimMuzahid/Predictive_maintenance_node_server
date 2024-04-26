@@ -37,43 +37,62 @@ const createReservationRequestIntoDB = async ({
       '_id of machine you provided is no found',
     );
   }
-
-  const reservationRequest: Partial<TReservationRequest> = {};
-
-  reservationRequest.machine = machine;
-  reservationRequest.user = user;
-  reservationRequest.problem = problem;
-
-  const lastCreatedRequest = await ReservationRequest.findOne(
-    { user },
-    { requestId: 1 },
-  ).sort({ _id: -1 });
-
-  reservationRequest.requestId = padNumberWithZeros(
-    Number(lastCreatedRequest?.requestId || '0000') + 1,
-    4,
+if (machineData?.user?.toString() !== user?.toString()) {
+  throw new AppError(
+    httpStatus.BAD_REQUEST,
+    'you are not owner of this machine',
   );
+}
+const isAlreadyReservation = await ReservationRequest.findOne({
+  user: user,
+  machine: machine,
 
-  if (schedule?.category === 'custom-date-picked') {
-    if (schedule?.schedules?.length !== 1) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "you've chosen custom-date-picked but you have not sent it ",
-      );
-    }
-  } else if (schedule?.category === 'on-demand') {
-    // do nothing: What does mean by "on-demand"?
-  } else if (schedule?.category === 'within-one-week') {
-    // from now, add 7 days;  set schedule?.schedules[0]
-  } else if (schedule?.category === 'within-two-week') {
-    // from now, add 14 days;  set schedule?.schedules[0]
+  status: { $nin: ['completed', 'canceled'] },
+});
+
+if (isAlreadyReservation) {
+  throw new AppError(
+    httpStatus.BAD_REQUEST,
+    'This machine is already reserved and its not completed',
+  );
+}
+const reservationRequest: Partial<TReservationRequest> = {};
+
+const lastCreatedRequest = await ReservationRequest.findOne(
+  { user },
+  { requestId: 1 },
+).sort({ _id: -1 });
+
+reservationRequest.requestId = padNumberWithZeros(
+  Number(lastCreatedRequest?.requestId || '0000') + 1,
+  4,
+);
+
+if (schedule?.category === 'custom-date-picked') {
+  if (schedule?.schedules?.length !== 1) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "you've chosen custom-date-picked but you have not sent it ",
+    );
   }
+} else if (schedule?.category === 'on-demand') {
+  // do nothing: What does mean by "on-demand"?
+} else if (schedule?.category === 'within-one-week') {
+  // from now, add 7 days;  set schedule?.schedules[0]
+} else if (schedule?.category === 'within-two-week') {
+  // from now, add 14 days;  set schedule?.schedules[0]
+}
+reservationRequest.machine = machine;
+reservationRequest.user = user;
+reservationRequest.problem = problem;
+reservationRequest.schedule = schedule;
+reservationRequest.status = 'pending';
+reservationRequest.date = new Date(); // we should convert this date to japan/korean local time
+reservationRequest.machineType = machineData?.category;
 
-  reservationRequest.schedule = schedule;
-  reservationRequest.status = 'pending';
-  reservationRequest.date = new Date(); // we should convert this date to japan/korean local time
-  reservationRequest.machineType = machineData?.category;
-
+reservationRequest.isSensorConnected = machineData.sensorModulesAttached?.length
+  ? true
+  : false;
   const result = await ReservationRequest.create(reservationRequest);
   return result;
 };

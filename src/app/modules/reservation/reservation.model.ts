@@ -19,7 +19,7 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>({
     required: true,
   },
   problem: {
-    issues: [{ title: String, issue: String }],
+    issues: [String],
     problemDescription: String,
     images: [{ image: String, title: String }],
   },
