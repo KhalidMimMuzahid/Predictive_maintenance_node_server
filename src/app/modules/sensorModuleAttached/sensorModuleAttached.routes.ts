@@ -12,5 +12,12 @@ router.post(
   ),
   sensorModuleAttachedControllers.addSensorAttachedModule,
 );
+// router.patch(
+//   '/add-sensor-data',
+//   // validateRequest(
+//   //   sensorModuleAttachedValidation.createSensorModuleAttachedSchema,
+//   // ),
+//   sensorModuleAttachedControllers.addSensorData,
+// );
 
 export const sensorModuleAttachedRoutes = router;

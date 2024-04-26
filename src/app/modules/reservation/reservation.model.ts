@@ -1,6 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 import { TReservationRequest } from './reservation.interface';
-import { AddressSchema } from '../common/common.model';
 
 const ReservationRequestSchema: Schema = new Schema<TReservationRequest>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -12,12 +11,17 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>({
     required: true,
   },
   date: { type: Date, required: true },
-  location: { type: AddressSchema, required: true }, // Assuming TAddress will be an object
+  // location: { type: AddressSchema, required: true }, // Assuming TAddress will be an object
   isSensorConnected: { type: Boolean, required: true },
+  machineType: {
+    type: String,
+    enum: ['washing-machine', 'general-machine'],
+    required: true,
+  },
   problem: {
     issues: [{ title: String, issue: String }],
     problemDescription: String,
-    images: [{ image: String, title: String, comment: String }],
+    images: [{ image: String, title: String }],
   },
   schedule: {
     category: {
@@ -30,7 +34,7 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>({
       ],
       required: true,
     },
-    date: { type: Date, required: true },
+    // date: { type: Date, required: true },
     schedules: [{ type: Date }],
   },
   invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },

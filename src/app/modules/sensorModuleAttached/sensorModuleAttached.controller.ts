@@ -34,6 +34,34 @@ const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+// const addSensorData: RequestHandler = catchAsync(async (req, res) => {
+//   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
+
+//   // sensorModuleAttached.user = auth._id;
+//   const macAddress: string = req?.query?.macAddress as string;
+
+//   if (!macAddress) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'macAddress is required to to add sensor data',
+//     );
+//   }
+//   const result =
+//     await sensorAttachedModuleServices.addSensorAttachedModuleIntoDB(
+//       macAddress,
+//       sensorModuleAttached,
+//     );
+//   // send response
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'sensorModule has purchased successfully',
+//     data: result,
+//   });
+// });
+
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
+  // addSensorData,
 };

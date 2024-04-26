@@ -4,12 +4,47 @@ import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { reservationServices } from './reservation.service';
 import { TAuth } from '../../interface/error';
+import AppError from '../../errors/AppError';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import { TProblem, TSchedule } from './reservation.interface';
 
 const createReservationRequest: RequestHandler = catchAsync(
   async (req, res) => {
-    const reservationData = req.body;
-    const result =
-      await reservationServices.createReservationRequestIntoDB(reservationData);
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
+    const machine: string = req?.query?.machine as string;
+
+    if (!machine) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '_id of machine is required for creating a reservation',
+      );
+    }
+
+    // problem: {
+    //   issues: { title: string; issue: string }[]; // all issues title one by one
+    //   problemDescription?: string;
+    //   images: { image: string; title?: string }[];
+    // };
+    // schedule: {
+    //   category:
+    //     | 'on-demand'
+    //     | 'within-one-week'
+    //     | 'within-two-week'
+    //     | 'custom-date-picked';
+    //   // date: Date;
+    //   schedules: Date[]; // every schedule will be stored here , if you re schedule this request 5 times, this array will hold five different date
+    // };
+    const problem = req?.body?.problem as TProblem;
+    const schedule = req?.body?.schedule as TSchedule;
+    const result = await reservationServices.createReservationRequestIntoDB({
+      user: auth?._id,
+      machine_id: machine,
+      problem,
+      schedule,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,

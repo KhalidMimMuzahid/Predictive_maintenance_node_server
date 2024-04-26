@@ -1,26 +1,80 @@
-// import mongoose, { Types } from 'mongoose';
 import { Types } from 'mongoose';
-import { TReservationRequest } from './reservation.interface';
+import {
+  TProblem,
+  TReservationRequest,
+  TSchedule,
+} from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
-// import AppError from '../../errors/AppError';
-// import { v4 as uuidv4 } from 'uuid';
-// import { Invoice } from '../invoice/invoice.model';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
+import { Machine } from '../machine/machine.model';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+const createReservationRequestIntoDB = async ({
+  user,
+  machine_id,
+  problem,
+  schedule,
+}: {
+  user: Types.ObjectId;
+  machine_id: string;
+  problem: TProblem;
+  schedule: TSchedule;
+}) => {
+  let machine: Types.ObjectId;
+  try {
+    machine = new Types.ObjectId(machine_id);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of machine you provided is invalid',
+    );
+  }
+  const machineData = await Machine.findById(machine);
 
-const createReservationRequestIntoDB = async (payload: TReservationRequest) => {
-  // const session = await mongoose.startSession();
+  if (!machineData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of machine you provided is no found',
+    );
+  }
 
-  // session.startTransaction();
-  // const invoice = new Invoice({ user: payload.user, invoiceNo: uuidv4() });
+  const reservationRequest: Partial<TReservationRequest> = {};
 
-  const reservation = new ReservationRequest(payload);
-  // reservation.invoice = invoice._id;
-  const result = await reservation.save();
-  // invoice.reservationRequest = result._id;
-  // await invoice.save({ session: session });
+  reservationRequest.machine = machine;
+  reservationRequest.user = user;
+  reservationRequest.problem = problem;
 
-  // await session.commitTransaction();
-  // await session.endSession();
+  const lastCreatedRequest = await ReservationRequest.findOne(
+    { user },
+    { requestId: 1 },
+  ).sort({ _id: -1 });
 
+  reservationRequest.requestId = padNumberWithZeros(
+    Number(lastCreatedRequest?.requestId || '0000') + 1,
+    4,
+  );
+
+  if (schedule?.category === 'custom-date-picked') {
+    if (schedule?.schedules?.length !== 1) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "you've chosen custom-date-picked but you have not sent it ",
+      );
+    }
+  } else if (schedule?.category === 'on-demand') {
+    // do nothing: What does mean by "on-demand"?
+  } else if (schedule?.category === 'within-one-week') {
+    // from now, add 7 days;  set schedule?.schedules[0]
+  } else if (schedule?.category === 'within-two-week') {
+    // from now, add 14 days;  set schedule?.schedules[0]
+  }
+
+  reservationRequest.schedule = schedule;
+  reservationRequest.status = 'pending';
+  reservationRequest.date = new Date(); // we should convert this date to japan/korean local time
+  reservationRequest.machineType = machineData?.category;
+
+  const result = await ReservationRequest.create(reservationRequest);
   return result;
 };
 
