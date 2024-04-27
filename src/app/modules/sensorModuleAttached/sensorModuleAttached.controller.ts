@@ -4,7 +4,10 @@ import catchAsync from '../../utils/catchAsync';
 import { TAuth } from '../../interface/error';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
-import { TSensorModuleAttached } from './sensorModuleAttached.interface';
+import {
+  TModule,
+  TSensorModuleAttached,
+} from './sensorModuleAttached.interface';
 import AppError from '../../errors/AppError';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
@@ -34,34 +37,31 @@ const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-// const addSensorData: RequestHandler = catchAsync(async (req, res) => {
-//   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-//   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
+const addSensorData: RequestHandler = catchAsync(async (req, res) => {
+  // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
-//   // sensorModuleAttached.user = auth._id;
-//   const macAddress: string = req?.query?.macAddress as string;
-
-//   if (!macAddress) {
-//     throw new AppError(
-//       httpStatus.BAD_REQUEST,
-//       'macAddress is required to to add sensor data',
-//     );
-//   }
-//   const result =
-//     await sensorAttachedModuleServices.addSensorAttachedModuleIntoDB(
-//       macAddress,
-//       sensorModuleAttached,
-//     );
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'sensorModule has purchased successfully',
-//     data: result,
-//   });
-// });
+  const macAddress: string = req?.query?.macAddress as string;
+  const sensorData: TModule = req?.body?.sensorData as TModule;
+  if (!macAddress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'macAddress is required to to add sensor data',
+    );
+  }
+  const result = await sensorAttachedModuleServices.addSensorDataInToDB({
+    macAddress,
+    sensorData,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'sensor data has added successfully',
+    data: result,
+  });
+});
 
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
-  // addSensorData,
+  addSensorData,
 };
