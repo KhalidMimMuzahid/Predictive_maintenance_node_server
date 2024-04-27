@@ -4,7 +4,7 @@ import { TIsDeleted } from '../../../common/common.interface';
 export type TServiceProviderAdmin = {
   user: Types.ObjectId;
   name: { firstName: string; lastName: string };
-
+  serviceProviderCompany: Types.ObjectId;
   // language?: TLanguage;
   // // fullName: firstName + " " + lastName // this fullName field will be virtual
   // phone: string;

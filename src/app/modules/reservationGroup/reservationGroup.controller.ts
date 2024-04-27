@@ -2,12 +2,21 @@ import httpStatus from 'http-status';
 import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
-import { ReservationRequest } from '../reservation/reservation.model';
 import { reservationGroupServices } from './reservationGroup.service';
+import { TAuth } from '../../interface/error';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 
 const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
-  const { reservationIds } = req.body; // array of reservation request ids
-  const result = await reservationGroupServices.createReservationRequestGroupService(reservationIds);
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+  const reservationRequests: string[] = req?.body
+    ?.reservationRequests as string[]; // array of reservation request ids
+  const result =
+    await reservationGroupServices.createReservationRequestGroup(
+      reservationRequests,
+    );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -18,8 +27,36 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const addBid: RequestHandler = catchAsync(async (req, res) => {
-  const { bid, groupId } = req.body;
-  const results = await reservationGroupServices.addBidService(bid, groupId);
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderAdmin', 'serviceProviderSubAdmin'],
+  });
+
+  // biddingUser: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'User',
+  //   required: true,
+  // },
+
+  // serviceProviderCompany: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'ServiceProviderCompany',
+  //   required: true,
+  // },
+  // biddingAmount:
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+  const biddingAmount: number = req.body?.biddingAmount as number;
+
+  const results = await reservationGroupServices.addBid({
+    reservationRequestGroup_id: reservationRequestGroup,
+    biddingUser: auth?._id,
+    biddingAmount: biddingAmount,
+    role: auth?.role,
+  });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,

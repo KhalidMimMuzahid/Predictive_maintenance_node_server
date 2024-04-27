@@ -21,7 +21,7 @@ const generateToken = (
     config?.privateKey as string,
     {
       algorithm: 'HS256',
-      expiresIn: '24h',
+      expiresIn: '7d',
     },
   );
   return token;

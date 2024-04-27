@@ -1,5 +1,7 @@
 import express, { Router } from 'express';
 import { reservationGroupController } from './reservationGroup.controller';
+import validateRequest from '../../middlewares/validateRequest';
+import { reservationGroupValidation } from './reservationGroup.validation';
 
 const router: Router = express.Router();
 
@@ -12,8 +14,17 @@ const router: Router = express.Router();
 
 // Start ------------------------------- XXXXX ----------------------------
 // those routers are for root user role routes
-router.post('/', reservationGroupController.createReservationGroup);
-router.post('/add-bid', reservationGroupController.addBid);
+router.post(
+  '/create',
+
+  validateRequest(reservationGroupValidation.createReservationGroupSchema),
+  reservationGroupController.createReservationGroup,
+);
+router.patch(
+  '/add-bid',
+  validateRequest(reservationGroupValidation.addBidSchema),
+  reservationGroupController.addBid,
+);
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);
 // router.get('/status/:status', reservationController.getReservationsByStatus);

@@ -86,6 +86,15 @@ export const createServiceProviderCompanyAndAdmin = async ({
   }
   const createdServiceProviderCompany = createdServiceProviderCompanyArray[0];
 
+
+  createdServiceProviderAdmin.serviceProviderCompany =
+    createdServiceProviderCompany?._id;
+  const updatedServiceProviderAdmin = createdServiceProviderAdmin.save({
+    session: session,
+  });
+  if (!updatedServiceProviderAdmin) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
+  }
   const createdWalletArrayForServiceProviderCompany = await Wallet.create(
     [
       {
@@ -118,6 +127,7 @@ export const createServiceProviderCompanyAndAdmin = async ({
       },
       { new: true, session: session },
     );
+
   if (!updatedServiceProviderCompany) {
     throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
   }
