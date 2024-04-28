@@ -22,6 +22,18 @@ const addSensorModule: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getInstockSensorModules: RequestHandler = catchAsync(async (req, res) => {
+  const result = await sensorModuleServices.getAllSensorModules();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'All in sotck sensor modules',
+    data: result,
+  });
+});
+
 export const sensorModuleControllers = {
   addSensorModule,
+  getInstockSensorModules,
 };

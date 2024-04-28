@@ -19,6 +19,11 @@ const addSensorModuleIntoDB = async (sensorModule: TSensorModule) => {
 
   return createdSensorModule;
 };
+const getAllSensorModules = async () => {
+  const sensors = await SensorModule.find({ status: 'in-stock' });
+  return sensors;
+};
 export const sensorModuleServices = {
   addSensorModuleIntoDB,
+  getAllSensorModules,
 };
