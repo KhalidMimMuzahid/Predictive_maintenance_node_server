@@ -90,10 +90,10 @@ const addSensorConnectedMachineInToDB = async (payload: {
     }
     const createdSensorModuleAttached = createdSensorModuleAttachedArray[0];
     // create machine
-    console.log({ createdSensorModuleAttached });
 
     machineData.sensorModulesAttached = [createdSensorModuleAttached?._id];
     machineData.status = 'normal';
+
     const lastAddedMachine = await Machine.findOne(
       { user: machineData?.user },
       { machineNo: 1 },
@@ -102,6 +102,7 @@ const addSensorConnectedMachineInToDB = async (payload: {
       Number(lastAddedMachine?.machineNo || '0000') + 1,
       4,
     );
+
     const machineArray = await Machine.create([machineData], {
       session: session,
     });

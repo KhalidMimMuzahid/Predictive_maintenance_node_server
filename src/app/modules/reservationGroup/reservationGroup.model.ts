@@ -5,7 +5,7 @@ import { Schema } from 'mongoose';
 const ReservationRequestGroupSchema: Schema =
   new Schema<TReservationRequestGroup>({
     groupId: { type: String, required: true },
-    reservationRequest: [
+    reservationRequests: [
       { type: Schema.Types.ObjectId, ref: 'ReservationRequest' },
     ],
     allBids: [
@@ -15,22 +15,29 @@ const ReservationRequestGroupSchema: Schema =
           ref: 'User',
           required: true,
         },
-        bidder: { type: Schema.Types.ObjectId, required: true },
+        serviceProviderCompany: {
+          type: Schema.Types.ObjectId,
+          ref: 'ServiceProviderCompany',
+          required: true,
+        },
         biddingAmount: { type: Number, required: true },
       },
     ],
     postBiddingProcess: {
-      biddingUser: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-      },
-      bidWinner: { type: Schema.Types.ObjectId, required: true },
-      invoiceGroup: {
-        type: Schema.Types.ObjectId,
-        ref: 'InvoiceGroup',
-        required: true,
-      },
+      type: new Schema({
+        biddingUser: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        bidWinner: { type: Schema.Types.ObjectId, required: true },
+        invoiceGroup: {
+          type: Schema.Types.ObjectId,
+          ref: 'InvoiceGroup',
+          required: true,
+        },
+      }),
+      required: false,
     },
   });
 

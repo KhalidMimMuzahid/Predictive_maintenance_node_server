@@ -12,7 +12,11 @@ const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>({
     type: { firstName: { type: String }, lastName: { type: String } },
     required: true,
   },
-
+  serviceProviderCompany: {
+    type: Schema.Types.ObjectId,
+    ref: 'ServiceProviderCompany',
+    // required: true,
+  },
   isDeleted: {
     type: IsDeletedSchema,
     required: true,
