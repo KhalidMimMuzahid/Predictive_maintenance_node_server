@@ -32,10 +32,7 @@ const UserSchema = new Schema<TUser, UserModel>({
     required: true,
     default: 'approved',
   }, // only showa-admin can change the status
-  serviceProviderEngineer: {
-    type: Schema.Types.ObjectId,
-    ref: 'ServiceProviderEngineer',
-  },
+
   showaUser: {
     type: Schema.Types.ObjectId,
     ref: 'ShowaUser',
@@ -43,6 +40,15 @@ const UserSchema = new Schema<TUser, UserModel>({
   serviceProviderAdmin: {
     type: Schema.Types.ObjectId,
     ref: 'ServiceProviderAdmin',
+  },
+
+  serviceProviderBranchManager: {
+    type: Schema.Types.ObjectId,
+    ref: 'ServiceProviderBranchManager',
+  },
+  serviceProviderEngineer: {
+    type: Schema.Types.ObjectId,
+    ref: 'ServiceProviderEngineer',
   },
   isDeleted: {
     type: IsDeletedSchema,

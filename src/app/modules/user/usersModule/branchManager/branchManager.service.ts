@@ -206,7 +206,7 @@ const approveServiceProviderBranchManagerIntoDB = async (
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'serviceProviderEngineer has already ben approved and assigned in a branch',
+      'serviceProviderBranchManager has already ben approved and assigned in a branch',
     );
   }
   let companyInfo;
@@ -260,7 +260,16 @@ const approveServiceProviderBranchManagerIntoDB = async (
         '_id of branch you provided is not a branch of your company',
       );
     }
-
+    const isExistsBranchManagerForThisBranch =
+      await ServiceProviderBranchManager.findOne({
+        'currentState.serviceProviderBranch': serviceProviderBranch_id,
+      });
+    if (isExistsBranchManagerForThisBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'This branch already have a branch manager',
+      );
+    }
     serviceProviderBranchManagerData.currentState.serviceProviderBranch =
       serviceProviderBranch_id;
   }

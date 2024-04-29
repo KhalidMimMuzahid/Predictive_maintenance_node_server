@@ -33,6 +33,10 @@ router.patch(
   '/send-reservation-group-to-branch',
   reservationGroupController.sendReservationGroupToBranch,
 );
+router.post(
+  '/assign-reservation-group-to-team',
+  reservationGroupController.sendReservationGroupToBranch,
+);
 
 
 // router.get('/:uid', reservationController.getMyReservations);

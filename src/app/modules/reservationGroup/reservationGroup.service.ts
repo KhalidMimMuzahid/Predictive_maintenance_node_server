@@ -284,7 +284,6 @@ const sendReservationGroupToBranch = async ({
     );
   }
 
-  console.log({ serviceProviderBranch });
   if (
     serviceProviderBranch?.serviceProviderCompany?.toString() !==
     serviceProviderCompany.toString()
@@ -297,7 +296,7 @@ const sendReservationGroupToBranch = async ({
   resGroup.postBiddingProcess.serviceProviderBranch =
     serviceProviderBranch?._id;
   const updatedReservationRequestGroup = await resGroup.save();
-  console.log({ updatedReservationRequestGroup });
+
   if (
     !updatedReservationRequestGroup?.postBiddingProcess?.serviceProviderBranch
   ) {
