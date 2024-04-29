@@ -3,7 +3,7 @@ import AppError from '../../errors/AppError';
 import { SensorModule } from '../sensorModule/sensorModule.model';
 import { TSensorModuleAttached } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
-
+import { Types } from 'mongoose';
 
 const addSensorAttachedModuleIntoDB = async (
   macAddress: string,
@@ -48,6 +48,15 @@ const addSensorAttachedModuleIntoDB = async (
     );
   }
   return createdSensorModuleAttached;
+};
+
+const getAttachedSensorModulesByuser = async (userId: Types.ObjectId) => {
+  const sensors = await SensorModuleAttached.find({ user: userId })
+    .select(
+      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType',
+    )
+    .populate('machine');
+  return sensors;
 };
 
 // const   addSensorDataInToDB =async (
@@ -96,5 +105,6 @@ const addSensorAttachedModuleIntoDB = async (
 // };
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB,
+  getAttachedSensorModulesByuser,
   // addSensorDataInToDB
 };

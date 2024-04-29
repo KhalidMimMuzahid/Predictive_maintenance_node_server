@@ -34,6 +34,23 @@ const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAttachedSensorModulesByUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const result =
+      await sensorAttachedModuleServices.getAttachedSensorModulesByuser(
+        auth._id,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensorModule has purchased successfully',
+      data: result,
+    });
+  },
+);
+
 // const addSensorData: RequestHandler = catchAsync(async (req, res) => {
 //   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 //   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
@@ -63,5 +80,6 @@ const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
 
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
+  getAttachedSensorModulesByUser,
   // addSensorData,
 };

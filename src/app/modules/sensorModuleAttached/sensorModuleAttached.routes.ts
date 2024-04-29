@@ -12,6 +12,11 @@ router.post(
   ),
   sensorModuleAttachedControllers.addSensorAttachedModule,
 );
+
+router.get(
+  '/get-sensors-by-user',
+  sensorModuleAttachedControllers.getAttachedSensorModulesByUser,
+);
 // router.patch(
 //   '/add-sensor-data',
 //   // validateRequest(
