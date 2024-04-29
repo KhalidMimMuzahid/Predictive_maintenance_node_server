@@ -4,6 +4,7 @@ import { TCompany, TIsDeleted } from '../common/common.interface';
 export type TMachine = {
   machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"
   status: 'abnormal' | 'normal'; // based oon what ?????????
+  packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;
 
@@ -27,7 +28,3 @@ export type TMachine = {
   isDeleted: TIsDeleted;
   // objectId of TAttachedSensor model
 };
-
-
-
-

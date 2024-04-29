@@ -87,29 +87,60 @@ const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
   },
 );
 
-// const getMyWashingMachine: RequestHandler = catchAsync(async (req, res) => {
-//   const { uid } = req.params;
-//   const results = await machineServices.getMyWashingMachineService(uid);
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'My washing machines',
-//     data: results,
-//   });
-// });
+const updateMachinePackageStatus: RequestHandler = catchAsync(
+  async (req, res) => {
+    const { machine_id } = req.query;
+    const { package_status } = req.body;
 
-// const getMyGeneralMachine: RequestHandler = catchAsync(async (req, res) => {
-//   const { uid } = req.params;
-//   const results = await machineServices.getMyGeneralMachineService(uid);
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'My general machines',
-//     data: results,
-//   });
-// });
+    if (!machine_id) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'machine_id must be provided to update package status',
+      );
+    }
+    if (!package_status) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'package_status must be provided to update package status',
+      );
+    }
+    const result = await machineServices.updateMachinePackageStatus(
+      new Types.ObjectId(machine_id as string),
+      package_status,
+    );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensor has added to machine successfully',
+      data: result,
+    });
+  },
+);
+
+const getMyWashingMachine: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const results = await machineServices.getMyWashingMachineService(auth._id);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'My washing machines',
+    data: results,
+  });
+});
+
+const getMyGeneralMachine: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const results = await machineServices.getMyGeneralMachineService(auth._id);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'My general machines',
+    data: results,
+  });
+});
 
 // const getMachine: RequestHandler = catchAsync(async (req, res) => {
 //   const { id } = req.params;
@@ -123,17 +154,21 @@ const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
 //   });
 // });
 
-// const deleteMachine: RequestHandler = catchAsync(async (req, res) => {
-//   const { id } = req.body;
-//   const result = await machineServices.deleteMachineService(id);
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Machine deleted',
-//     data: result,
-//   });
-// });
+const deleteMachine: RequestHandler = catchAsync(async (req, res) => {
+  const { machine_id } = req.query;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const result = await machineServices.deleteMachineService(
+    new Types.ObjectId(machine_id as string),
+    auth._id,
+  );
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine deleted',
+    data: result,
+  });
+});
 
 // const changeStatus: RequestHandler = catchAsync(async (req, res) => {
 //   const { id } = req.body;
@@ -163,11 +198,11 @@ export const machineController = {
   addSensorNonConnectedMachine,
   addSensorConnectedMachine,
   addSensorAttachedModuleInToMachine,
-
-  // getMyWashingMachine,
-  // getMyGeneralMachine,
+  updateMachinePackageStatus,
+  getMyWashingMachine,
+  getMyGeneralMachine,
   // getMachine,
-  // deleteMachine,
+  deleteMachine,
   // changeStatus,
   // addSensor,
 };

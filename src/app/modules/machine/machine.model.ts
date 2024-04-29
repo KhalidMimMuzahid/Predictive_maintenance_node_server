@@ -5,6 +5,11 @@ import { TMachine } from './machine.interface';
 export const MachineSchema: Schema = new Schema<TMachine>({
   machineNo: { type: String, required: true, unique: true },
   status: { type: String, enum: ['abnormal', 'normal'], required: true },
+  packageStatus: {
+    type: String,
+    enum: ['Pending', 'Running', 'Expired'],
+    required: true,
+  },
   category: {
     type: String,
     enum: ['washing-machine', 'general-machine'],
@@ -35,6 +40,11 @@ export const MachineSchema: Schema = new Schema<TMachine>({
 
 MachineSchema.pre('find', function (next) {
   this.find({ 'isDeleted.value': { $ne: true } });
+  next();
+});
+
+MachineSchema.pre('findOne', function (next) {
+  this.findOne({ 'isDeleted.value': { $ne: true } });
   next();
 });
 

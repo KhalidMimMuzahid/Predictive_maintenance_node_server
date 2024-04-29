@@ -27,8 +27,6 @@ const addNonConnectedMachineInToDB = async (payload: TMachine) => {
   return machine;
 };
 
-
-
 const addSensorConnectedMachineInToDB = async (payload: {
   sensorModuleMacAddress: string;
   machineData: TMachine;
@@ -193,29 +191,37 @@ const addSensorAttachedModuleInToMachineIntoDB = async (
   }
 };
 
-// const getMyWashingMachineService = async (uid: String) => {
-//   try {
-//     const washingMachines = await Machine.find({
-//       user: uid,
-//       category: 'washing-machine',
-//     });
-//     return washingMachines;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+const updateMachinePackageStatus = async (
+  machine_id: Types.ObjectId,
+  packageStatus: string,
+) => {
+  const updatedMachine = await Machine.findByIdAndUpdate(machine_id, {
+    packageStatus: packageStatus,
+  });
+  if (!updatedMachine) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'this sensor module could not added to machine, please try again',
+    );
+  }
+  return { updatedMachine };
+};
 
-// const getMyGeneralMachineService = async (uid: String) => {
-//   try {
-//     const generalMachines = await Machine.find({
-//       user: uid,
-//       category: 'general-machine',
-//     });
-//     return generalMachines;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+const getMyWashingMachineService = async (uerId: Types.ObjectId) => {
+  const washingMachines = await Machine.find({
+    user: uerId,
+    category: 'washing-machine',
+  });
+  return washingMachines;
+};
+
+const getMyGeneralMachineService = async (uerId: Types.ObjectId) => {
+  const generalMachines = await Machine.find({
+    user: uerId,
+    category: 'general-machine',
+  });
+  return generalMachines;
+};
 
 // const getMachineService = async (id: String) => {
 //   try {
@@ -232,22 +238,27 @@ const addSensorAttachedModuleInToMachineIntoDB = async (
 //   }
 // };
 
-// const deleteMachineService = async (id: String) => {
-//   try {
-//     const machine = await Machine.findById(id);
-//     if (!machine) {
-//       throw new AppError(
-//         httpStatus.BAD_REQUEST,
-//         'There is no machine with this id!',
-//       );
-//     }
-//     machine.deleted = true;
-//     const deletedMachine = await machine.save();
-//     return deletedMachine;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+const deleteMachineService = async (
+  machineId: Types.ObjectId,
+  userId: Types.ObjectId,
+) => {
+  const machine = await Machine.findById(machineId);
+  if (!machine) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'There is no machine with this id!',
+    );
+  }
+  machine.isDeleted = {
+    value: true,
+    deletedBy: userId,
+  };
+  const deletedMachine = await machine.save();
+  if (!deletedMachine) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Machine could not be deleted');
+  }
+  return deletedMachine;
+};
 
 // const changeStatusService = async (id: string) => {
 //   try {
@@ -306,10 +317,12 @@ export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
   addSensorAttachedModuleInToMachineIntoDB,
+  updateMachinePackageStatus,
+  getMyWashingMachineService,
   // getMyWashingMachineService,
-  // getMyGeneralMachineService,
+  getMyGeneralMachineService,
   // getMachineService,
-  // deleteMachineService,
+  deleteMachineService,
   // changeStatusService,
   // addSensorService,
 };
