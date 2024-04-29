@@ -85,6 +85,42 @@ const selectBiddingWinner: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const sendReservationGroupToBranch: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin', 'serviceProviderSubAdmin'],
+    });
+
+    const reservationRequestGroup: string = req?.query
+      ?.reservationRequestGroup as string;
+    const serviceProviderBranch: string = req?.query
+      ?.serviceProviderBranch as string;
+    if (!reservationRequestGroup || !serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '_id of reservationRequestGroup & serviceProviderBranch are required to send it to branch',
+      );
+    }
+    const results = await reservationGroupServices.sendReservationGroupToBranch(
+      {
+        user: auth?._id,
+        reservationRequestGroup_id: reservationRequestGroup,
+        serviceProviderBranch_id: serviceProviderBranch,
+      },
+    );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation group has sent to a branch',
+      data: results,
+    });
+  },
+);
 // const getMyReservationsByStatus: RequestHandler = catchAsync(async (req, res) => {
 //   const { uid, status } = req.params;
 //   const results = await reservationServices.getMyReservationsByStatusService(uid, status);
@@ -113,4 +149,5 @@ export const reservationGroupController = {
   createReservationGroup,
   addBid,
   selectBiddingWinner,
+  sendReservationGroupToBranch,
 };

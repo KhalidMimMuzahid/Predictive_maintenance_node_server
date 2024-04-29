@@ -43,7 +43,7 @@ const ReservationRequestGroupSchema: Schema =
         invoiceGroup: {
           type: Schema.Types.ObjectId,
           ref: 'InvoiceGroup',
-          required: true,
+          // required: true,
         },
       }),
       required: false,

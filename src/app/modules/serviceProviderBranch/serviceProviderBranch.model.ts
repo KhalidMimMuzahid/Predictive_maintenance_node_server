@@ -10,6 +10,7 @@ const serviceProviderBranchSchema = new Schema<TServiceProviderBranch>({
   serviceProviderCompany: {
     type: Schema.Types.ObjectId,
     ref: 'ServiceProviderCompany',
+    // required: true,
   },
   email: { type: String, required: true },
   contactNo: String,

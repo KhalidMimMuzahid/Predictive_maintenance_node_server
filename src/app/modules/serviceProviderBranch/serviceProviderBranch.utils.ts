@@ -71,7 +71,7 @@ export const createServiceProviderBranch = async ({
       },
       { new: true, session: session },
     );
-  console.log({ updatedServiceProviderBranch });
+  // console.log({ updatedServiceProviderBranch });
   if (!updatedServiceProviderBranch) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -93,5 +93,5 @@ export const createServiceProviderBranch = async ({
       'failed to create service provider branch',
     );
   }
-  return { x: 'y' };
+  return updatedServiceProviderBranch;
 };

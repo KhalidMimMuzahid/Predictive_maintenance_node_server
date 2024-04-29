@@ -29,6 +29,10 @@ router.patch(
   '/select-bidding-winner',
   reservationGroupController.selectBiddingWinner,
 );
+router.patch(
+  '/send-reservation-group-to-branch',
+  reservationGroupController.sendReservationGroupToBranch,
+);
 
 
 // router.get('/:uid', reservationController.getMyReservations);

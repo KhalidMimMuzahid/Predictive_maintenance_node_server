@@ -3,7 +3,7 @@ export type TPostBiddingProcess = {
   biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation
   serviceProviderCompany: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
   serviceProviderBranch: Types.ObjectId; // when we assign this reservation group to a specific branch
-  invoiceGroup: Types.ObjectId; // objectId of InvoiceGroup model; when we assign this to a engineers team
+  invoiceGroup?: Types.ObjectId; // objectId of InvoiceGroup model; when we assign this to a engineers team
 };
 export type TReservationRequestGroup = {
   groupId: string; // customized unique Identifier

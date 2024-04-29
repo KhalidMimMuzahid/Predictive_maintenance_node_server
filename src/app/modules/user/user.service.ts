@@ -74,9 +74,38 @@ const getUserBy_id = async (_id: string) => {
       options: { strictPopulate: false },
     },
     {
+      path: 'showaAdmin',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'showaSubAdmin',
+      options: { strictPopulate: false },
+    },
+    {
       path: 'serviceProviderAdmin',
       options: { strictPopulate: false },
     },
+    {
+      path: 'serviceProviderSubAdmin',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'serviceProviderEngineer',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'serviceProviderBranchManager',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'serviceProviderSupportStuff',
+      options: { strictPopulate: false },
+    },
+    // // for no we no need wallet in this api; cause for get wallet we have another api
+    // {
+    //   path: 'wallet',
+    //   options: { strictPopulate: false },
+    // },
   ]);
 
   return user;
