@@ -30,7 +30,16 @@ const ReservationRequestGroupSchema: Schema =
           ref: 'User',
           required: true,
         },
-        bidWinner: { type: Schema.Types.ObjectId, required: true },
+        serviceProviderCompany: {
+          type: Schema.Types.ObjectId,
+          ref: 'ServiceProviderCompany',
+          required: true,
+        },
+        serviceProviderBranch: {
+          type: Schema.Types.ObjectId,
+          ref: 'ServiceProviderBranch',
+          required: true,
+        },
         invoiceGroup: {
           type: Schema.Types.ObjectId,
           ref: 'InvoiceGroup',

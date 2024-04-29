@@ -6,6 +6,7 @@ import httpStatus from 'http-status';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { TRole } from '../user/user.interface';
 import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
+import { TPostBiddingProcess } from './reservationGroup.interface';
 
 const createReservationRequestGroup = async (reservationRequests: string[]) => {
   const session = await mongoose.startSession();
@@ -174,8 +175,55 @@ const addBid = async ({
     );
   return updatedReservationRequestGroup;
 };
+const selectBiddingWinner = async ({
+  reservationRequestGroup_id,
+  bid_id,
+}: {
+  reservationRequestGroup_id: string;
+  bid_id: string;
+}) => {
+  const resGroup = await ReservationRequestGroup.findById(
+    new mongoose.Types.ObjectId(reservationRequestGroup_id),
+  );
+  if (!resGroup) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'No reservation request group with this id',
+    );
+  }
+
+  if (resGroup?.postBiddingProcess?.biddingUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'bidding winner has already been selected for this reservation group',
+    );
+  }
+  const winner = resGroup?.allBids.find(
+    (bid) => bid?._id?.toString() === bid_id,
+  );
+  if (!winner) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'nod bid found with this bid_id for this reservation Group',
+    );
+  }
+  let postBiddingProcess: Partial<TPostBiddingProcess> = {};
+
+  postBiddingProcess = {
+    biddingUser: winner?.biddingUser,
+    serviceProviderCompany: winner?.serviceProviderCompany,
+  };
+  const updatedReservationRequestGroup =
+    await ReservationRequestGroup.findByIdAndUpdate(
+      new mongoose.Types.ObjectId(reservationRequestGroup_id),
+      { postBiddingProcess },
+      { new: true },
+    );
+  return updatedReservationRequestGroup;
+};
 
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
+  selectBiddingWinner,
 };

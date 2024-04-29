@@ -5,6 +5,7 @@ import catchAsync from '../../utils/catchAsync';
 import { reservationGroupServices } from './reservationGroup.service';
 import { TAuth } from '../../interface/error';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import AppError from '../../errors/AppError';
 
 const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -35,18 +36,6 @@ const addBid: RequestHandler = catchAsync(async (req, res) => {
     accessUsers: ['serviceProviderAdmin', 'serviceProviderSubAdmin'],
   });
 
-  // biddingUser: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'User',
-  //   required: true,
-  // },
-
-  // serviceProviderCompany: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'ServiceProviderCompany',
-  //   required: true,
-  // },
-  // biddingAmount:
   const reservationRequestGroup: string = req?.query
     ?.reservationRequestGroup as string;
   const biddingAmount: number = req.body?.biddingAmount as number;
@@ -66,6 +55,36 @@ const addBid: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const selectBiddingWinner: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+
+  const bid: string = req?.query?.bid as string;
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+  if (!bid || !reservationRequestGroup) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id for bid & reservationRequestGroup are required to select winner',
+    );
+  }
+  const results = await reservationGroupServices.selectBiddingWinner({
+    reservationRequestGroup_id: reservationRequestGroup,
+    bid_id: bid,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'service provider company has selected as winner successfully',
+    data: results,
+  });
+});
 // const getMyReservationsByStatus: RequestHandler = catchAsync(async (req, res) => {
 //   const { uid, status } = req.params;
 //   const results = await reservationServices.getMyReservationsByStatusService(uid, status);
@@ -92,5 +111,6 @@ const addBid: RequestHandler = catchAsync(async (req, res) => {
 
 export const reservationGroupController = {
   createReservationGroup,
-  addBid
+  addBid,
+  selectBiddingWinner,
 };

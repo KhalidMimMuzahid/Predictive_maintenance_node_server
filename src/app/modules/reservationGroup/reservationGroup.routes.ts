@@ -25,6 +25,12 @@ router.patch(
   validateRequest(reservationGroupValidation.addBidSchema),
   reservationGroupController.addBid,
 );
+router.patch(
+  '/select-bidding-winner',
+  reservationGroupController.selectBiddingWinner,
+);
+
+
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);
 // router.get('/status/:status', reservationController.getReservationsByStatus);
