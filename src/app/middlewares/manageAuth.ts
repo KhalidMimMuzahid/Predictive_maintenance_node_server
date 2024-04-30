@@ -13,6 +13,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
     if (
       pathname?.endsWith('sign-up') ||
       pathname?.endsWith('sign-in') ||
+      pathname?.endsWith('add-sensor-data') ||
       pathname?.endsWith('upload-photo')
     ) {
       return next();
@@ -21,7 +22,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
 
       let auth;
       try {
-        auth = await jwtFunc?.decodeToken(bearerToken as string);
+        auth = jwtFunc?.decodeToken(bearerToken as string);
       } catch (error) {
         throw new AppError(
           httpStatus.FORBIDDEN,

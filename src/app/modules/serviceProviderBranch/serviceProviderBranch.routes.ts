@@ -1,9 +1,14 @@
 import express, { Router } from 'express';
+import validateRequest from '../../middlewares/validateRequest';
+import { serviceProviderBranchValidation } from './serviceProviderBranch.validation';
+import { serviceProviderBranchController } from './serviceProviderBranch.controller';
 
 const router: Router = express.Router();
-
-// router.get(
-//   '/get-all-service-provider-companies',
-//   serviceProviderCompanyControllers.getAllServiceProviderCompanies,
-// );
+router.post(
+  '/create',
+  validateRequest(
+    serviceProviderBranchValidation.ServiceProviderBranchCreateValidationSchema,
+  ),
+  serviceProviderBranchController.createServiceProviderBranch,
+);
 export const serviceProviderBranchRoutes = router;

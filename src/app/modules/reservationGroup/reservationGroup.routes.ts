@@ -25,6 +25,20 @@ router.patch(
   validateRequest(reservationGroupValidation.addBidSchema),
   reservationGroupController.addBid,
 );
+router.patch(
+  '/select-bidding-winner',
+  reservationGroupController.selectBiddingWinner,
+);
+router.patch(
+  '/send-reservation-group-to-branch',
+  reservationGroupController.sendReservationGroupToBranch,
+);
+router.post(
+  '/assign-reservation-group-to-team',
+  reservationGroupController.sendReservationGroupToBranch,
+);
+
+
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);
 // router.get('/status/:status', reservationController.getReservationsByStatus);

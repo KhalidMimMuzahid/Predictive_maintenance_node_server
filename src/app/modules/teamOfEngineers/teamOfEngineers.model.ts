@@ -23,7 +23,11 @@ const TeamOfEngineersSchema = new Schema<TTeamOfEngineers>({
   members: [
     {
       isDeleted: Boolean,
-      member: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming 'User' is the model name for the User schema
+      member: {
+        type: Schema.Types.ObjectId,
+        ref: 'ServiceProviderEngineer',
+        required: true,
+      },
     },
   ],
 

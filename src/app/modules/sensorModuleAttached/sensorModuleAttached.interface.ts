@@ -21,6 +21,8 @@ export type TModule4 = {
   temperature: [number, number, number, number, number, number];
 };
 export type TModule = TModule1 | TModule2 | TModule3 | TModule4;
+
+export type TModuleType = 'module-1' | 'module-2' | 'module-3' | 'module-4';
 export type TSensorModuleAttached = {
   sensorModule: Types.ObjectId; // objectId of TSensor
   macAddress: string;
@@ -32,6 +34,6 @@ export type TSensorModuleAttached = {
   sectionName: string; // showa admin can set this value
   isSwitchedOn: boolean; // when the sensor is active then it's value is true
   currentSubscription?: Types.ObjectId; // objectId of Subscription model
-  moduleType: 'module-1' | 'module-2' | 'module-3' | 'module-4';
+  moduleType: TModuleType;
   sensorData?: TModule[];
 };

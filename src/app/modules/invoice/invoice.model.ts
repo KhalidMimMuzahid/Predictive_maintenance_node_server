@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
 import mongoose, { Schema } from 'mongoose';
 import { TInvoice } from './invoice.interface';
+import { PostBiddingProcessSchema } from '../reservationGroup/reservationGroup.model';
+import { IsDeletedSchema } from '../common/common.model';
 
 export const InvoiceSchema: Schema = new Schema<TInvoice>({
   invoiceNo: { type: String, required: true },
@@ -8,47 +11,76 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
     ref: 'ReservationRequest',
     required: true,
   },
-  bidWinner: {
+  reservationRequestGroup: {
     type: Schema.Types.ObjectId,
+    ref: 'ReservationRequestGroup',
     required: true,
-    ref: 'ReservationRequest',
   },
   invoiceGroup: {
     type: Schema.Types.ObjectId,
     ref: 'InvoiceGroup',
     required: true,
   },
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  additionalProducts: {
-    products: [
-      {
-        productName: { type: String, required: true },
-        quantity: { type: Number, required: true },
-        tax: { type: Number, default: 0 },
-        price: {
-          amount: { type: Number, required: true },
-          currency: { type: String, required: true },
-        },
-      },
-    ],
-    totalAmount: { type: Number, required: true },
-  },
-  feedbackByUser: {
-    ratings: { type: Number, required: true },
-    comment: { type: String, required: true },
-  },
-  taskAssignee: {
-    engineer: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    taskStatus: {
-      type: String,
-      enum: ['pending', 'accepted', 'completed'],
-    },
-    comments: [String],
-  },
-  isDeleted: { type: Boolean, default: false },
-});
 
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  postBiddingProcess: {
+    type: PostBiddingProcessSchema,
+    required: false,
+  },
+  additionalProducts: {
+    type: new Schema({
+      products: [
+        {
+          addedBy: {
+            type: Schema.Types.ObjectId,
+            ref: 'ServiceProviderEngineer',
+            required: true,
+          },
+          productName: { type: String, required: true },
+          quantity: { type: Number, required: true },
+          tax: { type: Number, default: 0 },
+          price: {
+            amount: { type: Number, required: true },
+            quantity: { type: Number, required: true },
+            total: { type: Number, required: true },
+          },
+        },
+      ],
+      totalAmount: { type: Number, required: true },
+      isPaid: { type: Number, required: true, default: false },
+    }),
+    default: {
+      products: [],
+      totalAmount: 0,
+      isPaid: false,
+    },
+    required: true,
+  },
+  taskStatus: {
+    type: String,
+    enum: ['ongoing', 'completed', 'canceled'],
+  },
+
+  feedbackByUser: {
+    type: new Schema({
+      ratings: { type: Number, required: true },
+      comment: { type: String, required: true },
+    }),
+    required: false,
+  },
+
+  isDeleted: {
+    type: IsDeletedSchema,
+    required: true,
+    default: { value: false },
+  },
+});
+InvoiceSchema.pre('find', function (next) {
+  this.find({ 'isDeleted.value': { $ne: true } });
+  next();
+});
+InvoiceSchema.pre('findOne', function (next) {
+  this.find({ 'isDeleted.value': { $ne: true } });
+  next();
+});
 export const Invoice = mongoose.model<TInvoice>('Invoice', InvoiceSchema);

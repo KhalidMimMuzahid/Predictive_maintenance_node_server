@@ -10,7 +10,7 @@ export const ServiceProviderBranchCreateValidationSchema = z.object({
   //   type: z.string(),
   branchName: z.string(),
   department: z.string(),
-  serviceProviderCompany: z.string(), // Assuming ObjectId is represented as a string
+  // serviceProviderCompany: z.string(), // Assuming ObjectId is represented as a string
   email: z.string().email(),
   contactNo: z.string(),
   language: z
