@@ -7,6 +7,7 @@ import {
 } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
 import { validateSensorData } from './sensorModuleAttached.utils';
+import { Types } from 'mongoose';
 
 const addSensorAttachedModuleIntoDB = async (
   macAddress: string,
@@ -88,16 +89,28 @@ const addSensorDataInToDB = async ({
   }
 
   await SensorModuleAttached.findOneAndUpdate(
-   {
-     macAddress,
-   },
-   { $push: { sensorData: sensorData } },
-   { new: false },
- );
+    {
+      macAddress,
+    },
+    { $push: { sensorData: sensorData } },
+    { new: false },
+  );
 
   return sensorData;
 };
+
+const getAttachedSensorModulesByuser = async (userId: Types.ObjectId) => {
+  const sensors = await SensorModuleAttached.find({ user: userId })
+    .select(
+      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType',
+    )
+    .populate('machine');
+  return sensors;
+};
+
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB,
   addSensorDataInToDB,
+  getAttachedSensorModulesByuser,
+  // addSensorDataInToDB
 };
