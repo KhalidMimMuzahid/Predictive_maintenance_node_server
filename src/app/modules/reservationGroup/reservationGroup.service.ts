@@ -1,3 +1,4 @@
+import { ReservationRequest } from './../reservation/reservation.model';
 import mongoose from 'mongoose';
 import { ReservationRequestGroup } from './reservationGroup.model';
 import AppError from '../../errors/AppError';
@@ -206,7 +207,7 @@ const selectBiddingWinner = async ({
   if (!winner) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'nod bid found with this bid_id for this reservation Group',
+      'no bid found with this bid_id for this reservation Group',
     );
   }
   let postBiddingProcess: Partial<TPostBiddingProcess> = {};
@@ -215,13 +216,54 @@ const selectBiddingWinner = async ({
     biddingUser: winner?.biddingUser,
     serviceProviderCompany: winner?.serviceProviderCompany,
   };
-  const updatedReservationRequestGroup =
-    await ReservationRequestGroup.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(reservationRequestGroup_id),
-      { postBiddingProcess },
-      { new: true },
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const updatedReservationRequestGroup =
+      await ReservationRequestGroup.findByIdAndUpdate(
+        new mongoose.Types.ObjectId(reservationRequestGroup_id),
+        { postBiddingProcess },
+        { new: true, session: session },
+      );
+
+    if (!updatedReservationRequestGroup) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request group',
+      );
+    }
+    const updatedReservationRequests = await ReservationRequest.updateMany(
+      {
+        _id: { $in: resGroup.reservationRequests },
+      },
+
+      {
+        status: 'accepted',
+      },
+      {
+        new: true,
+        session: session,
+      },
     );
-  return updatedReservationRequestGroup;
+    if (
+      updatedReservationRequests?.modifiedCount !==
+      resGroup.reservationRequests?.length
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request status',
+      );
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return updatedReservationRequestGroup;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 const sendReservationGroupToBranch = async ({
   user,

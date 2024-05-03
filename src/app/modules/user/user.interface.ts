@@ -37,3 +37,8 @@ export interface UserModel extends Model<TUser> {
   isUidExists(uid: string): Promise<TUser | null>;
   isEmailExists(email: string): Promise<TUser | null>;
 }
+
+
+
+
+
