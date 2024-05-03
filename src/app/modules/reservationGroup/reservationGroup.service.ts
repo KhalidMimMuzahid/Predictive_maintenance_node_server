@@ -1,8 +1,6 @@
-import { ReservationRequest } from './../reservation/reservation.model';
 import mongoose from 'mongoose';
 import { ReservationRequestGroup } from './reservationGroup.model';
 import AppError from '../../errors/AppError';
-import { ReservationRequest } from '../reservation/reservation.model';
 import httpStatus from 'http-status';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { TRole } from '../user/user.interface';
@@ -10,6 +8,7 @@ import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/s
 import { TPostBiddingProcess } from './reservationGroup.interface';
 import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 
 const createReservationRequestGroup = async (reservationRequests: string[]) => {
   const session = await mongoose.startSession();

@@ -11,6 +11,7 @@ import { getServiceProviderBranchForUser_EngineerAndManager } from './invoiceGro
 import { TInvoice } from '../invoice/invoice.interface';
 import { TReservationRequest } from '../reservation/reservation.interface';
 import { Invoice } from '../invoice/invoice.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 
 const assignReservationGroupToTeam = async ({
   user,
@@ -189,6 +190,29 @@ const assignReservationGroupToTeam = async ({
       throw new AppError(
         httpStatus.BAD_REQUEST,
         'could not updated reservation Group for postBiddingProcess?.invoiceGroup, please try again',
+      );
+    }
+
+    const updatedReservationRequests = await ReservationRequest.updateMany(
+      {
+        _id: { $in: resGroup.reservationRequests },
+      },
+
+      {
+        status: 'ongoing',
+      },
+      {
+        new: true,
+        session: session,
+      },
+    );
+    if (
+      updatedReservationRequests?.modifiedCount !==
+      resGroup.reservationRequests?.length
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request status',
       );
     }
     await session.commitTransaction();
