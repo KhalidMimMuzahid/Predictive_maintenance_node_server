@@ -123,9 +123,16 @@ const getReservationsByStatusService = async (status: string) => {
   return results;
 };
 
+
+const getAllReservationsService = async () => {
+  const results = await ReservationRequest.find({}).populate('user');
+
+  return results;
+};
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
   getMyReservationsByStatusService,
   getReservationsByStatusService,
+  getAllReservationsService,
 };

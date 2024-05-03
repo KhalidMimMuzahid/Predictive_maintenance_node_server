@@ -11,6 +11,7 @@ router.post(
   reservationController.createReservationRequest,
 );
 router.get('/', reservationController.getMyReservations);
+router.get('/all-reservation', reservationController.getAllReservations);
 router.get('/status/:status', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
 export const reservationRoutes = router;

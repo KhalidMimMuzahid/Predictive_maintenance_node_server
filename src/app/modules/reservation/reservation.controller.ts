@@ -98,10 +98,26 @@ const getReservationsByStatus: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
-
+const getAllReservations: RequestHandler = catchAsync(async (req, res) => {
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderAdmin', 'serviceProviderSubAdmin'],
+  });
+  const results = await reservationServices.getAllReservationsService();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'successfully retrieve all reservations',
+    data: results,
+  });
+});
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
   getMyReservationsByStatus,
   getReservationsByStatus,
+  getAllReservations,
 };
