@@ -97,7 +97,96 @@ const addSensorDataInToDB = async ({
 
   return sensorData;
 };
+
+const getSensorDataFromDB = async ({
+  macAddress,
+  page,
+  limit,
+}: {
+  macAddress: string;
+  page: number;
+  limit: number;
+}) => {
+  const result = await SensorModuleAttached.aggregate([
+    { $match: { macAddress: macAddress } },
+    {
+      $project: {
+        count: {
+          $size: '$sensorData',
+        },
+      },
+    },
+  ]);
+  if (result?.length === 0) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'No attached sensor module available with this macAddress!',
+    );
+  }
+
+  const dataCount = result.length > 0 ? result[0].count : 0;
+
+  const remaining = dataCount - page * limit;
+  let skip = -limit * page;
+  let limitTemp = limit;
+  if (remaining < 0) {
+    skip = -dataCount;
+    limitTemp = remaining + limit;
+    if (limitTemp < 0) limitTemp = 0;
+  }
+
+  if (limitTemp === 0) {
+    return {
+      prevPage:
+        limitTemp <= 0
+          ? Math.ceil(dataCount / limit)
+          : page - 1 == 0
+            ? false
+            : page - 1,
+
+      nextPage: false,
+      sensorData: [],
+    };
+  }
+  const sensorModuleAttached = await SensorModuleAttached.findOne(
+    { macAddress: macAddress },
+    { sensorData: { $slice: [skip, limitTemp] } },
+  );
+  if (!sensorModuleAttached) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `No sensor data for this page ${page}`,
+    );
+  }
+
+  const sensor = {
+    prevPage:
+      limitTemp <= 0
+        ? Math.ceil(dataCount / limit)
+        : page - 1 == 0
+          ? false
+          : page - 1,
+    nextPage: page == Math.ceil(dataCount / limit) ? false : page + 1,
+    sensorData: sensorModuleAttached?.sensorData || [],
+    finished: true,
+    sensorModule_id: sensorModuleAttached.sensorModule,
+
+    macAddress,
+    // price: iot.price,
+    // status: iot.status,
+    // uid: iot.uid,
+    purpose: sensorModuleAttached.purpose,
+    sectionName: sensorModuleAttached.sectionName,
+    isSwitchedOn: sensorModuleAttached.isSwitchedOn,
+    moduleType: sensorModuleAttached.moduleType,
+    machine_id: sensorModuleAttached.machine,
+  };
+
+  return { totalData: sensor?.sensorData?.length || 0, ...sensor };
+};
+
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB,
   addSensorDataInToDB,
+  getSensorDataFromDB,
 };

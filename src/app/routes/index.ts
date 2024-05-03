@@ -10,6 +10,7 @@ import { sensorModuleAttachedRoutes } from '../modules/sensorModuleAttached/sens
 import { serviceProviderBranchRoutes } from '../modules/serviceProviderBranch/serviceProviderBranch.routes';
 import { teamOfEngineersRoutes } from '../modules/teamOfEngineers/teamOfEngineers.routes';
 import { invoiceGroupRoutes } from '../modules/invoiceGroup/invoiceGroup.routes';
+import { invoiceRoutes } from '../modules/invoice/invoice.routes';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const moduleRoutes: any[] = [
   { path: '/user', route: userRoutes },
   { path: '/reservation', route: reservationRoutes },
   { path: '/reservations-group', route: reservationGroupRoutes },
-  // { path: '/invoice', route: reservationGroupRoutes },
+  { path: '/invoice', route: invoiceRoutes },
   { path: '/invoices-group', route: invoiceGroupRoutes },
   { path: '/machine', route: machineRoutes },
   { path: '/service-provider-company', route: serviceProviderCompanyRoutes },

@@ -60,8 +60,40 @@ const addSensorData: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getSensorData: RequestHandler = catchAsync(async (req, res) => {
+  // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
+  const page = parseInt(req?.query?.page as string) || 1;
+  const limit = parseInt(req?.query?.limit as string) || 10;
+
+  if (page < 1 || limit < 1) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Page and limit cannot be less than 1',
+    );
+  }
+  const macAddress: string = req?.query?.macAddress as string;
+  if (!macAddress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'macAddress is required to to get sensor data',
+    );
+  }
+  const result = await sensorAttachedModuleServices.getSensorDataFromDB({
+    macAddress,
+    page,
+    limit,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'sensor data has retrieved successfully',
+    data: result,
+  });
+});
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
   addSensorData,
+  getSensorData,
 };

@@ -13,5 +13,5 @@ router.post(
   sensorModuleAttachedControllers.addSensorAttachedModule,
 );
 router.patch('/add-sensor-data', sensorModuleAttachedControllers.addSensorData);
-
+router.get('/get-sensor-data', sensorModuleAttachedControllers.getSensorData);
 export const sensorModuleAttachedRoutes = router;

@@ -37,16 +37,17 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
             required: true,
           },
           productName: { type: String, required: true },
-          quantity: { type: Number, required: true },
-          tax: { type: Number, default: 0 },
-          price: {
-            amount: { type: Number, required: true },
+          // quantity: { type: Number, required: true },
+
+          cost: {
+            price: { type: Number, required: true },
             quantity: { type: Number, required: true },
-            total: { type: Number, required: true },
+            tax: { type: Number, default: 0 },
+            totalAmount: { type: Number, required: true },
           },
         },
       ],
-      totalAmount: { type: Number, required: true },
+      totalAmount: { type: Number, required: true, default: 0 },
       isPaid: { type: Number, required: true, default: false },
     }),
     default: {
