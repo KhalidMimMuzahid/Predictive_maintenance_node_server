@@ -156,6 +156,21 @@ const getUserConnectedMachine: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getUserNonConnectedGeneralMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const results =
+      await machineServices.getUserNonConnectedGeneralMachineService(auth._id);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'My non connected general machines',
+      data: results,
+    });
+  },
+);
+
 const deleteMachine: RequestHandler = catchAsync(async (req, res) => {
   const { machine_id } = req.query;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -204,6 +219,7 @@ export const machineController = {
   getMyWashingMachine,
   getMyGeneralMachine,
   getUserConnectedMachine,
+  getUserNonConnectedGeneralMachine,
   deleteMachine,
   // changeStatus,
   // addSensor,

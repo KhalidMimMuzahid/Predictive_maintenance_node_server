@@ -10,7 +10,8 @@ router.post(
   validateRequest(reservationValidation.createReservationValidationSchema),
   reservationController.createReservationRequest,
 );
-router.get('/', reservationController.getMyReservations);
-router.get('/status/:status', reservationController.getMyReservationsByStatus);
+router.get('/user', reservationController.getMyReservations);
+router.get('/status/user', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
+router.post('/upload-image', reservationController.uploadRequestImage);
 export const reservationRoutes = router;

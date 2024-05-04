@@ -231,6 +231,17 @@ const getUserConnectedMachineService = async (uerId: Types.ObjectId) => {
   return machines;
 };
 
+const getUserNonConnectedGeneralMachineService = async (
+  uerId: Types.ObjectId,
+) => {
+  const machines = await Machine.find({
+    user: uerId,
+    sensorModulesAttached: { $size: 0 },
+    category: 'general-machine',
+  });
+  return machines;
+};
+
 const deleteMachineService = async (
   machineId: Types.ObjectId,
   userId: Types.ObjectId,
@@ -314,7 +325,7 @@ export const machineServices = {
   getMyWashingMachineService,
   getUserConnectedMachineService,
   getMyGeneralMachineService,
-  // getMachineService,
+  getUserNonConnectedGeneralMachineService,
   deleteMachineService,
   // changeStatusService,
   // addSensorService,

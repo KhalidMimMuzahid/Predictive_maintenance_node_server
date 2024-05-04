@@ -29,6 +29,10 @@ router.put(
 router.get('/washing-machine/user', machineController.getMyWashingMachine);
 router.get('/general-machine/user', machineController.getMyGeneralMachine);
 router.get(
+  '/general-machine/non-connected/user',
+  machineController.getUserNonConnectedGeneralMachine,
+);
+router.get(
   '/connected-machine/user',
   machineController.getUserConnectedMachine,
 );

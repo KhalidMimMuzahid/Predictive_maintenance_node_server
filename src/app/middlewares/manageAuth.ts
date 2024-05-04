@@ -14,7 +14,8 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
       pathname?.endsWith('sign-up') ||
       pathname?.endsWith('sign-in') ||
       pathname?.endsWith('add-sensor-data') ||
-      pathname?.endsWith('upload-photo')
+      pathname?.endsWith('upload-photo') ||
+      pathname?.endsWith('upload-image')
     ) {
       return next();
     } else {
