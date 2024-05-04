@@ -1,4 +1,21 @@
 import { Types } from 'mongoose';
+
+
+
+export type TMachineType = 'connected' | 'non-connected';
+
+export type TReservationType =
+  | 'all'
+  | 'on-demand'
+  | 'within-one-week'
+  | 'within-two-week'
+  | 'scheduled'
+  | 'rescheduled'
+  | 'pending'
+  | 'accepted'
+  | 'ongoing'
+  | 'completed';
+
 export type TProblem = {
   issues: string[]; // all issues title one by one
   problemDescription?: string;

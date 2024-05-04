@@ -39,7 +39,37 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
+
+  const reservationRequest: string = req?.query?.reservationRequest as string;
+
+  if (!reservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequest ais required to change status',
+    );
+  }
+  const results = await invoiceServices.changeStatusToCompleted({
+    user: auth?._id,
+    reservationRequest_id: reservationRequest,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'status has changed to completed',
+    data: results,
+  });
+});
 
 export const invoiceController = {
   addAdditionalProducts,
+  changeStatusToCompleted,
 };

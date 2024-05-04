@@ -35,7 +35,7 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>({
       required: true,
     },
     // date: { type: Date, required: true },
-    schedules: [{ type: Date }],
+    schedules: [{ type: String }],
   },
   invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },
   reservationRequestGroup: {

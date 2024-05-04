@@ -10,6 +10,12 @@ export const getTeamOfEngineers = async (teamOfEngineers_id: any) => {
   return teamOfEngineers;
 };
 
+export const getAllInvoicesOfReservationGroup = (
+  invoice: any,
+): mongoose.Types.ObjectId[] => {
+  return invoice.invoiceGroup?.invoices as mongoose.Types.ObjectId[];
+};
+
 export const isEngineerBelongsToThisTeam = async (
   invoiceGroup: any,
   user: mongoose.Types.ObjectId,
@@ -30,7 +36,7 @@ export const isEngineerBelongsToThisTeam = async (
     const isUserBelongsToThisTeam = teamOfEngineers.members.some(
       (each) => each.member.toString() === userEngineerData?._id?.toString(),
     );
-    console.log({ isUserBelongsToThisTeam });
+    // console.log({ isUserBelongsToThisTeam });
     return {
       isUserBelongsToThisTeam,
       serviceProviderEngineer: userEngineerData?._id,

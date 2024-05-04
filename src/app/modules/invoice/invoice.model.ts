@@ -48,7 +48,7 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
         },
       ],
       totalAmount: { type: Number, required: true, default: 0 },
-      isPaid: { type: Number, required: true, default: false },
+      isPaid: { type: Boolean, required: true, default: false },
     }),
     default: {
       products: [],
@@ -60,6 +60,7 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>({
   taskStatus: {
     type: String,
     enum: ['ongoing', 'completed', 'canceled'],
+    default: 'ongoing',
   },
 
   feedbackByUser: {
