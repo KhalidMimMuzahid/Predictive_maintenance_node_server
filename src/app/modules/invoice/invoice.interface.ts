@@ -1,7 +1,20 @@
 import { Types } from 'mongoose';
 import { TPostBiddingProcess } from '../reservationGroup/reservationGroup.interface';
 import { TIsDeleted } from '../common/common.interface';
+export type TAdditionalProduct = {
+  addedBy: Types.ObjectId; // ServiceProviderEngineer model
+  productName: string;
+  // quantity: number;
+  // promo:number // percentage of promo ; by default 0%   // is it the same of discount offer? what is actually a promo?
 
+  cost: {
+    price: number;
+    quantity: number;
+    tax?: number; // percentage of tax ; by default 0%
+    totalAmount: number;
+    // currency: string;
+  };
+};
 export type TInvoice = {
   invoiceNo: string; // customized unique number
 
@@ -13,19 +26,7 @@ export type TInvoice = {
   postBiddingProcess?: TPostBiddingProcess;
 
   additionalProducts: {
-    products: {
-      addedBy: Types.ObjectId; // ServiceProviderEngineer model
-      productName: string;
-      quantity: number;
-      // promo:number // percentage of promo ; by default 0%   // is it the same of discount offer? what is actually a promo?
-      tax: number; // percentage of tax ; by default 0%
-      price: {
-        amount: number;
-        quantity: number;
-        total: number;
-        // currency: string;
-      };
-    }[];
+    products: TAdditionalProduct[];
     totalAmount: number;
     isPaid?: boolean;
   };
