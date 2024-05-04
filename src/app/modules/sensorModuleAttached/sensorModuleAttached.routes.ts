@@ -26,4 +26,5 @@ router.get(
 //   sensorModuleAttachedControllers.addSensorData,
 // );
 
+router.get('/get-sensor-data', sensorModuleAttachedControllers.getSensorData);
 export const sensorModuleAttachedRoutes = router;
