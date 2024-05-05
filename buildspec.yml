@@ -10,9 +10,6 @@ phases:
   build:
     commands:
       - npm run build
-  post_build:
-    commands:
-      - node ./dist/server.js
 
 artifacts:
   files:
@@ -21,4 +18,5 @@ artifacts:
     - 'dist/**/*'
     - '.platform/**/*' # AWS Elastic Beanstalk configuration files
     - '.ebextensions/**/*' # AWS Elastic Beanstalk configuration files
+    - Procfile
   discard-paths: no
