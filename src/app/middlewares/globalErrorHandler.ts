@@ -4,7 +4,7 @@
 import { ErrorRequestHandler } from 'express';
 import { ZodError, ZodIssue } from 'zod';
 import { TErrorSources } from '../interface/error';
-import config from '../config';
+// import config from '../config';
 import handleZodError from '../errors/handleZodError';
 import handleValidationError from '../errors/handleValidationError';
 import handleCastError from '../errors/handleCastError';
@@ -74,7 +74,7 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     success: false,
     message,
     errorSources,
-    stack: config.NODE_ENV === 'development' ? error?.stack : null,
+    stack: process.env.NODE_ENV === 'development' ? error?.stack : null,
     error,
   });
 };

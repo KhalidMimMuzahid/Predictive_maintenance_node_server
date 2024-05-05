@@ -2,14 +2,14 @@
 import app from './app';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import config from './app/config';
+// import config from './app/config';
 import { Server } from 'http';
 let server: Server;
 async function main() {
   try {
-    await mongoose.connect(config.database_url as string);
-    server = app.listen(config.port, () => {
-      console.log(`Showa app listening on port ${config.port}`);
+    await mongoose.connect(process.env.SHOWA_DB_URL as string);
+    server = app.listen(process.env.PORT, () => {
+      console.log(`Showa app listening on port ${process.env.PORT}`);
     });
   } catch (error) {
     console.log(error);
