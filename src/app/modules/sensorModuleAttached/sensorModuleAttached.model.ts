@@ -1,5 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
-import { TSensorModuleAttached } from './sensorModuleAttached.interface';
+import {
+  TModule,
+  TSensorModuleAttached,
+} from './sensorModuleAttached.interface';
 
 const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>({
   sensorModule: { type: Schema.Types.ObjectId, ref: 'Sensor', required: true },
@@ -21,7 +24,16 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>({
     enum: ['module-1', 'module-2', 'module-3', 'module-4'],
     required: true,
   },
-  sensorData: [Schema.Types.Mixed],
+  sensorData: [
+    {
+      type: new mongoose.Schema<TModule>(
+        { vibration: [Number], temperature: [Number] },
+        {
+          timestamps: true,
+        },
+      ),
+    },
+  ],
 });
 
 export const SensorModuleAttached = mongoose.model<TSensorModuleAttached>(
