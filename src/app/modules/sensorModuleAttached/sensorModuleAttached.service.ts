@@ -108,6 +108,13 @@ const getAttachedSensorModulesByuser = async (userId: Types.ObjectId) => {
   return sensors;
 };
 
+const getAttachedSensorModulesByMachine = async (
+  machine_id: Types.ObjectId,
+) => {
+  const sensors = await SensorModuleAttached.find({ machine: machine_id }, { sensorData: { $slice: [-10, 10] } });
+  return sensors;
+};
+
 const getSensorDataFromDB = async ({
   macAddress,
   page,
@@ -199,6 +206,6 @@ export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB,
   addSensorDataInToDB,
   getAttachedSensorModulesByuser,
-  // addSensorDataInToDB
+  getAttachedSensorModulesByMachine,
   getSensorDataFromDB,
 };

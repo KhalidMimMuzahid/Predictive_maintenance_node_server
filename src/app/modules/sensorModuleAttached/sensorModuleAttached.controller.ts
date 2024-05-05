@@ -9,6 +9,7 @@ import {
   TSensorModuleAttached,
 } from './sensorModuleAttached.interface';
 import AppError from '../../errors/AppError';
+import { Types } from 'mongoose';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -81,6 +82,24 @@ const getAttachedSensorModulesByUser: RequestHandler = catchAsync(
   },
 );
 
+const getAttachedSensorModulesByMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const { machine_id } = req.query;
+    const result =
+      await sensorAttachedModuleServices.getAttachedSensorModulesByMachine(
+        new Types.ObjectId(machine_id as string),
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Attached sensor modules under this machine',
+      data: result,
+    });
+  },
+);
+
 const getSensorData: RequestHandler = catchAsync(async (req, res) => {
   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
@@ -119,4 +138,5 @@ export const sensorModuleAttachedControllers = {
   addSensorData,
   getSensorData,
   getAttachedSensorModulesByUser,
+  getAttachedSensorModulesByMachine,
 };

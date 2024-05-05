@@ -18,6 +18,11 @@ router.get(
   '/get-sensors-by-user',
   sensorModuleAttachedControllers.getAttachedSensorModulesByUser,
 );
+
+router.get(
+  '/get-sensors-by-machine',
+  sensorModuleAttachedControllers.getAttachedSensorModulesByMachine,
+);
 // router.patch(
 //   '/add-sensor-data',
 //   // validateRequest(
