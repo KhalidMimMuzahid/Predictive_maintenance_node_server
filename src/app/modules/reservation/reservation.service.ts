@@ -100,7 +100,12 @@ const createReservationRequestIntoDB = async ({
 };
 
 const getMyReservationsService = async (uid: string | Types.ObjectId) => {
-  const results = await ReservationRequest.find({ user: uid }).populate('user');
+  const results = await ReservationRequest.find({ user: uid })
+    .populate({
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .populate('machine');
 
   return results;
 };
@@ -113,7 +118,10 @@ const getMyReservationsByStatusService = async (
     user: uid,
     status: status,
   })
-    .populate('user')
+    .populate({
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
     .populate('machine');
 
   return results;
@@ -121,7 +129,10 @@ const getMyReservationsByStatusService = async (
 
 const getReservationsByStatusService = async (status: string) => {
   const results = await ReservationRequest.find({ status: status })
-    .populate('user')
+    .populate({
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
     .populate('machine')
     .sort({ createdAt: -1 });
 
