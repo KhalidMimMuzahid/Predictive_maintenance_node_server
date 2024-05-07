@@ -3,41 +3,46 @@ import { TInvoiceGroup } from './invoiceGroup.interface';
 import { PostBiddingProcessSchema } from '../reservationGroup/reservationGroup.model';
 import { IsDeletedSchema } from '../common/common.model';
 
-export const InvoiceGroupSchema: Schema<TInvoiceGroup> = new Schema({
-  invoiceGroupNo: { type: String, required: true },
+export const InvoiceGroupSchema: Schema<TInvoiceGroup> = new Schema(
+  {
+    invoiceGroupNo: { type: String, required: true },
 
-  reservationRequestGroup: {
-    type: Schema.Types.ObjectId,
-    ref: 'ReservationRequestGroup',
-    required: true,
-  },
+    reservationRequestGroup: {
+      type: Schema.Types.ObjectId,
+      ref: 'ReservationRequestGroup',
+      required: true,
+    },
 
-  invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
-  postBiddingProcess: {
-    type: PostBiddingProcessSchema,
-    required: true,
+    invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
+    postBiddingProcess: {
+      type: PostBiddingProcessSchema,
+      required: true,
+    },
+    taskAssignee: {
+      type: new Schema({
+        teamOfEngineers: {
+          type: Schema.Types.ObjectId,
+          required: true,
+          ref: 'TeamOfEngineers',
+        },
+        taskStatus: {
+          type: String,
+          enum: ['ongoing', 'completed', 'canceled'],
+          required: true,
+        },
+      }),
+      required: true,
+    },
+    isDeleted: {
+      type: IsDeletedSchema,
+      required: true,
+      default: { value: false },
+    },
   },
-  taskAssignee: {
-    type: new Schema({
-      teamOfEngineers: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'TeamOfEngineers',
-      },
-      taskStatus: {
-        type: String,
-        enum: ['ongoing', 'completed', 'canceled'],
-        required: true,
-      },
-    }),
-    required: true,
+  {
+    timestamps: true,
   },
-  isDeleted: {
-    type: IsDeletedSchema,
-    required: true,
-    default: { value: false },
-  },
-});
+);
 InvoiceGroupSchema.pre('find', function (next) {
   this.find({ 'isDeleted.value': { $ne: true } });
   next();
