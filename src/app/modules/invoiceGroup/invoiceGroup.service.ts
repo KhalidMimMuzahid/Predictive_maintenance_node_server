@@ -171,11 +171,14 @@ const assignReservationGroupToTeam = async ({
         'could not created invoice for all reservations, please try again',
       );
     }
+
     createdInvoiceGroup.invoices = createdInvoiceArray?.map(
       (each) => each?._id,
     );
 
-    const updatedInvoiceGroup = await createdInvoiceGroup.save();
+    const updatedInvoiceGroup = await createdInvoiceGroup.save({
+      session: session,
+    });
     if (!updatedInvoiceGroup?.invoices) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -184,7 +187,7 @@ const assignReservationGroupToTeam = async ({
     }
 
     resGroup.postBiddingProcess.invoiceGroup = updatedInvoiceGroup?._id;
-    const updatedResGroup = await resGroup.save();
+    const updatedResGroup = await resGroup.save({ session: session });
 
     if (!updatedResGroup?.postBiddingProcess?.invoiceGroup) {
       throw new AppError(
@@ -193,6 +196,29 @@ const assignReservationGroupToTeam = async ({
       );
     }
 
+    // now update those invoice _id to reservation request
+
+    const updatedDocs = [];
+
+    for (const item of createdInvoiceArray) {
+      // Find and update document, then push the updated document to the array
+      const updatedDoc = await ReservationRequest.findByIdAndUpdate(
+        item.reservationRequest,
+        { invoice: item._id },
+        { session: session, new: true },
+      );
+      updatedDocs.push(updatedDoc);
+    }
+
+    if (
+      updatedDocs?.length !== createdInvoiceArray?.length ||
+      updatedDocs?.some((each) => !each?.invoice)
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request invoice _id',
+      );
+    }
     const updatedReservationRequests = await ReservationRequest.updateMany(
       {
         _id: { $in: resGroup.reservationRequests },
@@ -215,6 +241,7 @@ const assignReservationGroupToTeam = async ({
         'could not updated reservation request status',
       );
     }
+
     await session.commitTransaction();
     await session.endSession();
 
