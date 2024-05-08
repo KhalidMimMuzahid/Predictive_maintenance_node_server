@@ -1,14 +1,50 @@
 /* eslint-disable no-console */
-import app from './app';
+import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-// import config from './app/config';
-import { Server } from 'http';
-let server: Server;
+import cors from 'cors';
+import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import notFoundErrorHandler from './app/middlewares/notFOund';
+import router from './app/routes/index';
+import { manageAuth } from './app/middlewares/manageAuth';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
+const app: Application = express();
+const server = createServer(app);
+
 async function main() {
   try {
+    const io = new Server(server, { cors: { origin: '*' } });
+
+    //parsers
+    app.use(express.json());
+    app.use(cors());
+
+    io.on('connection', (socket) => {
+      console.log(`${socket.id} socket just connected!`);
+      socket.on('disconnect', () => {
+        console.log('A socket disconnected');
+      });
+    });
+
+    app.use((req, res, next) => {
+      req.io = io;
+      next();
+    });
+
+    // application routes
+    app.use('/api/v2', manageAuth, router);
+
+    const showWelcome = (req: Request, res: Response) => {
+      res.status(200).json({ message: 'Welcome to Showa home' });
+    };
+    app.use('/', showWelcome);
+    app.use(globalErrorHandler);
+    app.use('*', notFoundErrorHandler);
+
     await mongoose.connect(process.env.SHOWA_DB_URL as string);
-    server = app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log(`Showa app listening on port ${process.env.PORT}`);
     });
   } catch (error) {

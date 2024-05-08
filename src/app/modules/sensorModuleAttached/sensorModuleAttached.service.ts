@@ -8,6 +8,7 @@ import {
 import { SensorModuleAttached } from './sensorModuleAttached.model';
 import { validateSensorData } from './sensorModuleAttached.utils';
 import { Types } from 'mongoose';
+import { Request } from 'express';
 
 const addSensorAttachedModuleIntoDB = async (
   macAddress: string,
@@ -57,9 +58,11 @@ const addSensorAttachedModuleIntoDB = async (
 const addSensorDataInToDB = async ({
   macAddress,
   sensorData,
+  req,
 }: {
   macAddress: string;
   sensorData: TModule;
+  req: Request;
 }) => {
   const sensorModuleAttached = await SensorModuleAttached.findOne(
     {
@@ -88,6 +91,8 @@ const addSensorDataInToDB = async ({
     );
   }
 
+  const now = new Date(Date.now());
+
   await SensorModuleAttached.findOneAndUpdate(
     {
       macAddress,
@@ -95,6 +100,8 @@ const addSensorDataInToDB = async ({
     { $push: { sensorData: sensorData } },
     { new: false },
   );
+
+  req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
 
   return sensorData;
 };
@@ -111,7 +118,10 @@ const getAttachedSensorModulesByuser = async (userId: Types.ObjectId) => {
 const getAttachedSensorModulesByMachine = async (
   machine_id: Types.ObjectId,
 ) => {
-  const sensors = await SensorModuleAttached.find({ machine: machine_id }, { sensorData: { $slice: [-10, 10] } });
+  const sensors = await SensorModuleAttached.find(
+    { machine: machine_id },
+    { sensorData: { $slice: [-10, 10] } },
+  );
   return sensors;
 };
 

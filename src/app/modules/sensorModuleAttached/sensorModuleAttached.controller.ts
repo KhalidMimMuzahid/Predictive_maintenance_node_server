@@ -55,6 +55,7 @@ const addSensorData: RequestHandler = catchAsync(async (req, res) => {
   const result = await sensorAttachedModuleServices.addSensorDataInToDB({
     macAddress,
     sensorData,
+    req,
   });
   // send response
   sendResponse(res, {
