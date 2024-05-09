@@ -109,7 +109,11 @@ const createReservationRequestGroup = async (reservationRequests: string[]) => {
   }
 };
 const allReservationsGroup = async () => {
-  const result = await ReservationRequestGroup.find({});
+  // reservationRequests
+  const result = await ReservationRequestGroup.find({}).populate({
+    path: 'reservationRequests',
+    options: { strictPopulate: false },
+  });
 
   return result?.map((each, i) => {
     return { ...each?._doc, groupName: `Group-${i + 1}` };
