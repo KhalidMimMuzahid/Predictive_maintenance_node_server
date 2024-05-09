@@ -28,7 +28,14 @@ router.put(
 
 router.get('/washing-machine/user', machineController.getMyWashingMachine);
 router.get('/general-machine/user', machineController.getMyGeneralMachine);
-// router.get('/:id', machineController.getMachine);
+router.get(
+  '/general-machine/non-connected/user',
+  machineController.getUserNonConnectedGeneralMachine,
+);
+router.get(
+  '/connected-machine/user',
+  machineController.getUserConnectedMachine,
+);
 router.delete('/', machineController.deleteMachine);
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);

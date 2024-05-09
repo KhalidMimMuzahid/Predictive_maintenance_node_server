@@ -9,6 +9,7 @@ import {
   TSensorModuleAttached,
 } from './sensorModuleAttached.interface';
 import AppError from '../../errors/AppError';
+import { Types } from 'mongoose';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -39,6 +40,9 @@ const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
 
 const addSensorData: RequestHandler = catchAsync(async (req, res) => {
   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
+  // const addSensorData: RequestHandler = catchAsync(async (req, res) => {
+  //   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  //   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
   const macAddress: string = req?.query?.macAddress as string;
   const sensorData: TModule = req?.body?.sensorData as TModule;
@@ -51,6 +55,7 @@ const addSensorData: RequestHandler = catchAsync(async (req, res) => {
   const result = await sensorAttachedModuleServices.addSensorDataInToDB({
     macAddress,
     sensorData,
+    req,
   });
   // send response
   sendResponse(res, {
@@ -60,9 +65,46 @@ const addSensorData: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getAttachedSensorModulesByUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const result =
+      await sensorAttachedModuleServices.getAttachedSensorModulesByuser(
+        auth._id,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensorModule has purchased successfully',
+      data: result,
+    });
+  },
+);
+
+const getAttachedSensorModulesByMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const { machine_id } = req.query;
+    const result =
+      await sensorAttachedModuleServices.getAttachedSensorModulesByMachine(
+        new Types.ObjectId(machine_id as string),
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Attached sensor modules under this machine',
+      data: result,
+    });
+  },
+);
+
 const getSensorData: RequestHandler = catchAsync(async (req, res) => {
   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
+  // addSensorData,
   const page = parseInt(req?.query?.page as string) || 1;
   const limit = parseInt(req?.query?.limit as string) || 10;
 
@@ -96,4 +138,6 @@ export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
   addSensorData,
   getSensorData,
+  getAttachedSensorModulesByUser,
+  getAttachedSensorModulesByMachine,
 };

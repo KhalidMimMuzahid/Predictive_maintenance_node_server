@@ -11,6 +11,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { Machine } from '../machine/machine.model';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+import S3 from 'aws-sdk/clients/s3';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -101,7 +102,12 @@ const createReservationRequestIntoDB = async ({
 };
 
 const getMyReservationsService = async (uid: string | Types.ObjectId) => {
-  const results = await ReservationRequest.find({ user: uid }).populate('user');
+  const results = await ReservationRequest.find({ user: uid })
+    .populate({
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .populate('machine');
 
   return results;
 };
@@ -113,14 +119,23 @@ const getMyReservationsByStatusService = async (
   const results = await ReservationRequest.find({
     user: uid,
     status: status,
-  }).populate('user');
+  })
+    .populate({
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .populate('machine');
 
   return results;
 };
 
 const getReservationsByStatusService = async (status: string) => {
   const results = await ReservationRequest.find({ status: status })
-    .populate('user')
+    .populate({
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .populate('machine')
     .sort({ createdAt: -1 });
 
   return results;
@@ -207,10 +222,33 @@ const getAllReservationsService = async ({
 
   return result;
 };
+const getSignedUrl = async (fileKey: string, fileType: string) => {
+  const client_s3 = new S3({
+    region: 'ap-northeast-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+    // s3ForcePathStyle: true,
+    signatureVersion: 'v4',
+  });
+
+  const fileParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileKey,
+    Expires: 600,
+    ContentType: fileType,
+    ACL: 'bucket-owner-full-control',
+  };
+
+  const url = await client_s3.getSignedUrlPromise('putObject', fileParams);
+
+  return { url };
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
   getMyReservationsByStatusService,
   getReservationsByStatusService,
   getAllReservationsService,
+  getSignedUrl,
 };

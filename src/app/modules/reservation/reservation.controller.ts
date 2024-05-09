@@ -76,7 +76,7 @@ const getMyReservations: RequestHandler = catchAsync(async (req, res) => {
 
 const getMyReservationsByStatus: RequestHandler = catchAsync(
   async (req, res) => {
-    const { status } = req.params;
+    const status: string = req.query.status as string;
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     const results = await reservationServices.getMyReservationsByStatusService(
       auth._id,
@@ -148,15 +148,18 @@ const getAllReservations: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-
-
-
-
-
-
-
-
-
+const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
+  // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const { fileKey, fileType } = req.body;
+  const result = await reservationServices.getSignedUrl(fileKey, fileType);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Reservation image uploaded successfully',
+    data: result,
+  });
+});
 
 export const reservationController = {
   createReservationRequest,
@@ -164,4 +167,5 @@ export const reservationController = {
   getMyReservationsByStatus,
   getReservationsByStatus,
   getAllReservations,
+  uploadRequestImage,
 };

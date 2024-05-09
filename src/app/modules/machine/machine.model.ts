@@ -4,7 +4,7 @@ import { TMachine } from './machine.interface';
 
 export const MachineSchema: Schema = new Schema<TMachine>(
   {
-    machineNo: { type: String, required: true, unique: true },
+    machineNo: { type: String, required: true },
     status: { type: String, enum: ['abnormal', 'normal'], required: true },
     packageStatus: {
       type: String,
