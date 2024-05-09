@@ -120,6 +120,7 @@ const allReservationsGroup = async () => {
   });
 
   return result?.map((each, i) => {
+    // @ts-ignore
     return { ...each?._doc, groupName: `Group-${i + 1}` };
   });
 };
