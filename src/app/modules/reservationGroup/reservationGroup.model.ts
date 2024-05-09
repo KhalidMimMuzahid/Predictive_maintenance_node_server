@@ -27,6 +27,7 @@ const ReservationRequestGroupSchema: Schema =
   new Schema<TReservationRequestGroup>(
     {
       groupId: { type: String, required: true },
+      groupName: { type: String, required: true, default: 'no-title' },
       reservationRequests: [
         { type: Schema.Types.ObjectId, ref: 'ReservationRequest' },
       ],

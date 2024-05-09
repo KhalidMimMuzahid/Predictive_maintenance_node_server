@@ -10,7 +10,10 @@ import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import { ReservationRequest } from '../reservation/reservation.model';
 
-const createReservationRequestGroup = async (reservationRequests: string[]) => {
+const createReservationRequestGroup = async (
+  reservationRequests: string[],
+  groupName: string,
+) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -55,6 +58,7 @@ const createReservationRequestGroup = async (reservationRequests: string[]) => {
             (each) => new mongoose.Types.ObjectId(each),
           ),
           groupId: groupId,
+          groupName: groupName,
         },
       ],
       { session: session },

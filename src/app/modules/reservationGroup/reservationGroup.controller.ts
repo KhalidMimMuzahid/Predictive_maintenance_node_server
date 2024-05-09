@@ -13,11 +13,19 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
   const reservationRequests: string[] = req?.body
-    ?.reservationRequests as string[]; // array of reservation request ids
-  const result =
-    await reservationGroupServices.createReservationRequestGroup(
-      reservationRequests,
+    ?.reservationRequests as string[];
+  const groupName: string = req?.body?.groupName as string; // array of reservation request ids
+
+  if (!reservationRequests?.length || !groupName) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequests and groupName are required to make group',
     );
+  }
+  const result = await reservationGroupServices.createReservationRequestGroup(
+    reservationRequests,
+    groupName,
+  );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
