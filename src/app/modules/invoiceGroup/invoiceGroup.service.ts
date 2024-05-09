@@ -240,7 +240,7 @@ const assignReservationGroupToTeam = async ({
         httpStatus.BAD_REQUEST,
         'could not updated reservation request status',
       );
-    }         
+    }
 
     await session.commitTransaction();
     await session.endSession();
@@ -252,6 +252,7 @@ const assignReservationGroupToTeam = async ({
     throw error;
   }
 };
+
 export const invoiceGroupServices = {
   assignReservationGroupToTeam,
 };

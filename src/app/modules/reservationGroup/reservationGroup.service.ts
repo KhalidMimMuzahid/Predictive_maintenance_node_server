@@ -108,7 +108,13 @@ const createReservationRequestGroup = async (reservationRequests: string[]) => {
     throw error;
   }
 };
+const allReservationsGroup = async () => {
+  const result = await ReservationRequestGroup.find({});
 
+  return result?.map((each, i) => {
+    return { ...each?._doc, groupName: `Group-${i + 1}` };
+  });
+};
 const addBid = async ({
   reservationRequestGroup_id,
   biddingUser,
@@ -353,4 +359,5 @@ export const reservationGroupServices = {
   addBid,
   selectBiddingWinner,
   sendReservationGroupToBranch,
+  allReservationsGroup,
 };

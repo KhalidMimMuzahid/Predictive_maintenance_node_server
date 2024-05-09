@@ -7,4 +7,5 @@ router.post(
   invoiceGroupController.assignReservationGroupToTeam,
 );
 
+
 export const invoiceGroupRoutes = router;

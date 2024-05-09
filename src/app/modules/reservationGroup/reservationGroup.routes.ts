@@ -20,6 +20,10 @@ router.post(
   validateRequest(reservationGroupValidation.createReservationGroupSchema),
   reservationGroupController.createReservationGroup,
 );
+router.get(
+  '/all-reservations-group',
+  reservationGroupController.allReservationsGroup,
+);
 router.patch(
   '/add-bid',
   validateRequest(reservationGroupValidation.addBidSchema),

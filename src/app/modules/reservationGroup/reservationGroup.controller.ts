@@ -27,6 +27,24 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const allReservationsGroup: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+
+  const results = await reservationGroupServices.allReservationsGroup();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation groups are retrieved successfully',
+    data: results,
+  });
+});
 const addBid: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -147,6 +165,7 @@ const sendReservationGroupToBranch: RequestHandler = catchAsync(
 
 export const reservationGroupController = {
   createReservationGroup,
+  allReservationsGroup,
   addBid,
   selectBiddingWinner,
   sendReservationGroupToBranch,
