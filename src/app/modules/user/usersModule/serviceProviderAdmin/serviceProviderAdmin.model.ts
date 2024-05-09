@@ -2,27 +2,32 @@ import mongoose, { Schema } from 'mongoose';
 import { TServiceProviderAdmin } from './serviceProviderAdmin.interface';
 import { IsDeletedSchema } from '../../../common/common.model';
 
-const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    name: {
+      type: { firstName: { type: String }, lastName: { type: String } },
+      required: true,
+    },
+    serviceProviderCompany: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceProviderCompany',
+      // required: true,
+    },
+    isDeleted: {
+      type: IsDeletedSchema,
+      required: true,
+      default: { value: false },
+    },
   },
-  name: {
-    type: { firstName: { type: String }, lastName: { type: String } },
-    required: true,
+  {
+    timestamps: true,
   },
-  serviceProviderCompany: {
-    type: Schema.Types.ObjectId,
-    ref: 'ServiceProviderCompany',
-    // required: true,
-  },
-  isDeleted: {
-    type: IsDeletedSchema,
-    required: true,
-    default: { value: false },
-  },
-});
+);
 ServiceProviderAdminSchema.virtual('fullName').get(function () {
   return this?.name?.firstName + ' ' + this?.name?.lastName;
 });

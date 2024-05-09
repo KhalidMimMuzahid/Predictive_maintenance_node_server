@@ -11,6 +11,7 @@ import { getServiceProviderBranchForUser_EngineerAndManager } from './invoiceGro
 import { TInvoice } from '../invoice/invoice.interface';
 import { TReservationRequest } from '../reservation/reservation.interface';
 import { Invoice } from '../invoice/invoice.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 
 const assignReservationGroupToTeam = async ({
   user,
@@ -170,11 +171,14 @@ const assignReservationGroupToTeam = async ({
         'could not created invoice for all reservations, please try again',
       );
     }
+
     createdInvoiceGroup.invoices = createdInvoiceArray?.map(
       (each) => each?._id,
     );
 
-    const updatedInvoiceGroup = await createdInvoiceGroup.save();
+    const updatedInvoiceGroup = await createdInvoiceGroup.save({
+      session: session,
+    });
     if (!updatedInvoiceGroup?.invoices) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -183,7 +187,7 @@ const assignReservationGroupToTeam = async ({
     }
 
     resGroup.postBiddingProcess.invoiceGroup = updatedInvoiceGroup?._id;
-    const updatedResGroup = await resGroup.save();
+    const updatedResGroup = await resGroup.save({ session: session });
 
     if (!updatedResGroup?.postBiddingProcess?.invoiceGroup) {
       throw new AppError(
@@ -191,6 +195,53 @@ const assignReservationGroupToTeam = async ({
         'could not updated reservation Group for postBiddingProcess?.invoiceGroup, please try again',
       );
     }
+
+    // now update those invoice _id to reservation request
+
+    const updatedDocs = [];
+
+    for (const item of createdInvoiceArray) {
+      // Find and update document, then push the updated document to the array
+      const updatedDoc = await ReservationRequest.findByIdAndUpdate(
+        item.reservationRequest,
+        { invoice: item._id },
+        { session: session, new: true },
+      );
+      updatedDocs.push(updatedDoc);
+    }
+
+    if (
+      updatedDocs?.length !== createdInvoiceArray?.length ||
+      updatedDocs?.some((each) => !each?.invoice)
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request invoice _id',
+      );
+    }
+    const updatedReservationRequests = await ReservationRequest.updateMany(
+      {
+        _id: { $in: resGroup.reservationRequests },
+      },
+
+      {
+        status: 'ongoing',
+      },
+      {
+        new: true,
+        session: session,
+      },
+    );
+    if (
+      updatedReservationRequests?.modifiedCount !==
+      resGroup.reservationRequests?.length
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request status',
+      );
+    }
+
     await session.commitTransaction();
     await session.endSession();
 
@@ -201,6 +252,7 @@ const assignReservationGroupToTeam = async ({
     throw error;
   }
 };
+
 export const invoiceGroupServices = {
   assignReservationGroupToTeam,
 };

@@ -10,5 +10,9 @@ router.patch(
   validateRequest(invoiceValidation.addAdditionalProductValidationSchema),
   invoiceController.addAdditionalProducts,
 );
+router.patch(
+  '/change-status-to-completed',
+  invoiceController.changeStatusToCompleted,
+);
 
 export const invoiceRoutes = router;

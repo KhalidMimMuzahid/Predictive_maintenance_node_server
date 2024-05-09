@@ -111,7 +111,17 @@ const createShowaUserIntoDB = async (
     throw error;
   }
 };
+const getShowaUserFromDB = async (showaUser_id: string) => {
+  const showaUser = await ShowaUser.findById(showaUser_id);
+  if (!showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no user founded with this showaUser',
+    );
+  }
 
+  return showaUser;
+};
 const updateAddress = async (uid: string, addressPayload: TAddress) => {
   const user = await User.findOne({ uid });
   if (!user) {
@@ -189,6 +199,7 @@ const getSignedUrl = async (fileKey: string, fileType: string) => {
 
 export const showaUserServices = {
   createShowaUserIntoDB,
+  getShowaUserFromDB,
   updateAddress,
   getSignedUrl,
   updateProfile,

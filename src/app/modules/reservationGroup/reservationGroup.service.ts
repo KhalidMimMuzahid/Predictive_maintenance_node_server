@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { ReservationRequestGroup } from './reservationGroup.model';
 import AppError from '../../errors/AppError';
-import { ReservationRequest } from '../reservation/reservation.model';
 import httpStatus from 'http-status';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { TRole } from '../user/user.interface';
@@ -9,8 +8,12 @@ import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/s
 import { TPostBiddingProcess } from './reservationGroup.interface';
 import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 
-const createReservationRequestGroup = async (reservationRequests: string[]) => {
+const createReservationRequestGroup = async (
+  reservationRequests: string[],
+  groupName: string,
+) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -55,6 +58,7 @@ const createReservationRequestGroup = async (reservationRequests: string[]) => {
             (each) => new mongoose.Types.ObjectId(each),
           ),
           groupId: groupId,
+          groupName: groupName,
         },
       ],
       { session: session },
@@ -108,7 +112,17 @@ const createReservationRequestGroup = async (reservationRequests: string[]) => {
     throw error;
   }
 };
+const allReservationsGroup = async () => {
+  // reservationRequests
+  const result = await ReservationRequestGroup.find({}).populate({
+    path: 'reservationRequests',
+    options: { strictPopulate: false },
+  });
 
+  return result?.map((each, i) => {
+    return { ...each?._doc, groupName: `Group-${i + 1}` };
+  });
+};
 const addBid = async ({
   reservationRequestGroup_id,
   biddingUser,
@@ -206,7 +220,7 @@ const selectBiddingWinner = async ({
   if (!winner) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'nod bid found with this bid_id for this reservation Group',
+      'no bid found with this bid_id for this reservation Group',
     );
   }
   let postBiddingProcess: Partial<TPostBiddingProcess> = {};
@@ -215,13 +229,54 @@ const selectBiddingWinner = async ({
     biddingUser: winner?.biddingUser,
     serviceProviderCompany: winner?.serviceProviderCompany,
   };
-  const updatedReservationRequestGroup =
-    await ReservationRequestGroup.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(reservationRequestGroup_id),
-      { postBiddingProcess },
-      { new: true },
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const updatedReservationRequestGroup =
+      await ReservationRequestGroup.findByIdAndUpdate(
+        new mongoose.Types.ObjectId(reservationRequestGroup_id),
+        { postBiddingProcess },
+        { new: true, session: session },
+      );
+
+    if (!updatedReservationRequestGroup) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request group',
+      );
+    }
+    const updatedReservationRequests = await ReservationRequest.updateMany(
+      {
+        _id: { $in: resGroup.reservationRequests },
+      },
+
+      {
+        status: 'accepted',
+      },
+      {
+        new: true,
+        session: session,
+      },
     );
-  return updatedReservationRequestGroup;
+    if (
+      updatedReservationRequests?.modifiedCount !==
+      resGroup.reservationRequests?.length
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not updated reservation request status',
+      );
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return updatedReservationRequestGroup;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 const sendReservationGroupToBranch = async ({
   user,
@@ -312,4 +367,5 @@ export const reservationGroupServices = {
   addBid,
   selectBiddingWinner,
   sendReservationGroupToBranch,
+  allReservationsGroup,
 };

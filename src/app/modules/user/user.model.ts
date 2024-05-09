@@ -12,50 +12,55 @@ const roles = [
   'serviceProviderBranchManager',
   'serviceProviderSupportStuff',
 ];
-const UserSchema = new Schema<TUser, UserModel>({
-  uid: { type: String, required: true, unique: true },
-  // uniqueNumberId: { type: String },
+const UserSchema = new Schema<TUser, UserModel>(
+  {
+    uid: { type: String, required: true, unique: true },
+    // uniqueNumberId: { type: String },
 
-  email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
 
-  role: {
-    type: String,
-    required: true,
-    enum: roles,
-    default: 'showaUser',
-  },
-  wallet: { type: Schema.Types.ObjectId, ref: 'Wallet' },
+    role: {
+      type: String,
+      required: true,
+      enum: roles,
+      default: 'showaUser',
+    },
+    wallet: { type: Schema.Types.ObjectId, ref: 'Wallet' },
 
-  status: {
-    type: String,
-    enum: ['in-progress', 'approved', 'suspended'],
-    required: true,
-    default: 'approved',
-  }, // only showa-admin can change the status
+    status: {
+      type: String,
+      enum: ['in-progress', 'approved', 'suspended'],
+      required: true,
+      default: 'approved',
+    }, // only showa-admin can change the status
 
-  showaUser: {
-    type: Schema.Types.ObjectId,
-    ref: 'ShowaUser',
-  },
-  serviceProviderAdmin: {
-    type: Schema.Types.ObjectId,
-    ref: 'ServiceProviderAdmin',
-  },
+    showaUser: {
+      type: Schema.Types.ObjectId,
+      ref: 'ShowaUser',
+    },
+    serviceProviderAdmin: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceProviderAdmin',
+    },
 
-  serviceProviderBranchManager: {
-    type: Schema.Types.ObjectId,
-    ref: 'ServiceProviderBranchManager',
+    serviceProviderBranchManager: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceProviderBranchManager',
+    },
+    serviceProviderEngineer: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceProviderEngineer',
+    },
+    isDeleted: {
+      type: IsDeletedSchema,
+      required: true,
+      default: { value: false },
+    },
   },
-  serviceProviderEngineer: {
-    type: Schema.Types.ObjectId,
-    ref: 'ServiceProviderEngineer',
+  {
+    timestamps: true,
   },
-  isDeleted: {
-    type: IsDeletedSchema,
-    required: true,
-    default: { value: false },
-  },
-});
+);
 
 // methods
 UserSchema.statics.isUidExists = async (uid: string) => {

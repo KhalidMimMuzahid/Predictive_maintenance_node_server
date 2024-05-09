@@ -12,7 +12,6 @@ export type TInvoiceGroup = {
     teamOfEngineers: Types.ObjectId;
     taskStatus: 'ongoing' | 'completed' | 'canceled';
   };
-
   //   report: {
   //     // maintenance report
   //     cost: { totalCost: number }; // more field can be added

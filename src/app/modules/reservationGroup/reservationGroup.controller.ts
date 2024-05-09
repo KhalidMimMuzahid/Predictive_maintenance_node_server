@@ -13,11 +13,19 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
   const reservationRequests: string[] = req?.body
-    ?.reservationRequests as string[]; // array of reservation request ids
-  const result =
-    await reservationGroupServices.createReservationRequestGroup(
-      reservationRequests,
+    ?.reservationRequests as string[];
+  const groupName: string = req?.body?.groupName as string; // array of reservation request ids
+
+  if (!reservationRequests?.length || !groupName) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequests and groupName are required to make group',
     );
+  }
+  const result = await reservationGroupServices.createReservationRequestGroup(
+    reservationRequests,
+    groupName,
+  );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -27,6 +35,24 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const allReservationsGroup: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+
+  const results = await reservationGroupServices.allReservationsGroup();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation groups are retrieved successfully',
+    data: results,
+  });
+});
 const addBid: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -81,7 +107,7 @@ const selectBiddingWinner: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'service provider company has selected as winner successfully',
+    message: 'Service provider company has selected as winner successfully',
     data: results,
   });
 });
@@ -147,6 +173,7 @@ const sendReservationGroupToBranch: RequestHandler = catchAsync(
 
 export const reservationGroupController = {
   createReservationGroup,
+  allReservationsGroup,
   addBid,
   selectBiddingWinner,
   sendReservationGroupToBranch,

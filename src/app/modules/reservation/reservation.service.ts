@@ -1,7 +1,9 @@
 import { Types } from 'mongoose';
 import {
+  TMachineType,
   TProblem,
   TReservationRequest,
+  TReservationType,
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
@@ -139,6 +141,87 @@ const getReservationsByStatusService = async (status: string) => {
   return results;
 };
 
+const getAllReservationsService = async ({
+  machineType,
+  reservationType,
+}: {
+  machineType: TMachineType;
+  reservationType: TReservationType;
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {};
+  if (machineType === 'connected') {
+    if (reservationType === 'rescheduled') {
+      const result = await ReservationRequest.aggregate([
+        {
+          $match: {
+            isSensorConnected: true,
+            'schedule.schedules': { $exists: true },
+          },
+        },
+        {
+          $addFields: {
+            friendsCount: { $size: '$schedule.schedules' },
+          },
+        },
+        {
+          $match: {
+            friendsCount: { $gt: 1 },
+          },
+        },
+      ]);
+      return result;
+    }
+    filterQuery['isSensorConnected'] = true;
+  } else if (machineType === 'non-connected') {
+    if (reservationType === 'rescheduled') {
+      const result = await ReservationRequest.aggregate([
+        {
+          $match: {
+            isSensorConnected: false,
+            'schedule.schedules': { $exists: true },
+          },
+        },
+        {
+          $addFields: {
+            friendsCount: { $size: '$schedule.schedules' },
+          },
+        },
+        {
+          $match: {
+            friendsCount: { $gt: 1 },
+          },
+        },
+      ]);
+      return result;
+    }
+    filterQuery['isSensorConnected'] = false;
+  }
+
+  if (reservationType === 'all') {
+    //do nothing
+  } else if (reservationType === 'on-demand') {
+    filterQuery['schedule.category'] = 'on-demand';
+  } else if (reservationType === 'within-one-week') {
+    filterQuery['schedule.category'] = 'within-one-week';
+  } else if (reservationType === 'within-two-week') {
+    filterQuery['schedule.category'] = 'within-two-week';
+  } else if (reservationType === 'scheduled') {
+    filterQuery['schedule.schedules'] = { $size: 1 }; // for rescheduled; we handle it above
+  } else if (reservationType === 'pending') {
+    filterQuery['status'] = 'pending';
+  } else if (reservationType === 'accepted') {
+    filterQuery['status'] = 'accepted';
+  } else if (reservationType === 'ongoing') {
+    filterQuery['status'] = 'ongoing';
+  } else if (reservationType === 'completed') {
+    filterQuery['status'] = 'completed';
+  }
+
+  const result = await ReservationRequest.find(filterQuery).populate('user');
+
+  return result;
+};
 const getSignedUrl = async (fileKey: string, fileType: string) => {
   const client_s3 = new S3({
     region: 'ap-northeast-1',
@@ -166,5 +249,6 @@ export const reservationServices = {
   getMyReservationsService,
   getMyReservationsByStatusService,
   getReservationsByStatusService,
+  getAllReservationsService,
   getSignedUrl,
 };

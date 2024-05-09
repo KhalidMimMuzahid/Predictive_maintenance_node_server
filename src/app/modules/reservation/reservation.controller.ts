@@ -6,7 +6,13 @@ import { reservationServices } from './reservation.service';
 import { TAuth } from '../../interface/error';
 import AppError from '../../errors/AppError';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
-import { TProblem, TSchedule } from './reservation.interface';
+import {
+  TMachineType,
+  TProblem,
+  TReservationType,
+  TSchedule,
+} from './reservation.interface';
+import { machineTypeArray, reservationTypeArray } from './reservation.const';
 
 const createReservationRequest: RequestHandler = catchAsync(
   async (req, res) => {
@@ -98,6 +104,49 @@ const getReservationsByStatus: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const getAllReservations: RequestHandler = catchAsync(async (req, res) => {
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const machineType: TMachineType = req?.query?.machineType as TMachineType;
+  const reservationType: TReservationType = req?.query
+    ?.reservationType as TReservationType;
+  if (!machineTypeArray.some((each) => each === machineType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "machine type must be 'connected' or 'non-connected",
+    );
+  }
+
+  if (!reservationTypeArray.some((each) => each === reservationType)) {
+    //
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `reservationType must be any of ${reservationTypeArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+  });
+  const results = await reservationServices.getAllReservationsService({
+    machineType,
+    reservationType,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'successfully retrieve all reservations',
+    data: results,
+  });
+});
 
 const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -117,5 +166,6 @@ export const reservationController = {
   getMyReservations,
   getMyReservationsByStatus,
   getReservationsByStatus,
+  getAllReservations,
   uploadRequestImage,
 };

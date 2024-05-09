@@ -14,7 +14,7 @@ export type TAdditionalProduct = {
     totalAmount: number;
     // currency: string;
   };
-};
+};   
 export type TInvoice = {
   invoiceNo: string; // customized unique number
 
