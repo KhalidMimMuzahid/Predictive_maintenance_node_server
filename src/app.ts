@@ -16,10 +16,7 @@ app.use(express.json());
 app.use(cors());
 
 io.on('connection', (socket) => {
-  console.log(`${socket.id} socket just connected!`);
-  socket.on('disconnect', () => {
-    console.log('A socket disconnected');
-  });
+  socket.on('disconnect', () => {});
 });
 
 app.use((req, res, next) => {
