@@ -107,7 +107,7 @@ const selectBiddingWinner: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'service provider company has selected as winner successfully',
+    message: 'Service provider company has selected as winner successfully',
     data: results,
   });
 });
