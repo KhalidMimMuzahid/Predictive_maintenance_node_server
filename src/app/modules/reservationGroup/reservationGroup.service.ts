@@ -112,16 +112,34 @@ const createReservationRequestGroup = async (
     throw error;
   }
 };
+
+
+// biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)
+// serviceProviderCompany
+
+
 const allReservationsGroup = async () => {
   // reservationRequests
-  const result = await ReservationRequestGroup.find({}).populate({
-    path: 'reservationRequests',
-    options: { strictPopulate: false },
-  });
+  const result = await ReservationRequestGroup.find({}).populate([
+    {
+      path: 'reservationRequests',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'allBids.biddingUser',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'allBids.serviceProviderCompany',
+      options: { strictPopulate: false },
+    },
+  ]);
 
-  return result?.map((each, i) => {
-    return { ...each?._doc, groupName: `Group-${i + 1}` };
-  });
+  // return result?.map((each, i) => {
+  //   return { ...each?._doc, groupName: `Group-${i + 1}` };
+  // });
+
+  return result;
 };
 const addBid = async ({
   reservationRequestGroup_id,

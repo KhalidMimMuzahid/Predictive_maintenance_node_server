@@ -5,7 +5,7 @@ const router: Router = express.Router();
 
 router.post('/add-sensor-module', sensorModuleControllers.addSensorModule);
 router.get(
-  '/get-in-stock-sensor-module',
-  sensorModuleControllers.getInstockSensorModules,
+  '/get-all-sensor-module',
+  sensorModuleControllers.getAllSensorModules,
 );
 export const sensorModuleRoutes = router;

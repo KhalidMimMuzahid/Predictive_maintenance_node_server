@@ -20,7 +20,6 @@ export type TReservationRequestGroup = {
   allBids: {
     _id: Types.ObjectId; // mongoose will generate this _id, we no need to think about this
     biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)
-    // bidder: Types.ObjectId; // objectId  of ServiceProviderCompany or ServiceProviderBranch or what ?
     serviceProviderCompany: Types.ObjectId; // objectId  of ServiceProviderCompany
     biddingAmount: number; // price for the bid
   }[];

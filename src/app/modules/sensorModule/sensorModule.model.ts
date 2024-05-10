@@ -11,7 +11,7 @@ export const SensorModuleSchema = new Schema<TSensorModule, SensorModuleModel>(
     },
     name: { type: String, required: true },
     macAddress: { type: String, unique: true, required: true },
-    // price: { type: Number, required: true },
+    price: { type: Number, required: true },
     status: { type: String, enum: ['in-stock', 'sold-out'], required: true },
     moduleType: {
       type: String,
@@ -36,6 +36,21 @@ SensorModuleSchema.pre('findOne', function (next) {
   this.find({ 'isDeleted.value': { $ne: true } });
   next();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 SensorModuleSchema.statics.isMacAddressExists = async (macAddress: string) => {
   const existingSensorModule = SensorModule.findOne({ macAddress });
   return existingSensorModule;
