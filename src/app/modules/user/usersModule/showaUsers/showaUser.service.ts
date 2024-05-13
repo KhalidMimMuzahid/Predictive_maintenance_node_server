@@ -196,10 +196,27 @@ const getSignedUrl = async (fileKey: string, fileType: string) => {
 
   return { url };
 };
+const getShowaUserBy_user = async (user: string) => {
+  const showaUser = await ShowaUser.findOne(
+    {
+      user: new mongoose.Types.ObjectId(user),
+    },
 
+    { name: 1, email: 1, phone: 1 },
+  );
+  if (!showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no showaUser founded with this user',
+    );
+  }
+
+  return showaUser;
+};
 export const showaUserServices = {
   createShowaUserIntoDB,
   getShowaUserFromDB,
+  getShowaUserBy_user,
   updateAddress,
   getSignedUrl,
   updateProfile,

@@ -73,14 +73,17 @@ const getUserBy_id = async (_id: string) => {
       path: 'showaUser',
       options: { strictPopulate: false },
     },
+
     {
       path: 'showaAdmin',
       options: { strictPopulate: false },
     },
+
     {
       path: 'showaSubAdmin',
       options: { strictPopulate: false },
     },
+
     {
       path: 'serviceProviderAdmin',
       options: { strictPopulate: false },

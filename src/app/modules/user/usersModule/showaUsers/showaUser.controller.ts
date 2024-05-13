@@ -79,9 +79,31 @@ const getShowaUser: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getShowaUserBy_user: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+  const user = req?.query?.user as string;
+  if (!user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'user is required to get customer information',
+    );
+  }
+  const result = await showaUserServices.getShowaUserBy_user(user);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Showa user address updated successfully',
+    data: result,
+  });
+});
 export const showaUserControllers = {
   createShowaUser,
   getShowaUser,
+  getShowaUserBy_user,
   updateAddress,
   uploadProfilePhoto,
   updateProfile,
