@@ -59,6 +59,43 @@ const addSensorConnectedMachine: RequestHandler = catchAsync(
     });
   },
 );
+const addSensorModuleInToMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    const { machine_id } = req.query;
+    const sensorModuleMacAddress: string = req.query.macAddress as string;
+    if (!sensorModuleMacAddress) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'macAddress is required for adding sensor connected machine',
+      );
+    }
+
+    const sensorModuleAttached: Partial<TSensorModuleAttached> =
+      req?.body?.sensorModuleAttached;
+    sensorModuleAttached.user = auth?._id;
+
+    if (!machine_id) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'machine_id and attachedSensorModuleAttached_id must be provided to add sensor to machine',
+      );
+    }
+    const result = await machineServices.addModuleToMachineInToDB(
+      sensorModuleMacAddress,
+      new Types.ObjectId(machine_id as string),
+      sensorModuleAttached,
+    );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensor has been added to machine successfully',
+      data: result,
+    });
+  },
+);
 const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -214,6 +251,7 @@ const deleteMachine: RequestHandler = catchAsync(async (req, res) => {
 export const machineController = {
   addSensorNonConnectedMachine,
   addSensorConnectedMachine,
+  addSensorModuleInToMachine,
   addSensorAttachedModuleInToMachine,
   updateMachinePackageStatus,
   getMyWashingMachine,

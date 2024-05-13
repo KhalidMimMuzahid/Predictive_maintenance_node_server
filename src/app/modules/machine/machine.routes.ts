@@ -17,6 +17,11 @@ router.post(
 );
 
 router.patch(
+  '/add-sensor-module-to-machine',
+  machineController.addSensorModuleInToMachine,
+);
+
+router.patch(
   '/add-sensor-module-attached-to-machine',
   machineController.addSensorAttachedModuleInToMachine,
 );
