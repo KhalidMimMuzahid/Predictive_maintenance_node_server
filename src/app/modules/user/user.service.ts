@@ -128,6 +128,10 @@ const getAllShowaCustomersFromDB = async () => {
       path: 'showaUser',
       options: { strictPopulate: false },
     },
+    {
+      path: 'wallet',
+      options: { strictPopulate: false },
+    },
   ]);
 
   return showaCustomers;
