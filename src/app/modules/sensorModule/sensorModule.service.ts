@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
-import { TSensorModule } from './sensorModule.interface';
+import { TSensorModule, TStatus } from './sensorModule.interface';
 import { SensorModule } from './sensorModule.model';
 
 const addSensorModuleIntoDB = async (sensorModule: TSensorModule) => {
@@ -19,8 +19,12 @@ const addSensorModuleIntoDB = async (sensorModule: TSensorModule) => {
 
   return createdSensorModule;
 };
-const getAllSensorModules = async () => {
-  const sensors = await SensorModule.find({ status: 'in-stock' });
+const getAllSensorModules = async (status: TStatus) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {};
+  if (status) filterQuery['status'] = status;
+  const sensors = await SensorModule.find(filterQuery);
+
   return sensors;
 };
 export const sensorModuleServices = {
