@@ -10,7 +10,11 @@ router.post(
   validateRequest(showaUserValidation.userCreateValidationSchema),
   showaUserControllers.createShowaUser,
 );
+
+
+
 router.get('/get-showa-user', showaUserControllers.getShowaUser);
+router.get('/get-showa-user-by-user', showaUserControllers.getShowaUserBy_user);
 
 router.patch('/address', showaUserControllers.updateAddress);
 router.put('/update-profile', showaUserControllers.updateProfile);

@@ -77,7 +77,7 @@ const getAttachedSensorModulesByUser: RequestHandler = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'sensorModule has purchased successfully',
+      message: 'sensorModules are retrieved successfully',
       data: result,
     });
   },
@@ -134,10 +134,34 @@ const getSensorData: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getSensorModuleAttachedByMacAddress: RequestHandler = catchAsync(
+  async (req, res) => {
+    const macAddress: string = req?.query?.macAddress as string;
+    if (!macAddress) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'macAddress is required to to get sensor module attached data',
+      );
+    }
+    const result =
+      await sensorAttachedModuleServices.getSensorModuleAttachedByMacAddress(
+        macAddress,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensor module data has retrieved successfully',
+      data: result,
+    });
+  },
+);
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
   addSensorData,
   getSensorData,
   getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,
+  getSensorModuleAttachedByMacAddress,
 };

@@ -7,10 +7,9 @@ const validateModuleData = async (sensorData: any, schema: AnyZodObject) => {
   try {
     //validation check
     //if everything allright then next() -->
-
     const result = await schema.safeParseAsync(sensorData);
-
     return result.success;
+    // return result;
   } catch (error) {
     return false;
   }
@@ -35,11 +34,13 @@ export const validateSensorData = async ({
       sensorDataValidationSchema.moduleTwoSchema,
     );
   } else if (moduleType === 'module-3') {
+    console.log('3333333');
     return await validateModuleData(
       sensorData,
       sensorDataValidationSchema.moduleThreeSchema,
     );
   } else if (moduleType === 'module-4') {
+    console.log('4444444444444444');
     return await validateModuleData(
       sensorData,
       sensorDataValidationSchema.moduleFourSchema,

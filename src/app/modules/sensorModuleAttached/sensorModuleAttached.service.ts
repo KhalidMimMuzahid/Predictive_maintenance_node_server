@@ -7,8 +7,8 @@ import {
 } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
 import { validateSensorData } from './sensorModuleAttached.utils';
-import { Types } from 'mongoose';
 import { Request } from 'express';
+import mongoose from 'mongoose';
 
 const addSensorAttachedModuleIntoDB = async (
   macAddress: string,
@@ -106,7 +106,9 @@ const addSensorDataInToDB = async ({
   return sensorData;
 };
 
-const getAttachedSensorModulesByuser = async (userId: Types.ObjectId) => {
+const getAttachedSensorModulesByuser = async (
+  userId: mongoose.Types.ObjectId,
+) => {
   const sensors = await SensorModuleAttached.find({ user: userId })
     .select(
       'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType',
@@ -116,7 +118,7 @@ const getAttachedSensorModulesByuser = async (userId: Types.ObjectId) => {
 };
 
 const getAttachedSensorModulesByMachine = async (
-  machine_id: Types.ObjectId,
+  machine_id: mongoose.Types.ObjectId,
 ) => {
   const sensors = await SensorModuleAttached.find(
     { machine: machine_id },
@@ -211,11 +213,20 @@ const getSensorDataFromDB = async ({
 
   return { totalData: sensor?.sensorData?.length || 0, ...sensor };
 };
-
+const getSensorModuleAttachedByMacAddress = async (macAddress: string) => {
+  const sensorModuleAttached = await SensorModuleAttached.findOne(
+    {
+      macAddress: macAddress,
+    },
+    { sensorData: 0 },
+  );
+  return sensorModuleAttached;
+};
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB,
   addSensorDataInToDB,
   getAttachedSensorModulesByuser,
   getAttachedSensorModulesByMachine,
   getSensorDataFromDB,
+  getSensorModuleAttachedByMacAddress,
 };
