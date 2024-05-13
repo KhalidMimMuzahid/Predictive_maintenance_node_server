@@ -102,10 +102,10 @@ const getUserBy_id = async (_id: string) => {
       options: { strictPopulate: false },
     },
     // // for no we no need wallet in this api; cause for get wallet we have another api
-    // {
-    //   path: 'wallet',
-    //   options: { strictPopulate: false },
-    // },
+    {
+      path: 'wallet',
+      options: { strictPopulate: false },
+    },
   ]);
 
   return user;
