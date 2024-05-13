@@ -84,6 +84,7 @@ const addSensorDataInToDB = async ({
     sensorData: sensorData,
   });
 
+
   if (!isValid) {
     throw new AppError(
       httpStatus.BAD_REQUEST,

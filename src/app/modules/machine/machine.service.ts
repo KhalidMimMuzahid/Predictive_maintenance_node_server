@@ -316,7 +316,13 @@ const deleteMachineService = async (
 //     throw error;
 //   }
 // };
+const getAllMachineBy_id = async (user_id: string) => {
+  const machine = await Machine.find({
+    user: new mongoose.Types.ObjectId(user_id),
+  });
 
+  return machine;
+};
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
@@ -326,6 +332,7 @@ export const machineServices = {
   getUserConnectedMachineService,
   getMyGeneralMachineService,
   getUserNonConnectedGeneralMachineService,
+  getAllMachineBy_id,
   deleteMachineService,
   // changeStatusService,
   // addSensorService,
