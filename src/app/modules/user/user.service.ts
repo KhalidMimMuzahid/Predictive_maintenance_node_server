@@ -73,14 +73,17 @@ const getUserBy_id = async (_id: string) => {
       path: 'showaUser',
       options: { strictPopulate: false },
     },
+
     {
       path: 'showaAdmin',
       options: { strictPopulate: false },
     },
+
     {
       path: 'showaSubAdmin',
       options: { strictPopulate: false },
     },
+
     {
       path: 'serviceProviderAdmin',
       options: { strictPopulate: false },
@@ -102,10 +105,10 @@ const getUserBy_id = async (_id: string) => {
       options: { strictPopulate: false },
     },
     // // for no we no need wallet in this api; cause for get wallet we have another api
-    // {
-    //   path: 'wallet',
-    //   options: { strictPopulate: false },
-    // },
+    {
+      path: 'wallet',
+      options: { strictPopulate: false },
+    },
   ]);
 
   return user;
@@ -126,6 +129,10 @@ const getAllShowaCustomersFromDB = async () => {
   const showaCustomers = await User.find({ role: 'showaUser' }).populate([
     {
       path: 'showaUser',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'wallet',
       options: { strictPopulate: false },
     },
   ]);

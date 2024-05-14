@@ -2,7 +2,7 @@ import { createServiceProviderBranch } from './serviceProviderBranch.utils';
 import mongoose from 'mongoose';
 import { TServiceProviderBranch } from './serviceProviderBranch.interface';
 import { userServices } from '../user/user.service';
-import { TServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.interface';
+
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 // import { TServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.interface';

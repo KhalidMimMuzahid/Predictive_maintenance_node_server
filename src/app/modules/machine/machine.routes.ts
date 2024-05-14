@@ -41,6 +41,7 @@ router.get(
   '/connected-machine/user',
   machineController.getUserConnectedMachine,
 );
+router.get('/getAllMachineBy_id', machineController.getAllMachineBy_id);
 router.delete('/', machineController.deleteMachine);
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);

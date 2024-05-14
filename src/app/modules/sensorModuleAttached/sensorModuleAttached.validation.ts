@@ -16,10 +16,10 @@ export const createSensorModuleAttachedSchema = z.object({
    vibration: z.array(z.number()).length(6),
    temperature: z.array(z.number()).length(3),
  });
- const moduleFourSchema = z.object({
-   vibration: z.array(z.number()).length(6),
-   temperature: z.array(z.number()).length(6),
- });
+const moduleFourSchema = z.object({
+  vibration: z.array(z.number()).length(6),
+  temperature: z.array(z.number()).length(6),
+});
  export const sensorDataValidationSchema = {
    moduleOneSchema,
    moduleTwoSchema,
