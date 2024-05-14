@@ -8,4 +8,9 @@ router.get(
   '/get-all-sensor-module',
   sensorModuleControllers.getAllSensorModules,
 );
+
+router.delete(
+  '/delete-sensor-module',
+  sensorModuleControllers.deleteSensorModule,
+);
 export const sensorModuleRoutes = router;
