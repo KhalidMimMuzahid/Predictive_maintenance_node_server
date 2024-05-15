@@ -100,6 +100,27 @@ const getShowaUserBy_user: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getShowaUserByPhoneOrEmail: RequestHandler = catchAsync(
+  async (req, res) => {
+    const emailOrPhone = req?.query?.email_or_phone as string;
+    if (!emailOrPhone) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'phone or email is required to get customer information',
+      );
+    }
+    const result =
+      await showaUserServices.getShowaUserByPhoneOrEmail(emailOrPhone);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Showa user with phone or email',
+      data: result,
+    });
+  },
+);
 export const showaUserControllers = {
   createShowaUser,
   getShowaUser,
@@ -107,4 +128,5 @@ export const showaUserControllers = {
   updateAddress,
   uploadProfilePhoto,
   updateProfile,
+  getShowaUserByPhoneOrEmail,
 };

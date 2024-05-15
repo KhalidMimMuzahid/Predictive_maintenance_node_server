@@ -213,6 +213,44 @@ const getShowaUserBy_user = async (user: string) => {
 
   return showaUser;
 };
+
+const getShowaUserByPhoneOrEmail = async (emailOrPhone: string) => {
+  const user = await User.findOne({
+    email: emailOrPhone,
+  }).populate([
+    {
+      path: 'showaUser',
+      options: { strictPopulate: false },
+    },
+  ]);
+  if (user && !user.showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no showaUser founded with this email',
+    );
+  } else if (!user) {
+    const showaUser = await ShowaUser.findOne({
+      phone: emailOrPhone,
+    }).populate([
+      {
+        path: 'user',
+        options: { strictPopulate: false },
+      },
+    ]);
+    if (!showaUser) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'no showaUser founded with this phone or email',
+      );
+    }
+    return {
+      ...showaUser.user,
+      showaUser: { ...showaUser, user: showaUser.user._id },
+    };
+  }
+
+  return user;
+};
 export const showaUserServices = {
   createShowaUserIntoDB,
   getShowaUserFromDB,
@@ -220,4 +258,5 @@ export const showaUserServices = {
   updateAddress,
   getSignedUrl,
   updateProfile,
+  getShowaUserByPhoneOrEmail,
 };

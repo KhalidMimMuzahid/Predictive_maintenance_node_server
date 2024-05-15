@@ -1,3 +1,6 @@
+import { Types } from 'mongoose';
+import { TIsDeleted } from '../common/common.interface';
+
 // I have some confusion about this transaction model
 export type TTransaction = {
   category:
@@ -9,8 +12,8 @@ export type TTransaction = {
     | 'payment'
     | 'mb-transfer'; // value can be like
   transactionId: string; //
-  from: string; // objectId of the UserModel
-  recipient: string; // objectId of the UserModel
+  from: Types.ObjectId; // objectId of the UserModel
+  recipient: Types.ObjectId; // objectId of the UserModel
 
   transactionDate: Date; // when this transaction will be happening
   paymentMethod: 'showa-balance' | 'showa-point' | 'card' | 'showa-mb'; // what about showa mb ?
@@ -20,5 +23,5 @@ export type TTransaction = {
   totalAmount: number; // total amount
   status: 'pending' | 'success' | 'failure'; //  success or approved?? which sounds good?
 
-  isDeleted: boolean; // by default false
+  isDeleted: TIsDeleted; // by default false
 };
