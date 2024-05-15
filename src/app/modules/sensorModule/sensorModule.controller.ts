@@ -33,7 +33,7 @@ const getAllSensorModules: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
   // we are checking the permission of this api
-  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaUser'] });
   const status: TStatus = req?.query?.status as TStatus;
 
   if (status && status !== 'in-stock' && status !== 'sold-out') {
