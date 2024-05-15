@@ -17,7 +17,7 @@ export type TTransaction = {
 
   transactionDate: Date; // when this transaction will be happening
   paymentMethod: 'showa-balance' | 'showa-point' | 'card' | 'showa-mb'; // what about showa mb ?
-  referenceId: string; // objectId of the UserModel
+  referenceId: Types.ObjectId; // objectId of the UserModel
   netAmount: number; //
   transactionFee: number; //
   totalAmount: number; // total amount

@@ -17,6 +17,7 @@ router.get(
   '/get-showa-user-with-phone-email',
   showaUserControllers.getShowaUserByPhoneOrEmail,
 );
+router.get('/get-my-showa-contact', showaUserControllers.getShowaUserContacts);
 
 router.patch('/address', showaUserControllers.updateAddress);
 router.put('/update-profile', showaUserControllers.updateProfile);

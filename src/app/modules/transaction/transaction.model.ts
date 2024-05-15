@@ -30,6 +30,7 @@ export const TransactionSchema: Schema = new Schema<TTransaction>(
     },
     from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     recipient: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    referenceId: { type: Schema.Types.ObjectId, ref: 'User' },
     netAmount: { type: Number, default: 0 },
     transactionFee: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 },

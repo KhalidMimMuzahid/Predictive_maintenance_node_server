@@ -121,6 +121,23 @@ const getShowaUserByPhoneOrEmail: RequestHandler = catchAsync(
     });
   },
 );
+const getShowaUserContacts: RequestHandler = catchAsync(async (req, res) => {
+  const phones = req?.query?.phones as string;
+  if (!phones) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'phone numers are required to get contact information',
+    );
+  }
+  const result = await showaUserServices.getShowaUserContacts(phones);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Showa contacts',
+    data: result,
+  });
+});
 export const showaUserControllers = {
   createShowaUser,
   getShowaUser,
@@ -129,4 +146,5 @@ export const showaUserControllers = {
   uploadProfilePhoto,
   updateProfile,
   getShowaUserByPhoneOrEmail,
+  getShowaUserContacts,
 };

@@ -251,6 +251,36 @@ const getShowaUserByPhoneOrEmail = async (emailOrPhone: string) => {
 
   return user;
 };
+
+const getShowaUserContacts = async (commaSeperatedPhones: string) => {
+  const phones = commaSeperatedPhones.split(',');
+
+  const usersByphone = [];
+
+  for (const phone of phones) {
+    if (phone === '' || phone === ' ') {
+      continue;
+    }
+    const truncatedPhone = phone.replace('-', '').replace('+', '');
+    const showaUser = await ShowaUser.findOne({
+      phone: { $regex: truncatedPhone },
+    }).populate([
+      {
+        path: 'user',
+        options: { strictPopulate: false },
+      },
+    ]);
+
+    if (showaUser) {
+      usersByphone.push({
+        ...showaUser.user,
+        showaUser: { ...showaUser, user: showaUser.user._id },
+      });
+    }
+  }
+  return usersByphone;
+};
+
 export const showaUserServices = {
   createShowaUserIntoDB,
   getShowaUserFromDB,
@@ -259,4 +289,5 @@ export const showaUserServices = {
   getSignedUrl,
   updateProfile,
   getShowaUserByPhoneOrEmail,
+  getShowaUserContacts,
 };
