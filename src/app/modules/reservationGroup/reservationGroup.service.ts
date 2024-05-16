@@ -382,7 +382,36 @@ const sendReservationGroupToBranch = async ({
 const getReservationGroupById = async (reservationRequestGroup: string) => {
   const getReservationGroupData = await ReservationRequestGroup.findById(
     new mongoose.Types.ObjectId(reservationRequestGroup),
-  );
+  ).populate([
+    {
+      path: 'reservationRequests',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'allBids.biddingUser',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'allBids.serviceProviderCompany',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'postBiddingProcess.biddingUser',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'postBiddingProcess.serviceProviderCompany',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'postBiddingProcess.serviceProviderBranch',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'postBiddingProcess.invoiceGroup',
+      options: { strictPopulate: false },
+    },
+  ]);
 
   return getReservationGroupData;
 };
