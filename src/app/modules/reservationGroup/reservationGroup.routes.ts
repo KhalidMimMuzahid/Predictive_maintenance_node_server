@@ -41,6 +41,11 @@ router.post(
   '/assign-reservation-group-to-team',
   reservationGroupController.sendReservationGroupToBranch,
 );
+router.get(
+  '/get-invoice-group-by-id',
+  reservationGroupController.getReservationGroupById,
+);
+
 
 
 // router.get('/:uid', reservationController.getMyReservations);

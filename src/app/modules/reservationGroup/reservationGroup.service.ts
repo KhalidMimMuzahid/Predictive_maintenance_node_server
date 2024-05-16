@@ -378,10 +378,19 @@ const sendReservationGroupToBranch = async ({
   }
   return updatedReservationRequestGroup;
 };
+
+const getReservationGroupById = async (reservationRequestGroup: string) => {
+  const getReservationGroupData = await ReservationRequestGroup.findById(
+    new mongoose.Types.ObjectId(reservationRequestGroup),
+  );
+
+  return getReservationGroupData;
+};
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
   selectBiddingWinner,
   sendReservationGroupToBranch,
   allReservationsGroup,
+  getReservationGroupById,
 };
