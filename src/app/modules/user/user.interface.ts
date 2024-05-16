@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Model, Types } from 'mongoose';
 import { TIsDeleted } from '../common/common.interface';
+import { TWallet } from '../wallet/wallet.interface';
 export type TRole =
   // root user
   | 'showaUser'
@@ -22,7 +23,7 @@ export type TUser = {
   role: TRole;
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   // stripeId: string;
-  wallet?: Types.ObjectId; // it user is ObjectId of the Wallet model
+  wallet?: Types.ObjectId | TWallet; // it user is ObjectId of the Wallet model
   status: 'in-progress' | 'approved' | 'suspended';
 
   showaUser?: Types.ObjectId;
@@ -37,8 +38,3 @@ export interface UserModel extends Model<TUser> {
   isUidExists(uid: string): Promise<TUser | null>;
   isEmailExists(email: string): Promise<TUser | null>;
 }
-
-
-
-
-
