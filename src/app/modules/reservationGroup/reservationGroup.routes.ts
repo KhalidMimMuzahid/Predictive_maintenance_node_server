@@ -42,7 +42,7 @@ router.post(
   reservationGroupController.sendReservationGroupToBranch,
 );
 router.get(
-  '/get-invoice-group-by-id',
+  '/get-reservation-group-by-id',
   reservationGroupController.getReservationGroupById,
 );
 
