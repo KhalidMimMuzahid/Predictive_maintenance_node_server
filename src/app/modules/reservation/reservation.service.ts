@@ -244,11 +244,27 @@ const getSignedUrl = async (fileKey: string, fileType: string) => {
   return { url };
 };
 
+const getAllReservationsByUser = async (user: string) => {
+  const reservations = await ReservationRequest.find({ user }).populate([
+    { path: 'machine', options: { strictPopulate: false } },
+    {
+      path: 'reservationRequestGroup',
+      populate: {
+        path: 'postBiddingProcess.serviceProviderCompany',
+        options: { strictPopulate: false },
+      },
+    },
+  ]);
+
+  return reservations;
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
   getMyReservationsByStatusService,
   getReservationsByStatusService,
   getAllReservationsService,
+  getAllReservationsByUser,
   getSignedUrl,
 };

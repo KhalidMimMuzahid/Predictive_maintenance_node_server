@@ -41,7 +41,7 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>(
     invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },
     reservationRequestGroup: {
       type: Schema.Types.ObjectId,
-      ref: 'ReservationGroup',
+      ref: 'ReservationRequestGroup',
     },
   },
   {

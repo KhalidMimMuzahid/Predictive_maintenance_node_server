@@ -12,6 +12,10 @@ router.post(
 );
 router.get('/', reservationController.getMyReservations);
 router.get('/all-reservation', reservationController.getAllReservations);
+router.get(
+  '/all-reservation-by-user',
+  reservationController.getAllReservationsByUser,
+);
 router.get('/status', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
 router.post('/upload-image', reservationController.uploadRequestImage);

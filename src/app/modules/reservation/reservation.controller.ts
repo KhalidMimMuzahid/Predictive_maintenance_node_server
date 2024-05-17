@@ -160,12 +160,39 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getAllReservationsByUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const { uid } = req.params;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const user: string = req?.query?.user as string;
 
+    if (!user) {
+      //
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `user is required to get the reservations for this user`,
+      );
+    }
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+    });
+    const results = await reservationServices.getAllReservationsByUser(user);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request are retrieved successfully',
+      data: results,
+    });
+  },
+);
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
   getMyReservationsByStatus,
   getReservationsByStatus,
   getAllReservations,
+  getAllReservationsByUser,
   uploadRequestImage,
 };
