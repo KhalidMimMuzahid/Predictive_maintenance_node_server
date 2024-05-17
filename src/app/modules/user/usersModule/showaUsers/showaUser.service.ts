@@ -9,6 +9,9 @@ import { jwtFunc } from '../../../../utils/jwtFunction';
 import mongoose from 'mongoose';
 import { TAddress } from '../../../common/common.interface';
 import S3 from 'aws-sdk/clients/s3';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const createShowaUserIntoDB = async (
   rootUser: Partial<TUser>,
@@ -40,6 +43,9 @@ const createShowaUserIntoDB = async (
       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
     }
     const createdUser = createdUserArray[0];
+    const customer = await stripe.customers.create({
+      email: rootUser?.email,
+    });
     const createdWalletArray = await Wallet.create(
       [
         {
@@ -49,6 +55,7 @@ const createShowaUserIntoDB = async (
           balance: 0,
           point: 0,
           showaMB: 0,
+          stripeCustomerId: customer.id,
         },
       ],
       {
