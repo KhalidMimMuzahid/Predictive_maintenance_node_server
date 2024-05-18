@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
 import {
   TMachineType,
+  TMachineType2,
   TProblem,
   TReservationRequest,
   TReservationType,
-  TReservationTypeForCount,
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
@@ -259,29 +259,39 @@ const getAllReservationsByUser = async (user: string) => {
 
   return reservations;
 };
-const getAllReservationsCount = async (
-  reservationType: TReservationTypeForCount,
-) => {
+const getAllReservationsCount = async (machineType: TMachineType2) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQuery: any = {};
 
-  if (reservationType === 'all') {
-    //do nothing
-  } else if (reservationType === 'on-demand') {
-    filterQuery['schedule.category'] = 'on-demand';
-  } else if (reservationType === 'accepted') {
-    filterQuery['status'] = 'accepted';
-  } else if (reservationType === 'ongoing') {
-    filterQuery['status'] = 'ongoing';
-  } else if (reservationType === 'completed') {
-    filterQuery['status'] = 'completed';
-  } else if (reservationType === 'canceled') {
-    filterQuery['status'] = 'canceled';
+  if (machineType === 'general-machine') {
+    filterQuery['machineType'] = 'general-machine';
+  } else if (machineType === 'washing-machine') {
+    filterQuery['machineType'] = 'washing-machine';
   }
 
-  const result = await ReservationRequest.countDocuments(filterQuery);
+  const all = await ReservationRequest.countDocuments(filterQuery);
+  const onDemand = await ReservationRequest.countDocuments({
+    ...filterQuery,
+    'schedule.category': 'on-demand',
+  });
+  const accepted = await ReservationRequest.countDocuments({
+    ...filterQuery,
+    status: 'accepted',
+  });
+  const ongoing = await ReservationRequest.countDocuments({
+    ...filterQuery,
+    status: 'ongoing',
+  });
+  const completed = await ReservationRequest.countDocuments({
+    ...filterQuery,
+    status: 'completed',
+  });
+  const canceled = await ReservationRequest.countDocuments({
+    ...filterQuery,
+    status: 'canceled',
+  });
 
-  return result;
+  return { all, onDemand, accepted, ongoing, completed, canceled };
 };
 export const reservationServices = {
   createReservationRequestIntoDB,

@@ -8,15 +8,15 @@ import AppError from '../../errors/AppError';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import {
   TMachineType,
+  TMachineType2,
   TProblem,
   TReservationType,
-  TReservationTypeForCount,
   TSchedule,
 } from './reservation.interface';
 import {
   machineTypeArray,
   reservationTypeArray,
-  reservationTypeArrayCount,
+  machineTypeArray2,
 } from './reservation.const';
 
 const createReservationRequest: RequestHandler = catchAsync(
@@ -196,14 +196,13 @@ const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
   // const { uid } = req.params;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  const reservationType: TReservationTypeForCount = req?.query
-    ?.reservationType as TReservationTypeForCount;
+  const machineType: TMachineType2 = req?.query?.machineType as TMachineType2;
 
-  if (!reservationTypeArrayCount.some((each) => each === reservationType)) {
+  if (!machineTypeArray2.some((each) => each === machineType)) {
     //
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `reservationType must be any of ${reservationTypeArrayCount.reduce(
+      `reservationType must be any of ${machineTypeArray2.reduce(
         (total, current) => {
           total = total + `${current}, `;
           return total;
@@ -217,7 +216,7 @@ const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
     accessUsers: ['showaAdmin', 'showaSubAdmin'],
   });
   const results =
-    await reservationServices.getAllReservationsCount(reservationType);
+    await reservationServices.getAllReservationsCount(machineType);
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,

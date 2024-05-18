@@ -1,7 +1,7 @@
 import {
   TMachineType,
+  TMachineType2,
   TReservationType,
-  TReservationTypeForCount,
 } from './reservation.interface';
 
 export const machineTypeArray: TMachineType[] = ['connected', 'non-connected'];
@@ -17,11 +17,7 @@ export const reservationTypeArray: TReservationType[] = [
   'ongoing',
   'completed',
 ];
-export const reservationTypeArrayCount: TReservationTypeForCount[] = [
-  'all',
-  'on-demand',
-  'accepted',
-  'ongoing',
-  'completed',
-  'canceled',
+export const machineTypeArray2: TMachineType2[] = [
+  'washing-machine',
+  'general-machine',
 ];
