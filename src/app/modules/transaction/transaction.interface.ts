@@ -13,10 +13,8 @@ export type TTransaction = {
     | 'mb-transfer'
     | 'add-fund'; // value can be like
   transactionId: string; //
-  from: Types.ObjectId;
-  fromTransferPhone: string; // objectId of the UserModel
+  from: Types.ObjectId; // objectId of the UserModel
   recipient: Types.ObjectId; // objectId of the UserModel
-  toTransferPhone: string;
   transactionDate: Date; // when this transaction will be happening
   paymentMethod: 'showa-balance' | 'showa-point' | 'card' | 'showa-mb'; // what about showa mb ?
   referenceId: Types.ObjectId; // objectId of the UserModel

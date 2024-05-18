@@ -9,13 +9,11 @@ import { Types } from 'mongoose';
 const addTransfer: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   const toUser = req?.query?.to as string;
-  const { amount, fromTransferPhone, toTransferPhone } = req.body;
+  const { amount } = req.body;
   const results = await walletServices.addTransfer(
     auth._id,
     new Types.ObjectId(toUser),
     Number(amount),
-    fromTransferPhone,
-    toTransferPhone,
   );
   // send response
   sendResponse(res, {
@@ -102,13 +100,11 @@ const createPaymentIntent: RequestHandler = catchAsync(async (req, res) => {
 const mbTransfer: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   const toUser = req?.query?.to as string;
-  const { amount, fromTransferPhone, toTransferPhone } = req.body;
+  const { amount } = req.body;
   const results = await walletServices.mbTransfer(
     auth._id,
     new Types.ObjectId(toUser),
     Number(amount),
-    fromTransferPhone,
-    toTransferPhone,
   );
   // send response
   sendResponse(res, {
@@ -131,6 +127,18 @@ const getMyMBTransaction: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getRecentMBTransfer: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const results = await walletServices.getRecentMBTransfer(auth._id);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'My MBs',
+    data: results,
+  });
+});
+
 export const walletControllers = {
   addTransfer,
   fetchCustomerCards,
@@ -140,4 +148,5 @@ export const walletControllers = {
   createPaymentIntent,
   mbTransfer,
   getMyMBTransaction,
+  getRecentMBTransfer,
 };
