@@ -8,6 +8,26 @@ const getServiceProviderCompanyForAdmin = async (_id: Types.ObjectId) => {
 
   return serviceProviderCompany;
 };
+
+
+const getAllServiceProviderCompanies = async () => {
+  const serviceProviderCompanies = await ServiceProviderCompany.find().populate(
+    [
+      {
+        path: 'serviceProviderAdmin',
+
+        populate: {
+          path: 'serviceProviderAdmin',
+          options: { strictPopulate: false },
+        },
+      },
+    ],
+  );
+
+  return serviceProviderCompanies;
+};
+
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
+  getAllServiceProviderCompanies,
 };

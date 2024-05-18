@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import {
   TMachineType,
   TMachineType2,
@@ -13,6 +13,7 @@ import httpStatus from 'http-status';
 import { Machine } from '../machine/machine.model';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import S3 from 'aws-sdk/clients/s3';
+import { Invoice } from '../invoice/invoice.model';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -259,6 +260,18 @@ const getAllReservationsByUser = async (user: string) => {
 
   return reservations;
 };
+const getAllReservationsByServiceProviderCompany = async (
+  serviceProviderCompany: string,
+) => {
+  const reservations = await Invoice.find({
+    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+      serviceProviderCompany,
+    ),
+  }).populate([
+    { path: 'reservationRequest', options: { strictPopulate: false } },
+  ]);
+  return reservations;
+};
 const getAllReservationsCount = async (machineType: TMachineType2) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQuery: any = {};
@@ -301,5 +314,6 @@ export const reservationServices = {
   getAllReservationsService,
   getAllReservationsCount,
   getAllReservationsByUser,
+  getAllReservationsByServiceProviderCompany,
   getSignedUrl,
 };

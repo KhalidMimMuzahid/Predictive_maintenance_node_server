@@ -225,6 +225,37 @@ const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const getAllReservationsByServiceProviderCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const { uid } = req.params;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      //
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `serviceProviderCompany is required to get the reservations for this serviceProviderCompany`,
+      );
+    }
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+    });
+    const results =
+      await reservationServices.getAllReservationsByServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request are retrieved successfully',
+      data: results,
+    });
+  },
+);
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
@@ -233,5 +264,6 @@ export const reservationController = {
   getAllReservations,
   getAllReservationsCount,
   getAllReservationsByUser,
+  getAllReservationsByServiceProviderCompany,
   uploadRequestImage,
 };
