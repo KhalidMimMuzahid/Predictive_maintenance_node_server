@@ -9,6 +9,9 @@ import { jwtFunc } from '../../../../utils/jwtFunction';
 import mongoose from 'mongoose';
 import { TAddress } from '../../../common/common.interface';
 import S3 from 'aws-sdk/clients/s3';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const createShowaUserIntoDB = async (
   rootUser: Partial<TUser>,
@@ -40,6 +43,9 @@ const createShowaUserIntoDB = async (
       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
     }
     const createdUser = createdUserArray[0];
+    const customer = await stripe.customers.create({
+      email: rootUser?.email,
+    });
     const createdWalletArray = await Wallet.create(
       [
         {
@@ -49,6 +55,7 @@ const createShowaUserIntoDB = async (
           balance: 0,
           point: 0,
           showaMB: 0,
+          stripeCustomerId: customer.id,
         },
       ],
       {
@@ -213,6 +220,74 @@ const getShowaUserBy_user = async (user: string) => {
 
   return showaUser;
 };
+
+const getShowaUserByPhoneOrEmail = async (emailOrPhone: string) => {
+  const user = await User.findOne({
+    email: emailOrPhone,
+  }).populate([
+    {
+      path: 'showaUser',
+      options: { strictPopulate: false },
+    },
+  ]);
+  if (user && !user.showaUser) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no showaUser founded with this email',
+    );
+  } else if (!user) {
+    const showaUser = await ShowaUser.findOne({
+      phone: emailOrPhone,
+    }).populate([
+      {
+        path: 'user',
+        options: { strictPopulate: false },
+      },
+    ]);
+    if (!showaUser) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'no showaUser founded with this phone or email',
+      );
+    }
+    return {
+      ...showaUser.user,
+      showaUser: { ...showaUser, user: showaUser.user._id },
+    };
+  }
+
+  return user;
+};
+
+const getShowaUserContacts = async (commaSeperatedPhones: string) => {
+  const phones = commaSeperatedPhones.split(',');
+
+  const usersByphone = [];
+
+  for (const phone of phones) {
+    if (phone === '' || phone === ' ') {
+      continue;
+    }
+    const truncatedPhone = phone.replace('-', '').replace('+', '');
+    const showaUser = await ShowaUser.findOne({
+      phone: { $regex: truncatedPhone },
+    }).populate([
+      {
+        path: 'user',
+        options: { strictPopulate: false },
+      },
+    ]);
+
+    if (showaUser) {
+      usersByphone.push({
+        ...showaUser.user,
+        showaUser: { ...showaUser, user: showaUser.user._id },
+      });
+    }
+  }
+  return usersByphone;
+};
+
 export const showaUserServices = {
   createShowaUserIntoDB,
   getShowaUserFromDB,
@@ -220,4 +295,6 @@ export const showaUserServices = {
   updateAddress,
   getSignedUrl,
   updateProfile,
+  getShowaUserByPhoneOrEmail,
+  getShowaUserContacts,
 };

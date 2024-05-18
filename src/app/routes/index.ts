@@ -11,6 +11,8 @@ import { serviceProviderBranchRoutes } from '../modules/serviceProviderBranch/se
 import { teamOfEngineersRoutes } from '../modules/teamOfEngineers/teamOfEngineers.routes';
 import { invoiceGroupRoutes } from '../modules/invoiceGroup/invoiceGroup.routes';
 import { invoiceRoutes } from '../modules/invoice/invoice.routes';
+import { transactionRoutes } from '../modules/transaction/transaction.routes';
+import { walletRoutes } from '../modules/wallet/wallet.routes';
 
 const router = express.Router();
 
@@ -26,6 +28,8 @@ const moduleRoutes: any[] = [
   { path: '/sensor-module', route: sensorModuleRoutes },
   { path: '/sensor-module-attached', route: sensorModuleAttachedRoutes },
   { path: '/team-of-engineers', route: teamOfEngineersRoutes },
+  { path: '/transaction', route: transactionRoutes },
+  { path: '/wallet', route: walletRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
