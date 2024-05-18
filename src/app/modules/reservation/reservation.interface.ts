@@ -15,6 +15,14 @@ export type TReservationType =
   | 'accepted'
   | 'ongoing'
   | 'completed';
+  
+  export type TReservationTypeForCount =
+    | 'all'
+    | 'on-demand'
+    | 'accepted'
+    | 'ongoing'
+    | 'completed'
+    | 'canceled';
 
 export type TProblem = {
   issues: string[]; // all issues title one by one

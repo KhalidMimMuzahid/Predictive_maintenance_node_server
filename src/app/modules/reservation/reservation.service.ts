@@ -4,6 +4,7 @@ import {
   TProblem,
   TReservationRequest,
   TReservationType,
+  TReservationTypeForCount,
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
@@ -258,13 +259,37 @@ const getAllReservationsByUser = async (user: string) => {
 
   return reservations;
 };
+const getAllReservationsCount = async (
+  reservationType: TReservationTypeForCount,
+) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {};
 
+  if (reservationType === 'all') {
+    //do nothing
+  } else if (reservationType === 'on-demand') {
+    filterQuery['schedule.category'] = 'on-demand';
+  } else if (reservationType === 'accepted') {
+    filterQuery['status'] = 'accepted';
+  } else if (reservationType === 'ongoing') {
+    filterQuery['status'] = 'ongoing';
+  } else if (reservationType === 'completed') {
+    filterQuery['status'] = 'completed';
+  } else if (reservationType === 'canceled') {
+    filterQuery['status'] = 'canceled';
+  }
+
+  const result = await ReservationRequest.countDocuments(filterQuery);
+
+  return result;
+};
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
   getMyReservationsByStatusService,
   getReservationsByStatusService,
   getAllReservationsService,
+  getAllReservationsCount,
   getAllReservationsByUser,
   getSignedUrl,
 };

@@ -8,8 +8,9 @@ import { Transaction } from '../transaction/transaction.model';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
 import { TWallet } from './wallet.interface';
+import config from '../../config';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(config.stripeSecretKey);
 
 const addTransfer = async (
   fromId: Types.ObjectId,

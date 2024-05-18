@@ -12,6 +12,7 @@ router.post(
 );
 router.get('/', reservationController.getMyReservations);
 router.get('/all-reservation', reservationController.getAllReservations);
+router.get('/all-reservation-count', reservationController.getAllReservationsCount);
 router.get(
   '/all-reservation-by-user',
   reservationController.getAllReservationsByUser,

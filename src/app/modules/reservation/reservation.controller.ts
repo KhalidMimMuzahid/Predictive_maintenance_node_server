@@ -10,9 +10,14 @@ import {
   TMachineType,
   TProblem,
   TReservationType,
+  TReservationTypeForCount,
   TSchedule,
 } from './reservation.interface';
-import { machineTypeArray, reservationTypeArray } from './reservation.const';
+import {
+  machineTypeArray,
+  reservationTypeArray,
+  reservationTypeArrayCount,
+} from './reservation.const';
 
 const createReservationRequest: RequestHandler = catchAsync(
   async (req, res) => {
@@ -187,12 +192,47 @@ const getAllReservationsByUser: RequestHandler = catchAsync(
     });
   },
 );
+const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const reservationType: TReservationTypeForCount = req?.query
+    ?.reservationType as TReservationTypeForCount;
+
+  if (!reservationTypeArrayCount.some((each) => each === reservationType)) {
+    //
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `reservationType must be any of ${reservationTypeArrayCount.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+  });
+  const results =
+    await reservationServices.getAllReservationsCount(reservationType);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'successfully retrieve all reservations count',
+    data: results,
+  });
+});
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
   getMyReservationsByStatus,
   getReservationsByStatus,
   getAllReservations,
+  getAllReservationsCount,
   getAllReservationsByUser,
   uploadRequestImage,
 };
