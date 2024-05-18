@@ -30,8 +30,6 @@ export const TransactionSchema: Schema = new Schema<TTransaction>(
       required: true,
     },
     from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    fromTransferPhone: { type: String },
-    toTransferPhone: { type: String },
     recipient: { type: Schema.Types.ObjectId, ref: 'User' },
     referenceId: { type: Schema.Types.ObjectId, ref: 'User' },
     netAmount: { type: Number, default: 0 },
