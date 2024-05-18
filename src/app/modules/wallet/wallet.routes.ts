@@ -12,5 +12,6 @@ router.post('/pay-with-card', walletControllers.payWithCard);
 router.post('/create-payment-intent', walletControllers.createPaymentIntent);
 router.post('/transfer-mb', walletControllers.mbTransfer);
 router.get('/get-my-mb-transaction', walletControllers.getMyMBTransaction);
+router.get('/get-recent-mb-transfer', walletControllers.getRecentMBTransfer);
 
 export const walletRoutes = router;

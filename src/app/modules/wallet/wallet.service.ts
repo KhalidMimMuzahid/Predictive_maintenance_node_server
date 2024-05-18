@@ -15,8 +15,6 @@ const addTransfer = async (
   fromId: Types.ObjectId,
   toId: Types.ObjectId,
   amount: number,
-  fromTransferPhone: string,
-  toTransferPhone: string,
 ) => {
   const fromUser = await User.findById(fromId);
   if (!fromUser) {
@@ -50,8 +48,6 @@ const addTransfer = async (
     netAmount: amount,
     totalAmount: amount,
     transactionId: uuidv4(),
-    fromTransferPhone: fromTransferPhone,
-    toTransferPhone: toTransferPhone,
     // referenceId: fromId
   });
   return transaction;
@@ -212,8 +208,6 @@ const mbTransfer = async (
   fromId: Types.ObjectId,
   toId: Types.ObjectId,
   amount: number,
-  fromTransferPhone: string,
-  toTransferPhone: string,
 ) => {
   const fromUser = await User.findById(fromId);
   if (!fromUser) {
@@ -246,8 +240,6 @@ const mbTransfer = async (
     netAmount: amount,
     totalAmount: amount,
     transactionId: uuidv4(),
-    fromTransferPhone: fromTransferPhone,
-    toTransferPhone: toTransferPhone,
     referenceId: fromId,
   });
   return transaction;
@@ -257,7 +249,32 @@ const getMyMBTransaction = async (userId: Types.ObjectId) => {
   const transactions = await Transaction.find({
     $or: [{ from: userId }, { recipient: userId }, { referenceId: userId }],
     category: 'mb-transfer',
-  });
+  })
+    .populate({
+      path: 'from',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .populate({
+      path: 'recipient',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    });
+  return transactions;
+};
+
+const getRecentMBTransfer = async (userId: Types.ObjectId) => {
+  const transactions = await Transaction.find({
+    from: userId,
+    category: 'mb-transfer',
+  })
+    .populate({
+      path: 'from',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .populate({
+      path: 'recipient',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    })
+    .limit(3);
   return transactions;
 };
 
@@ -270,4 +287,5 @@ export const walletServices = {
   createPaymentIntent,
   mbTransfer,
   getMyMBTransaction,
+  getRecentMBTransfer,
 };
