@@ -20,7 +20,7 @@ export type TProblem = {
   issues: string[]; // all issues title one by one
   problemDescription?: string;
   images: { image: string; title?: string }[];
-};
+}; 
 export type TSchedule = {
   category:
     | 'on-demand'
