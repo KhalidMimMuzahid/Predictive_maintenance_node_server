@@ -5,6 +5,7 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { TAuth } from '../../interface/error';
 import { serviceProviderCompanyServices } from './serviceProviderCompany.service';
+import AppError from '../../errors/AppError';
 
 const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
   async (req, res) => {
@@ -40,10 +41,37 @@ const getAllServiceProviderCompanies: RequestHandler = catchAsync(
   },
 );
 
+const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
 
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
 
+    if (!serviceProviderCompany) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderCompany is required to get All Members',
+      );
+    }
+    const result =
+      await serviceProviderCompanyServices.getAllMembersForServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'All Members For ServiceProviderCompany has retrieved successfully',
+      data: result,
+    });
+  },
+);
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
   getAllServiceProviderCompanies,
+  getAllMembersForServiceProviderCompany,
 };

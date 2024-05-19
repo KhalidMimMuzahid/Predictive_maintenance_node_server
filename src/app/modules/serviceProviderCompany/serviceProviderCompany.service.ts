@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 import { ServiceProviderCompany } from './serviceProviderCompany.model';
+import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
+import { ServiceProviderBranchManager } from '../user/usersModule/branchManager/branchManager.model';
+import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
+import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
 
 const getServiceProviderCompanyForAdmin = async (
   _id: mongoose.Types.ObjectId,
@@ -28,7 +32,64 @@ const getAllServiceProviderCompanies = async () => {
   return serviceProviderCompanies;
 };
 
+const getAllMembersForServiceProviderCompany = async (
+  serviceProviderCompany: string,
+) => {
+  const admin = await ServiceProviderAdmin.findOne({
+    serviceProviderCompany: new mongoose.Types.ObjectId(serviceProviderCompany),
+  }).populate([
+    {
+      path: 'user',
+      options: { strictPopulate: false },
+    },
+  ]);
+  const serviceProviderSubAdmins = [];
+  const serviceProviderBranchManagers = await ServiceProviderBranchManager.find(
+    {
+      'currentState.serviceProviderCompany': new mongoose.Types.ObjectId(
+        serviceProviderCompany,
+      ),
+    },
+  ).populate([
+    {
+      path: 'user',
+      options: { strictPopulate: false },
+    },
+  ]);
+  const serviceProviderEngineers = await ServiceProviderEngineer.find({
+    'currentState.serviceProviderCompany': new mongoose.Types.ObjectId(
+      serviceProviderCompany,
+    ),
+  }).populate([
+    {
+      path: 'user',
+      options: { strictPopulate: false },
+    },
+  ]);
+
+  const allMembersUnsorted = [
+    admin,
+    ...serviceProviderSubAdmins,
+    ...serviceProviderBranchManagers,
+    ...serviceProviderEngineers,
+  ];
+
+  const allMembers = sortByCreatedAtDescending({
+    array: allMembersUnsorted,
+    sort: 'desc',
+  });
+
+  return {
+    allMembers,
+    admin,
+    serviceProviderSubAdmins,
+    serviceProviderBranchManagers,
+    serviceProviderEngineers,
+  };
+};
+
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
   getAllServiceProviderCompanies,
+  getAllMembersForServiceProviderCompany,
 };

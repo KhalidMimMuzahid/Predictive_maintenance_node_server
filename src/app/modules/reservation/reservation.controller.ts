@@ -256,6 +256,37 @@ const getAllReservationsByServiceProviderCompany: RequestHandler = catchAsync(
     });
   },
 );
+
+const getAllScheduledReservationsByServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    // const { uid } = req.params;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      //
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `serviceProviderCompany is required to get scheduled reservations for this serviceProviderCompany`,
+      );
+    }
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+    });
+    const results =
+      await reservationServices.getAllScheduledReservationsByServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'scheduled reservation request are retrieved successfully',
+      data: results,
+    });
+  });
 const getReservationCountByServiceProviderCompany: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -276,6 +307,7 @@ const getReservationCountByServiceProviderCompany: RequestHandler = catchAsync(
     });
   },
 );
+
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
@@ -285,6 +317,7 @@ export const reservationController = {
   getAllReservationsCount,
   getAllReservationsByUser,
   getAllReservationsByServiceProviderCompany,
+  getAllScheduledReservationsByServiceProviderCompany,
   getReservationCountByServiceProviderCompany,
   uploadRequestImage,
 };

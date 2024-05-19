@@ -22,6 +22,14 @@ router.get(
   reservationController.getAllReservationsByServiceProviderCompany,
 );
 router.get(
+  '/all-reservation-by-service-provider-company',
+  reservationController.getAllReservationsByServiceProviderCompany,
+);
+router.get(
+  '/all-scheduled-reservation-by-service-provider-company',
+  reservationController.getAllScheduledReservationsByServiceProviderCompany,
+);
+router.get(
   '/get-reservation-count-by-service-provider-company',
   reservationController.getReservationCountByServiceProviderCompany,
 );

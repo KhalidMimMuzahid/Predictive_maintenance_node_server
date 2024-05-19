@@ -14,6 +14,7 @@ import { Machine } from '../machine/machine.model';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import S3 from 'aws-sdk/clients/s3';
 import { Invoice } from '../invoice/invoice.model';
+import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -163,12 +164,12 @@ const getAllReservationsService = async ({
         },
         {
           $addFields: {
-            friendsCount: { $size: '$schedule.schedules' },
+            schedulesCount: { $size: '$schedule.schedules' },
           },
         },
         {
           $match: {
-            friendsCount: { $gt: 1 },
+            schedulesCount: { $gt: 1 },
           },
         },
       ]);
@@ -272,6 +273,35 @@ const getAllReservationsByServiceProviderCompany = async (
   ]);
   return reservations;
 };
+
+const getAllScheduledReservationsByServiceProviderCompany = async (
+  serviceProviderCompany: string,
+) => {
+  // filterQuery['schedule.schedules'] = { $size: 1 };
+
+  const reservations = await Invoice.find({
+    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+      serviceProviderCompany,
+    ),
+  }).populate([
+    { path: 'reservationRequest', options: { strictPopulate: false } },
+  ]);
+  // eslint-disable-next-line prefer-const
+  let allScheduledReservationsUnsorted = [];
+  reservations.forEach((each) => {
+    const reservationRequest: TReservationRequest =
+      each?.reservationRequest as unknown as TReservationRequest;
+    if (reservationRequest?.schedule?.schedules?.length) {
+      allScheduledReservationsUnsorted.push(reservationRequest);
+    }
+  });
+  const allScheduledReservations = sortByCreatedAtDescending({
+    array: allScheduledReservationsUnsorted,
+    sort: 'desc',
+  });
+  return allScheduledReservations;
+};
+
 const getReservationCountByServiceProviderCompany = async (
   serviceProviderCompany: string,
 ) => {
@@ -341,6 +371,7 @@ export const reservationServices = {
   getAllReservationsCount,
   getAllReservationsByUser,
   getAllReservationsByServiceProviderCompany,
+  getAllScheduledReservationsByServiceProviderCompany,
   getReservationCountByServiceProviderCompany,
   getSignedUrl,
 };
