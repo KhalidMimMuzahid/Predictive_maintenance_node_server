@@ -10,6 +10,12 @@ router.patch(
   validateRequest(invoiceValidation.addAdditionalProductValidationSchema),
   invoiceController.addAdditionalProducts,
 );
+
+router.get(
+  '/get-all-invoices-by-user',
+
+  invoiceController.getAllInvoicesByUser,
+);
 router.patch(
   '/change-status-to-completed',
   invoiceController.changeStatusToCompleted,

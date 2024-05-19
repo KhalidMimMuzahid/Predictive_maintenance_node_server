@@ -147,29 +147,35 @@ const sendReservationGroupToBranch: RequestHandler = catchAsync(
     });
   },
 );
-// const getMyReservationsByStatus: RequestHandler = catchAsync(async (req, res) => {
-//   const { uid, status } = req.params;
-//   const results = await reservationServices.getMyReservationsByStatusService(uid, status);
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'My reservations',
-//     data: results,
-//   });
-// });
+const getReservationGroupById: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-// const getReservationsByStatus: RequestHandler = catchAsync(async (req, res) => {
-//   const { status } = req.params;
-//   const results = await reservationServices.getReservationsByStatusService(status);
-//   // send response
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'reservations',
-//     data: results,
-//   });
-// });
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+
+  if (!reservationRequestGroup) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of reservationRequestGroup is required to get res group ',
+    );
+  }
+  const results = await reservationGroupServices.getReservationGroupById(
+    reservationRequestGroup,
+  );
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation group has retrieved successfully',
+    data: results,
+  });
+});
 
 export const reservationGroupController = {
   createReservationGroup,
@@ -177,4 +183,5 @@ export const reservationGroupController = {
   addBid,
   selectBiddingWinner,
   sendReservationGroupToBranch,
+  getReservationGroupById,
 };

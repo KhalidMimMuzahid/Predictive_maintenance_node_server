@@ -1,4 +1,8 @@
-import { TMachineType, TReservationType } from './reservation.interface';
+import {
+  TMachineType,
+  TMachineType2,
+  TReservationType,
+} from './reservation.interface';
 
 export const machineTypeArray: TMachineType[] = ['connected', 'non-connected'];
 export const reservationTypeArray: TReservationType[] = [
@@ -12,4 +16,8 @@ export const reservationTypeArray: TReservationType[] = [
   'accepted',
   'ongoing',
   'completed',
+];
+export const machineTypeArray2: TMachineType2[] = [
+  'washing-machine',
+  'general-machine',
 ];
