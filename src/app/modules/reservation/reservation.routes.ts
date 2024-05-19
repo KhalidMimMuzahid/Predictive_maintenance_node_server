@@ -21,6 +21,10 @@ router.get(
   '/all-reservation-by-service-provider-company',
   reservationController.getAllReservationsByServiceProviderCompany,
 );
+router.get(
+  '/get-reservation-count-by-service-provider-company',
+  reservationController.getReservationCountByServiceProviderCompany,
+);
 router.get('/status', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
 router.post('/upload-image', reservationController.uploadRequestImage);

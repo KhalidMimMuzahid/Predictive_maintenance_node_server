@@ -1,14 +1,15 @@
-import { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import { ServiceProviderCompany } from './serviceProviderCompany.model';
 
-const getServiceProviderCompanyForAdmin = async (_id: Types.ObjectId) => {
+const getServiceProviderCompanyForAdmin = async (
+  _id: mongoose.Types.ObjectId,
+) => {
   const serviceProviderCompany = await ServiceProviderCompany.findOne({
     serviceProviderAdmin: _id,
   });
 
   return serviceProviderCompany;
 };
-
 
 const getAllServiceProviderCompanies = async () => {
   const serviceProviderCompanies = await ServiceProviderCompany.find().populate(

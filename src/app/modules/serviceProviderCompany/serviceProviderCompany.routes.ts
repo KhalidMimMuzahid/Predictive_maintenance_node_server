@@ -12,4 +12,6 @@ router.get(
   '/get-all-service-provider-companies',
   serviceProviderCompanyControllers.getAllServiceProviderCompanies,
 );
+
+
 export const serviceProviderCompanyRoutes = router;

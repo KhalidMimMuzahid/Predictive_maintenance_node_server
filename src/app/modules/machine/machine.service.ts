@@ -412,6 +412,11 @@ const getAllMachineBy_id = async (user_id: string) => {
 
   return machine;
 };
+const getMachineBy_id = async (machine: string) => {
+  const machineData = await Machine.findById(machine);
+
+  return machineData;
+};
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
@@ -422,6 +427,7 @@ export const machineServices = {
   getMyGeneralMachineService,
   getUserNonConnectedGeneralMachineService,
   getAllMachineBy_id,
+  getMachineBy_id,
   deleteMachineService,
   addModuleToMachineInToDB,
   // changeStatusService,

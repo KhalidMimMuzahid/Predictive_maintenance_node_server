@@ -272,6 +272,32 @@ const getAllReservationsByServiceProviderCompany = async (
   ]);
   return reservations;
 };
+const getReservationCountByServiceProviderCompany = async (
+  serviceProviderCompany: string,
+) => {
+  const orderReceivedReservationsCount = await Invoice.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+      serviceProviderCompany,
+    ),
+  });
+  const orderCompletedReservationsCount = await Invoice.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+      serviceProviderCompany,
+    ),
+    taskStatus: 'completed',
+  });
+  const orderCanceledReservationsCount = await Invoice.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+      serviceProviderCompany,
+    ),
+    taskStatus: 'canceled',
+  });
+  return {
+    orderReceivedReservationsCount,
+    orderCompletedReservationsCount,
+    orderCanceledReservationsCount,
+  };
+};
 const getAllReservationsCount = async (machineType: TMachineType2) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQuery: any = {};
@@ -315,5 +341,6 @@ export const reservationServices = {
   getAllReservationsCount,
   getAllReservationsByUser,
   getAllReservationsByServiceProviderCompany,
+  getReservationCountByServiceProviderCompany,
   getSignedUrl,
 };

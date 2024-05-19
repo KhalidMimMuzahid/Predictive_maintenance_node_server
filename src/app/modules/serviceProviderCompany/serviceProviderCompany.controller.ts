@@ -40,6 +40,9 @@ const getAllServiceProviderCompanies: RequestHandler = catchAsync(
   },
 );
 
+
+
+
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
   getAllServiceProviderCompanies,
