@@ -159,7 +159,18 @@ const changeStatusToCompleted = async ({
     return existingInvoice;
   }
 };
+const getAllInvoicesByUser = async (user: string) => {
+  const invoices = await Invoice.find({
+    user: new mongoose.Types.ObjectId(user),
+  }).populate({
+    path: 'reservationRequest',
+    options: { strictPopulate: false },
+  });
+
+  return invoices;
+};
 export const invoiceServices = {
   addAdditionalProduct,
   changeStatusToCompleted,
+  getAllInvoicesByUser,
 };

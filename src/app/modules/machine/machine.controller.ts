@@ -260,6 +260,20 @@ const getAllMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
+  const machine: string = req.query?.machine as string;
+  // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const result = await machineServices.getMachineBy_id(machine);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine has retrieved successfully',
+    data: result,
+  });
+});
 export const machineController = {
   addSensorNonConnectedMachine,
   addSensorConnectedMachine,
@@ -270,7 +284,8 @@ export const machineController = {
   getMyGeneralMachine,
   getUserConnectedMachine,
   getUserNonConnectedGeneralMachine,
-  getAllMachineBy_id,
+  getAllMachineBy_id, // its user_id
+  getMachineBy_id,
   deleteMachine,
   // changeStatus,
   // addSensor,

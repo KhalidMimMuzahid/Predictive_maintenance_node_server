@@ -8,11 +8,16 @@ import AppError from '../../errors/AppError';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import {
   TMachineType,
+  TMachineType2,
   TProblem,
   TReservationType,
   TSchedule,
 } from './reservation.interface';
-import { machineTypeArray, reservationTypeArray } from './reservation.const';
+import {
+  machineTypeArray,
+  reservationTypeArray,
+  machineTypeArray2,
+} from './reservation.const';
 
 const createReservationRequest: RequestHandler = catchAsync(
   async (req, res) => {
@@ -160,6 +165,148 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getAllReservationsByUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const { uid } = req.params;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const user: string = req?.query?.user as string;
+
+    if (!user) {
+      //
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `user is required to get the reservations for this user`,
+      );
+    }
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+    });
+    const results = await reservationServices.getAllReservationsByUser(user);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request are retrieved successfully',
+      data: results,
+    });
+  },
+);
+const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const machineType: TMachineType2 = req?.query?.machineType as TMachineType2;
+
+  if (!machineTypeArray2.some((each) => each === machineType)) {
+    //
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `reservationType must be any of ${machineTypeArray2.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+  });
+  const results =
+    await reservationServices.getAllReservationsCount(machineType);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'successfully retrieve all reservations count',
+    data: results,
+  });
+});
+const getAllReservationsByServiceProviderCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const { uid } = req.params;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      //
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `serviceProviderCompany is required to get the reservations for this serviceProviderCompany`,
+      );
+    }
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+    });
+    const results =
+      await reservationServices.getAllReservationsByServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request are retrieved successfully',
+      data: results,
+    });
+  },
+);
+
+const getAllScheduledReservationsByServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    // const { uid } = req.params;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      //
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `serviceProviderCompany is required to get scheduled reservations for this serviceProviderCompany`,
+      );
+    }
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+    });
+    const results =
+      await reservationServices.getAllScheduledReservationsByServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'scheduled reservation request are retrieved successfully',
+      data: results,
+    });
+  });
+const getReservationCountByServiceProviderCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+    const result =
+      await reservationServices.getReservationCountByServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservationCount data has retrieved successfully',
+      data: result,
+    });
+  },
+);
 
 export const reservationController = {
   createReservationRequest,
@@ -167,5 +314,10 @@ export const reservationController = {
   getMyReservationsByStatus,
   getReservationsByStatus,
   getAllReservations,
+  getAllReservationsCount,
+  getAllReservationsByUser,
+  getAllReservationsByServiceProviderCompany,
+  getAllScheduledReservationsByServiceProviderCompany,
+  getReservationCountByServiceProviderCompany,
   uploadRequestImage,
 };

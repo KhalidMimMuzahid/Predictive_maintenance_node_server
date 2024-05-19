@@ -68,8 +68,34 @@ const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const getAllInvoicesByUser: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+
+  const user: string = req?.query?.user as string;
+
+  if (!user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'user is required to get invoices for user',
+    );
+  }
+  const result = await invoiceServices.getAllInvoicesByUser(user);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'invoices are retrieved successfully',
+    data: result,
+  });
+});
 export const invoiceController = {
   addAdditionalProducts,
   changeStatusToCompleted,
+  getAllInvoicesByUser,
 };

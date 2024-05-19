@@ -15,7 +15,7 @@ export type TReservationType =
   | 'accepted'
   | 'ongoing'
   | 'completed';
-
+  
 export type TProblem = {
   issues: string[]; // all issues title one by one
   problemDescription?: string;
@@ -30,6 +30,7 @@ export type TSchedule = {
   // date: Date;
   schedules: Date[]; // every schedule will be stored here , if you re schedule this request 5 times, this array will hold five different date
 };
+export type TMachineType2 = 'washing-machine' | 'general-machine';
 export type TReservationRequest = {
   user: Types.ObjectId; // objectId of the user model
   requestId: string; // customized unique Identifier
@@ -38,7 +39,7 @@ export type TReservationRequest = {
   date: Date; // date when the reservation arises
   // location: TAddress; // where this machine is located
   isSensorConnected: boolean; // machineType as figma; true if sensor is sensor-connected, false if not sensor-non-connected
-  machineType: 'washing-machine' | 'general-machine';
+  machineType: TMachineType2;
   problem: TProblem;
   schedule: TSchedule;
   invoice: Types.ObjectId; // objectId of invoice Model for this reservation
