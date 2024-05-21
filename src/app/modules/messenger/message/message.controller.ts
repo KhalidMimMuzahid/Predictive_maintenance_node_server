@@ -1,0 +1,46 @@
+import { RequestHandler } from 'express';
+
+import httpStatus from 'http-status';
+import catchAsync from '../../../utils/catchAsync';
+import { TMessage } from './message.interface';
+import sendResponse from '../../../utils/sendResponse';
+import { TAuth } from '../../../interface/error';
+import { messageServices } from './message.service';
+import AppError from '../../../errors/AppError';
+
+const sendMessage: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  console.log({ auth });
+  const chat: string = req?.query?.chat as string;
+  if (!chat) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'chat is required to send message',
+    );
+  }
+
+  const messageData: Partial<TMessage> = req.body as Partial<TMessage>;
+  if (!messageData[`${messageData?.type}`]) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `${messageData[`${messageData?.type}`]} is required to send message`,
+    );
+  }
+  const result = await messageServices.sendMessage({
+    messageData,
+    chat,
+    sender: auth._id,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'message sent successfully',
+    data: result,
+  });
+});
+
+export const messageController = {
+  sendMessage,
+};
