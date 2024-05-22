@@ -21,6 +21,7 @@ export type TUser = {
   // fullName: firstName + " " + lastName // this fullName field will be virtual
   email: string;
   role: TRole;
+  phone: string;
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   // stripeId: string;
   wallet?: Types.ObjectId | TWallet; // it user is ObjectId of the Wallet model
@@ -37,4 +38,5 @@ export type TUser = {
 export interface UserModel extends Model<TUser> {
   isUidExists(uid: string): Promise<TUser | null>;
   isEmailExists(email: string): Promise<TUser | null>;
+  isPhoneExists(phone: string): Promise<TUser | null>;
 }

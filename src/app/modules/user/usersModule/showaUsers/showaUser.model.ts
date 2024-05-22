@@ -26,7 +26,7 @@ const ShowaUserSchema: Schema = new Schema<TShowaUser>(
       required: true,
     },
     language: { type: LanguageSchema, required: false },
-    phone: { type: String, required: true, unique: true },
+    // phone: { type: String, required: true, unique: true },
     occupation: { type: String, required: true },
 
     dateOfBirth: { type: Date, required: true },
