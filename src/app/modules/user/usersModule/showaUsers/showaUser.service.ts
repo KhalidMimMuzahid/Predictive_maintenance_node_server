@@ -133,23 +133,23 @@ const getShowaUserFromDB = async (showaUser_id: string) => {
 
   return showaUser;
 };
-const updateAddress = async (uid: string, addressPayload: TAddress) => {
-  const user = await User.findOne({ uid });
-  if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
-  }
-  const showaUser = await ShowaUser.findById(user.showaUser);
-  if (!showaUser) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'no showa user founded with this id',
-    );
-  }
-  showaUser.addresses?.push({ isDeleted: false, address: addressPayload });
-  const updatedShowaUser = await showaUser.save();
+// const updateAddress = async (uid: string, addressPayload: TAddress) => {
+//   const user = await User.findOne({ uid });
+//   if (!user) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+//   }
+//   const showaUser = await ShowaUser.findById(user.showaUser);
+//   if (!showaUser) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'no showa user founded with this id',
+//     );
+//   }
+//   showaUser.addresses?.push({ isDeleted: false, address: addressPayload });
+//   const updatedShowaUser = await showaUser.save();
 
-  return { updatedShowaUser };
-};
+//   return { updatedShowaUser };
+// };
 
 const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
   const user = await User.findOne({ uid });
@@ -296,7 +296,7 @@ export const showaUserServices = {
   createShowaUserIntoDB,
   getShowaUserFromDB,
   getShowaUserBy_user,
-  updateAddress,
+  // updateAddress,
   getSignedUrl,
   updateProfile,
   getShowaUserByPhoneOrEmail,
