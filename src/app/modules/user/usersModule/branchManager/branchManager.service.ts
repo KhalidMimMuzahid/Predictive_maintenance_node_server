@@ -37,6 +37,10 @@ const createServiceProviderBranchManagerIntoDB = async ({
   if (isEmailExists) {
     throw new AppError(httpStatus.BAD_REQUEST, 'email is already in use');
   }
+  const isPhoneExists = await User.isPhoneExists(rootUser?.phone as string);
+  if (isPhoneExists) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'phone is already in use');
+  }
   let serviceProviderCompany_id: Types.ObjectId;
   try {
     serviceProviderCompany_id = new Types.ObjectId(serviceProviderCompany);

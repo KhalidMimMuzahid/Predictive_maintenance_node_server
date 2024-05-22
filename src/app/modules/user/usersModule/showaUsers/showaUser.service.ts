@@ -31,6 +31,10 @@ const createShowaUserIntoDB = async (
   if (isEmailExists) {
     throw new AppError(httpStatus.BAD_REQUEST, 'email has already in used');
   }
+  const isPhoneExists = await User.isPhoneExists(rootUser?.phone as string);
+  if (isPhoneExists) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'phone is already in use');
+  }
 
   // creating the session
   const session = await mongoose.startSession();
@@ -161,9 +165,6 @@ const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
   }
   if (userData.name) {
     showaUser.name = userData.name;
-  }
-  if (userData.phone) {
-    showaUser.phone = userData.phone;
   }
   if (userData.gender) {
     showaUser.gender = userData.gender;

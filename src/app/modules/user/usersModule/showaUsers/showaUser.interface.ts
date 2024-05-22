@@ -11,7 +11,7 @@ export type TShowaUser = {
   name: { firstName: string; lastName: string };
   language?: TLanguage;
   // fullName: firstName + " " + lastName // this fullName field will be virtual
-  phone: string;
+  // phone: string;
   occupation?: string;
   dateOfBirth: Date;
   gender: 'male' | 'female' | 'prefer-not-answer';

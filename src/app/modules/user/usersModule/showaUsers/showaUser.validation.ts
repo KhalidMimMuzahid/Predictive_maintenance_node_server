@@ -29,7 +29,7 @@ const showaUserCreateValidationSchema = z.object({
   }),
   language: languageSchema.optional(),
 
-  phone: z.string(),
+  // phone: z.string(),
   occupation: z.string(),
   dateOfBirth: z.string(), // for now its string; but it will be date in production
   gender: z.enum(['male', 'female', 'prefer-not-answer']),
