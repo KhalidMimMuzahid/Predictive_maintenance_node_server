@@ -133,25 +133,7 @@ const getShowaUserFromDB = async (showaUser_id: string) => {
 
   return showaUser;
 };
-// const updateAddress = async (uid: string, addressPayload: TAddress) => {
-//   const user = await User.findOne({ uid });
-//   if (!user) {
-//     throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
-//   }
-//   const showaUser = await ShowaUser.findById(user.showaUser);
-//   if (!showaUser) {
-//     throw new AppError(
-//       httpStatus.BAD_REQUEST,
-//       'no showa user founded with this id',
-//     );
-//   }
-//   showaUser.addresses?.push({ isDeleted: false, address: addressPayload });
-//   const updatedShowaUser = await showaUser.save();
-
-//   return { updatedShowaUser };
-// };
-
-const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
+const updateAddress = async (uid: string, addressPayload: TAddress) => {
   const user = await User.findOne({ uid });
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
@@ -163,28 +145,46 @@ const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
       'no showa user founded with this id',
     );
   }
-  if (userData.name) {
-    showaUser.name = userData.name;
-  }
-  if (userData.phone) {
-    showaUser.phone = userData.phone;
-  }
-  if (userData.gender) {
-    showaUser.gender = userData.gender;
-  }
-  if (userData.dateOfBirth) {
-    showaUser.dateOfBirth = userData.dateOfBirth;
-  }
-  if (userData.occupation) {
-    showaUser.occupation = userData.occupation;
-  }
-  if (userData.photoUrl) {
-    showaUser.photoUrl = userData.photoUrl;
-  }
+  showaUser.addresses?.push({ isDeleted: false, address: addressPayload });
   const updatedShowaUser = await showaUser.save();
 
-  return { showaUser: updatedShowaUser };
+  return { updatedShowaUser };
 };
+
+// const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
+//   const user = await User.findOne({ uid });
+//   if (!user) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+//   }
+//   const showaUser = await ShowaUser.findById(user.showaUser);
+//   if (!showaUser) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'no showa user founded with this id',
+//     );
+//   }
+//   if (userData.name) {
+//     showaUser.name = userData.name;
+//   }
+//   if (userData.phone) {
+//     showaUser.phone = userData.phone;
+//   }
+//   if (userData.gender) {
+//     showaUser.gender = userData.gender;
+//   }
+//   if (userData.dateOfBirth) {
+//     showaUser.dateOfBirth = userData.dateOfBirth;
+//   }
+//   if (userData.occupation) {
+//     showaUser.occupation = userData.occupation;
+//   }
+//   if (userData.photoUrl) {
+//     showaUser.photoUrl = userData.photoUrl;
+//   }
+//   const updatedShowaUser = await showaUser.save();
+
+//   return { showaUser: updatedShowaUser };
+// };
 
 const getSignedUrl = async (fileKey: string, fileType: string) => {
   const client_s3 = new S3({
@@ -296,9 +296,9 @@ export const showaUserServices = {
   createShowaUserIntoDB,
   getShowaUserFromDB,
   getShowaUserBy_user,
-  // updateAddress,
+  updateAddress,
   getSignedUrl,
-  updateProfile,
+  // updateProfile,
   getShowaUserByPhoneOrEmail,
   getShowaUserContacts,
 };
