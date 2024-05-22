@@ -18,7 +18,7 @@ const UserSchema = new Schema<TUser, UserModel>(
     // uniqueNumberId: { type: String },
 
     email: { type: String, required: true, unique: true },
-
+    phone: { type: String, required: true, unique: true },
     role: {
       type: String,
       required: true,
@@ -69,6 +69,10 @@ UserSchema.statics.isUidExists = async (uid: string) => {
 };
 UserSchema.statics.isEmailExists = async (email: string) => {
   const existingUser = User.findOne({ email });
+  return existingUser;
+};
+UserSchema.statics.isPhoneExists = async (phone: string) => {
+  const existingUser = User.findOne({ phone });
   return existingUser;
 };
 // //virtual

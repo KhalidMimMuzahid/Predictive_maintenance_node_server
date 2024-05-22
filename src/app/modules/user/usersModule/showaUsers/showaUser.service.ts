@@ -31,6 +31,10 @@ const createShowaUserIntoDB = async (
   if (isEmailExists) {
     throw new AppError(httpStatus.BAD_REQUEST, 'email has already in used');
   }
+  const isPhoneExists = await User.isPhoneExists(rootUser?.phone as string);
+  if (isPhoneExists) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'phone is already in use');
+  }
 
   // creating the session
   const session = await mongoose.startSession();
@@ -147,40 +151,40 @@ const updateAddress = async (uid: string, addressPayload: TAddress) => {
   return { updatedShowaUser };
 };
 
-const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
-  const user = await User.findOne({ uid });
-  if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
-  }
-  const showaUser = await ShowaUser.findById(user.showaUser);
-  if (!showaUser) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'no showa user founded with this id',
-    );
-  }
-  if (userData.name) {
-    showaUser.name = userData.name;
-  }
-  if (userData.phone) {
-    showaUser.phone = userData.phone;
-  }
-  if (userData.gender) {
-    showaUser.gender = userData.gender;
-  }
-  if (userData.dateOfBirth) {
-    showaUser.dateOfBirth = userData.dateOfBirth;
-  }
-  if (userData.occupation) {
-    showaUser.occupation = userData.occupation;
-  }
-  if (userData.photoUrl) {
-    showaUser.photoUrl = userData.photoUrl;
-  }
-  const updatedShowaUser = await showaUser.save();
+// const updateProfile = async (uid: string, userData: Partial<TShowaUser>) => {
+//   const user = await User.findOne({ uid });
+//   if (!user) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+//   }
+//   const showaUser = await ShowaUser.findById(user.showaUser);
+//   if (!showaUser) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'no showa user founded with this id',
+//     );
+//   }
+//   if (userData.name) {
+//     showaUser.name = userData.name;
+//   }
+//   if (userData.phone) {
+//     showaUser.phone = userData.phone;
+//   }
+//   if (userData.gender) {
+//     showaUser.gender = userData.gender;
+//   }
+//   if (userData.dateOfBirth) {
+//     showaUser.dateOfBirth = userData.dateOfBirth;
+//   }
+//   if (userData.occupation) {
+//     showaUser.occupation = userData.occupation;
+//   }
+//   if (userData.photoUrl) {
+//     showaUser.photoUrl = userData.photoUrl;
+//   }
+//   const updatedShowaUser = await showaUser.save();
 
-  return { showaUser: updatedShowaUser };
-};
+//   return { showaUser: updatedShowaUser };
+// };
 
 const getSignedUrl = async (fileKey: string, fileType: string) => {
   const client_s3 = new S3({
@@ -294,7 +298,7 @@ export const showaUserServices = {
   getShowaUserBy_user,
   updateAddress,
   getSignedUrl,
-  updateProfile,
+  // updateProfile,
   getShowaUserByPhoneOrEmail,
   getShowaUserContacts,
 };

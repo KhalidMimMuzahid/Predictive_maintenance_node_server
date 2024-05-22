@@ -30,6 +30,10 @@ const createServiceProviderAdminIntoDB = async (
   if (isEmailExists) {
     throw new AppError(httpStatus.BAD_REQUEST, 'email is already in use');
   }
+  const isPhoneExists = await User.isPhoneExists(rootUser?.phone as string);
+  if (isPhoneExists) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'phone is already in use');
+  }
 
   // creating the session
   const session = await mongoose.startSession();
