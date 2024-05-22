@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 
 export type TFile = {
+  fileUrl: string;
   fileName: string;
   extension: string;
 };

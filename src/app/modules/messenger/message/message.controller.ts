@@ -11,7 +11,6 @@ import AppError from '../../../errors/AppError';
 const sendMessage: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  console.log({ auth });
   const chat: string = req?.query?.chat as string;
   if (!chat) {
     throw new AppError(

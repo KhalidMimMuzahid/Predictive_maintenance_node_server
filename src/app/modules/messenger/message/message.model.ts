@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { TFile, TMessage } from './message.interface';
 
 const FileSchema: Schema = new Schema<TFile>({
+  fileUrl: { type: 'string', required: true },
   fileName: { type: 'string', required: true },
   extension: { type: 'string', required: true },
 });

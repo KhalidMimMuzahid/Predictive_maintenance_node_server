@@ -20,6 +20,9 @@ const sendMessage = async ({
     throw new AppError(httpStatus.BAD_REQUEST, `chat is not found`);
   }
 
+
+
+  console.log({ sender });
   if (
     !chatData?.users?.some((each) => each?.toString() === sender?.toString())
   ) {

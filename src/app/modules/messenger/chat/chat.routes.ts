@@ -11,4 +11,10 @@ router.post(
   chatController.createPersonalChat,
 );
 
+router.post(
+  '/create-group-chat',
+  validateRequest(chatValidation.createGroupChatValidationSchema),
+  chatController.createGroupChat,
+);
+
 export const chatRoutes = router;
