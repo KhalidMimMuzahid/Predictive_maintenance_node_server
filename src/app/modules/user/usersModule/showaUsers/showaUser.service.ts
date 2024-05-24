@@ -40,6 +40,7 @@ const createShowaUserIntoDB = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
+
     const createdUserArray = await User.create([rootUser], {
       session: session,
     });
