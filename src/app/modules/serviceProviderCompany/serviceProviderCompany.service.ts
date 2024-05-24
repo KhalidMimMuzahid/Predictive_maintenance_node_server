@@ -19,7 +19,9 @@ const getServiceProviderCompanyBy_id = async (
 ) => {
   const serviceProviderCompanyData = await ServiceProviderCompany.findById(
     serviceProviderCompany,
-  );
+  ).populate([
+    { path: 'serviceProviderAdmin', options: { strictPopulate: false } },
+  ]);
 
   return serviceProviderCompanyData;
 };
