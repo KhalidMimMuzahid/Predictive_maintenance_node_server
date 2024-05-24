@@ -292,7 +292,7 @@ const getAllScheduledReservationsByServiceProviderCompany = async (
     const reservationRequest: TReservationRequest =
       each?.reservationRequest as unknown as TReservationRequest;
     if (reservationRequest?.schedule?.schedules?.length) {
-      allScheduledReservationsUnsorted.push(reservationRequest);
+      allScheduledReservationsUnsorted.push(each);
     }
   });
   const allScheduledReservations = sortByCreatedAtDescending({

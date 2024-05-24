@@ -24,7 +24,32 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
     });
   },
 );
+const getServiceProviderCompanyBy_id: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
 
+    const serviceProviderCompany = req?.query?.serviceProviderCompany as string;
+    if (!serviceProviderCompany) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderCompany is required to get company details',
+      );
+    }
+
+    const result =
+      await serviceProviderCompanyServices.getServiceProviderCompanyBy_id(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'serviceProviderCompany retrieved successfully',
+      data: result,
+    });
+  },
+);
 const getAllServiceProviderCompanies: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -72,6 +97,7 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
+  getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
 };

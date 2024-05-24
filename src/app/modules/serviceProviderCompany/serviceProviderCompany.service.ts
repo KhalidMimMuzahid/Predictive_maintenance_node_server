@@ -14,7 +14,15 @@ const getServiceProviderCompanyForAdmin = async (
 
   return serviceProviderCompany;
 };
+const getServiceProviderCompanyBy_id = async (
+  serviceProviderCompany: string,
+) => {
+  const serviceProviderCompanyData = await ServiceProviderCompany.findById(
+    serviceProviderCompany,
+  );
 
+  return serviceProviderCompanyData;
+};
 const getAllServiceProviderCompanies = async () => {
   const serviceProviderCompanies = await ServiceProviderCompany.find().populate(
     [
@@ -90,6 +98,7 @@ const getAllMembersForServiceProviderCompany = async (
 
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
+  getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
 };
