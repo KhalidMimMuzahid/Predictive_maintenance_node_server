@@ -16,7 +16,8 @@ if (
   pathname?.endsWith('sign-in') ||
   pathname?.endsWith('add-sensor-data') ||
   pathname?.endsWith('upload-photo') ||
-  pathname?.endsWith('upload-image')
+  pathname?.endsWith('upload-image') ||
+  pathname?.endsWith('/delete-my-account')
 ) {
   return next();
 } else {
