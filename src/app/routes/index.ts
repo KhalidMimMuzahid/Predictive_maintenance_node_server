@@ -14,6 +14,8 @@ import { invoiceRoutes } from '../modules/invoice/invoice.routes';
 import { transactionRoutes } from '../modules/transaction/transaction.routes';
 import { walletRoutes } from '../modules/wallet/wallet.routes';
 import { messengerRoutes } from '../modules/messenger/messenger.routes';
+import { subscriptionRoutes } from '../modules/subscription/subscription.routes';
+import { extraDataRoutes } from '../modules/extraData/extraData.routes';
 
 const router = express.Router();
 
@@ -32,6 +34,8 @@ const moduleRoutes: any[] = [
   { path: '/transaction', route: transactionRoutes },
   { path: '/wallet', route: walletRoutes },
   { path: '/messenger', route: messengerRoutes },
+  { path: '/subscription', route: subscriptionRoutes },
+  { path: '/extra-data', route: extraDataRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
