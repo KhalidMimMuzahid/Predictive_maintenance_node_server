@@ -3,7 +3,6 @@ import AppError from '../../errors/AppError';
 import { User } from './user.model';
 import { jwtFunc } from '../../utils/jwtFunction';
 
-
 // 'showaAdmin'
 // 'showaSubAdmin'
 // 'serviceProviderAdmin'
@@ -11,9 +10,6 @@ import { jwtFunc } from '../../utils/jwtFunction';
 // 'serviceProviderEngineer'
 // 'serviceProviderBranchManager'
 // 'serviceProviderSupportStuff'
-
-
-
 
 const signIn = async (uid: string) => {
   const user = await User.findOne({ uid }).populate([
@@ -32,6 +28,14 @@ const signIn = async (uid: string) => {
     {
       path: 'serviceProviderAdmin',
       options: { strictPopulate: false },
+      populate: {
+        path: 'serviceProviderCompany',
+        options: { strictPopulate: false },
+        populate: {
+          path: 'branches',
+          options: { strictPopulate: false },
+        },
+      },
     },
     {
       path: 'serviceProviderSubAdmin',
@@ -87,6 +91,14 @@ const getUserBy_id = async (_id: string) => {
     {
       path: 'serviceProviderAdmin',
       options: { strictPopulate: false },
+      populate: {
+        path: 'serviceProviderCompany',
+        options: { strictPopulate: false },
+        populate: {
+          path: 'branches',
+          options: { strictPopulate: false },
+        },
+      },
     },
     {
       path: 'serviceProviderSubAdmin',

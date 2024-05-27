@@ -64,6 +64,14 @@ const createServiceProviderAdminIntoDB = async (
       {
         path: 'serviceProviderAdmin',
         options: { strictPopulate: false },
+        populate: {
+          path: 'serviceProviderCompany',
+          options: { strictPopulate: false },
+          populate: {
+            path: 'branches',
+            options: { strictPopulate: false },
+          },
+        },
       },
 
       // // for no we no need wallet in this api; cause for get wallet we have another api
