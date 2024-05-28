@@ -9,4 +9,9 @@ router.post(
   validateRequest(serviceProviderAdminValidation.userCreateValidationSchema),
   serviceProviderAdminControllers.createServiceProviderAdmin,
 );
+router.patch(
+  '/add-branch',
+  validateRequest(serviceProviderAdminValidation.addBranchValidationSchema),
+  serviceProviderAdminControllers.addServiceProviderBranch,
+);
 export const serviceProviderAdminRoutes = router;
