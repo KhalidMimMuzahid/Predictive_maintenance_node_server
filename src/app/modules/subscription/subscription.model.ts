@@ -54,19 +54,10 @@ const premiumSchema = new Schema<TPremium>({
     enum: moduleTypeEnum,
     required: true,
   },
-  validity: {
-    type: Number,
-    required: true,
-  },
 });
 
 const standardSchema = new Schema<TStandard>({
   totalMachine: {
-    type: Number,
-    required: true,
-  },
-
-  validity: {
     type: Number,
     required: true,
   },
@@ -84,11 +75,6 @@ const basicSchema = new Schema<TBasic>({
   applicableModules: {
     type: [String],
     enum: moduleTypeEnum,
-    required: true,
-  },
-
-  validity: {
-    type: Number,
     required: true,
   },
 });
@@ -137,6 +123,10 @@ export const SubscriptionSchema: Schema = new Schema<TSubscription>(
     },
     package: packageSchema,
     price: priceSchema,
+    validity: {
+      type: Number,
+      required: true,
+    },
     features: {
       type: [String],
       required: true,
