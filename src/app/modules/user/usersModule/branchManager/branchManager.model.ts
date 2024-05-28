@@ -20,7 +20,11 @@ export const ServiceProviderBranchManagerSchema: Schema =
           required: true,
           default: 'in-progress',
         }, // only service provider admin/sub-admin can change the status
-        designation: { type: String, default: 'engineer', required: true },
+        designation: {
+          type: String,
+          default: 'Branch Manager',
+          required: true,
+        },
         serviceProviderCompany: {
           type: Schema.Types.ObjectId,
           ref: 'ServiceProviderCompany',

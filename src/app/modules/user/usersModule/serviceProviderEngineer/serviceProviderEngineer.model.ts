@@ -72,6 +72,10 @@ export const ServiceProviderEngineerSchema: Schema =
     },
   );
 
+ServiceProviderEngineerSchema.virtual('fullName').get(function () {
+  return this?.name?.firstName + ' ' + this?.name?.lastName;
+});
+
 export const ServiceProviderEngineer = mongoose.model<TServiceProviderEngineer>(
   'ServiceProviderEngineer',
   ServiceProviderEngineerSchema,

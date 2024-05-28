@@ -9,6 +9,7 @@ import { jwtFunc } from '../../../../utils/jwtFunction';
 import { createServiceProviderCompanyAndAdmin } from './serviceProviderAdmin.utils';
 import { createServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.utils';
 import { TServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.interface';
+import { ServiceProviderAdmin } from './serviceProviderAdmin.model';
 
 const createServiceProviderAdminIntoDB = async (
   rootUser: Partial<TUser>,
@@ -97,6 +98,48 @@ const createServiceProviderAdminIntoDB = async (
   }
 };
 
+const addServiceProviderBranch = async (
+  uid: string,
+  serviceProviderBranch: Partial<TServiceProviderBranch>,
+) => {
+  const user = await User.findOne({ uid });
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'no user founded with this uid');
+  }
+  const serviceProviderAdmin = await ServiceProviderAdmin.findById(
+    user.serviceProviderAdmin,
+  );
+  if (!serviceProviderAdmin) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no service provider admin founded with this id',
+    );
+  }
+  if (!serviceProviderBranch) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'No branch data received!');
+  }
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const updatedServiceProviderBranch = await createServiceProviderBranch({
+      session,
+      serviceProviderCompany: serviceProviderAdmin.serviceProviderCompany,
+      serviceProviderBranch,
+    });
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return { updatedServiceProviderBranch };
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+};
+
 export const serviceProviderAdminServices = {
   createServiceProviderAdminIntoDB,
+  addServiceProviderBranch,
 };
