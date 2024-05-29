@@ -6,6 +6,7 @@ import { Chat } from './chat.model';
 import mongoose from 'mongoose';
 import { Message } from '../message/message.model';
 import { hadDuplicateValue } from '../../../utils/hadDuplicateValue';
+import { TAddingMember, TCreatingGroup } from '../message/message.interface';
 
 const createPersonalChat = async (personalChatData: Partial<TChat>) => {
   const { users } = personalChatData;
@@ -146,22 +147,66 @@ const createGroupChat = async (groupChatData: Partial<TChat>) => {
 
     const groupChat = groupChatArray[0];
 
-    const messageArray = await Message.create(
-      [
-        {
-          chat: groupChat?._id,
-          event: 'Group has created successfully',
-          type: 'event',
-        },
-      ],
-      {
-        session: session,
-      },
-    );
+    // we need to create event type message for creating group and adding members
 
-    if (!messageArray?.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'failed to create chat');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let eventMessages: any[] = [];
+
+    eventMessages = users?.map((user) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const event: any = {};
+      event.type = 'addingMember';
+      const addingMember: Partial<TAddingMember> = {};
+      addingMember.addedByUser = group.groupAdmin;
+      addingMember.addedUser = new mongoose.Types.ObjectId(user);
+      event.addingMember = addingMember;
+
+      return {
+        chat: groupChat?._id,
+        event,
+        type: 'event',
+      };
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const event: any = {};
+    event.type = 'creatingGroup';
+    const creatingGroup: Partial<TCreatingGroup> = {};
+    creatingGroup.createdByUser = group.groupAdmin;
+    event.creatingGroup = creatingGroup;
+
+    eventMessages.unshift({
+      chat: groupChat?._id,
+      event,
+      type: 'event',
+    });
+    const createdMessagesArray = await Message.create(eventMessages, {
+      session: session,
+    });
+
+    if (createdMessagesArray?.length !== users?.length + 1) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not create chat, please try again',
+      );
     }
+
+    // const messageArray = await Message.create(
+    //   [
+    //     {
+    //       chat: groupChat?._id,
+    //       event: 'Group has created successfully',
+    //       type: 'event',
+    //     },
+    //   ],
+    //   {
+    //     session: session,
+    //   },
+    // );
+
+    // if (!messageArray?.length) {
+    //   throw new AppError(httpStatus.BAD_REQUEST, 'failed to create chat');
+    // }
 
     await session.commitTransaction();
     await session.endSession();

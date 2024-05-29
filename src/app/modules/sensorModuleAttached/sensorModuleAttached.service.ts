@@ -126,6 +126,15 @@ const getAttachedSensorModulesByMachine = async (
   );
   return sensors;
 };
+const getAllAttachedSensorModulesByMachine = async (
+  machine_id: mongoose.Types.ObjectId,
+) => {
+  const sensors = await SensorModuleAttached.find(
+    { machine: machine_id },
+    { sensorData: 0 },
+  );
+  return sensors;
+};
 
 const getSensorDataFromDB = async ({
   macAddress,
@@ -227,6 +236,7 @@ export const sensorAttachedModuleServices = {
   addSensorDataInToDB,
   getAttachedSensorModulesByuser,
   getAttachedSensorModulesByMachine,
+  getAllAttachedSensorModulesByMachine,
   getSensorDataFromDB,
   getSensorModuleAttachedByMacAddress,
 };

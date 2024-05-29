@@ -159,6 +159,21 @@ const changeStatusToCompleted = async ({
     return existingInvoice;
   }
 };
+
+const getAllInvoices = async () => {
+  const invoices = await Invoice.find({}).populate([
+    {
+      path: 'reservationRequest',
+      options: { strictPopulate: false },
+    },
+    {
+      path: 'user',
+      populate: { path: 'showaUser', options: { strictPopulate: false } },
+    },
+  ]);
+
+  return invoices;
+};
 const getAllInvoicesByUser = async (user: string) => {
   const invoices = await Invoice.find({
     user: new mongoose.Types.ObjectId(user),
@@ -172,5 +187,6 @@ const getAllInvoicesByUser = async (user: string) => {
 export const invoiceServices = {
   addAdditionalProduct,
   changeStatusToCompleted,
+  getAllInvoices,
   getAllInvoicesByUser,
 };

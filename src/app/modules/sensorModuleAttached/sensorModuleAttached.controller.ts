@@ -100,6 +100,23 @@ const getAttachedSensorModulesByMachine: RequestHandler = catchAsync(
     });
   },
 );
+const getAllAttachedSensorModulesByMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const { machine_id } = req.query;
+    const result =
+      await sensorAttachedModuleServices.getAllAttachedSensorModulesByMachine(
+        new Types.ObjectId(machine_id as string),
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Attached sensor modules has retrieved successfully',
+      data: result,
+    });
+  },
+);
 
 const getSensorData: RequestHandler = catchAsync(async (req, res) => {
   // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
@@ -163,5 +180,6 @@ export const sensorModuleAttachedControllers = {
   getSensorData,
   getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,
+  getAllAttachedSensorModulesByMachine,
   getSensorModuleAttachedByMacAddress,
 };
