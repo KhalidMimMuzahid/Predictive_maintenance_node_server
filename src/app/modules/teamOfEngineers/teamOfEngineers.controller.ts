@@ -30,6 +30,23 @@ const makeTeamOfEngineers: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllTeamsOfEngineers: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+  const result = await teamOfEngineersServices.getAllTeamsOfEngineers();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    data: result,
+  });
+});
+
 export const teamOfEngineersControllers = {
   makeTeamOfEngineers,
+  getAllTeamsOfEngineers,
 };

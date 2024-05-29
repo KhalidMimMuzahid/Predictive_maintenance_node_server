@@ -12,4 +12,9 @@ router.post(
   ),
   teamOfEngineersControllers.makeTeamOfEngineers,
 );
+// validateRequest required
+router.get(
+  '/get-teams-of-engineers',
+  teamOfEngineersControllers.getAllTeamsOfEngineers,
+);
 export const teamOfEngineersRoutes = router;
