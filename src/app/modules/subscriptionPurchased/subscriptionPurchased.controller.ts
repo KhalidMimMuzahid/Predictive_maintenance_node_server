@@ -20,8 +20,10 @@ const purchaseSubscription: RequestHandler = catchAsync(async (req, res) => {
     );
   }
 
-  const result =
-    await subscriptionPurchasedServices.createSubscription(subscription);
+  const result = await subscriptionPurchasedServices.createSubscription({
+    user: auth?._id,
+    subscription,
+  });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,

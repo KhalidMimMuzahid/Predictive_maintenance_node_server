@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import {
   TPurchasedPrice,
   TSubscriptionPurchased,
@@ -8,8 +8,8 @@ import { SubscriptionSchema } from '../subscription/subscription.model';
 
 const usageSchema = new Schema<TUsage>({
   showaUser: {
-    machines: [{ type: Types.ObjectId, ref: 'Machine' }],
-    IOTs: [{ type: Types.ObjectId, ref: 'SensorModuleAttached' }],
+    machines: [{ type: Schema.Types.ObjectId, ref: 'Machine' }],
+    IOTs: [{ type: Schema.Types.ObjectId, ref: 'SensorModuleAttached' }],
     totalAvailableMachine: Number,
     totalAvailableIOT: Number,
     totalAvailableShowaMB: Number,
@@ -46,7 +46,7 @@ const SubscriptionPurchasedSchema: Schema = new Schema<TSubscriptionPurchased>(
       type: new Schema(
         {
           ...SubscriptionSchema.obj,
-          _id: { type: Types.ObjectId, required: true },
+          _id: { type: Schema.Types.ObjectId, required: true },
           createdAt: { type: Date, required: true, default: Date.now },
           updatedAt: { type: Date, required: true, default: Date.now },
         },
@@ -54,7 +54,7 @@ const SubscriptionPurchasedSchema: Schema = new Schema<TSubscriptionPurchased>(
       ),
       required: true,
     },
-
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     isActive: {
       type: Boolean,
       required: true,

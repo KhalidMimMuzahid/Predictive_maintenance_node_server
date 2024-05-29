@@ -23,7 +23,9 @@ export type TSubscriptionPurchased = {
     _id: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
-  }; // @Jawed vy;  we need to make plane together
+  };
+
+  user: mongoose.Types.ObjectId;
   isActive: boolean;
   usage: TUsage;
   expDate: Date;

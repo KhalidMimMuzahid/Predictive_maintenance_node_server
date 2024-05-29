@@ -17,7 +17,13 @@ import {
 import { addDays } from '../../utils/addDays';
 import { SubscriptionPurchased } from './subscriptionPurchased.model';
 
-const createSubscription = async (subscription: string) => {
+const createSubscription = async ({
+  user,
+  subscription,
+}: {
+  user: mongoose.Types.ObjectId;
+  subscription: string;
+}) => {
   const subscriptionData = await Subscription.findById(
     new mongoose.Types.ObjectId(subscription),
   );
@@ -82,6 +88,7 @@ const createSubscription = async (subscription: string) => {
   const expDate: Date = addDays(subscriptionData?.validity);
   const subscriptionPurchaseData = await SubscriptionPurchased.create({
     subscription: subscriptionData,
+    user,
     isActive: true,
     usage,
     expDate,
