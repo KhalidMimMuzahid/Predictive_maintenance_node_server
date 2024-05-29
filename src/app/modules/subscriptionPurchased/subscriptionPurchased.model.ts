@@ -2,16 +2,17 @@ import mongoose, { Schema, Types } from 'mongoose';
 import {
   TPurchasedPrice,
   TSubscriptionPurchased,
-  TUses,
+  TUsage,
 } from './subscriptionPurchased.interface';
 import { SubscriptionSchema } from '../subscription/subscription.model';
 
-const usagesSchema = new Schema<TUses>({
+const usageSchema = new Schema<TUsage>({
   showaUser: {
     machines: [{ type: Types.ObjectId, ref: 'Machine' }],
     IOTs: [{ type: Types.ObjectId, ref: 'SensorModuleAttached' }],
     totalAvailableMachine: Number,
     totalAvailableIOT: Number,
+    totalAvailableShowaMB: Number,
   },
   // Uncomment and define serviceProviderAdmin if needed
   // serviceProviderAdmin: {
@@ -59,8 +60,8 @@ const SubscriptionPurchasedSchema: Schema = new Schema<TSubscriptionPurchased>(
       required: true,
       default: true,
     },
-    usages: {
-      type: usagesSchema,
+    usage: {
+      type: usageSchema,
       required: true,
     },
     expDate: {

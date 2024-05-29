@@ -18,6 +18,7 @@ const createSubscription: RequestHandler = catchAsync(async (req, res) => {
     subscriptionTitle,
     package: packageData,
     price,
+    validity,
     features,
   } = subscription;
   if (!packageData || !price || !features) {
@@ -39,6 +40,7 @@ const createSubscription: RequestHandler = catchAsync(async (req, res) => {
       },
     },
     price,
+    validity,
     features,
   };
 

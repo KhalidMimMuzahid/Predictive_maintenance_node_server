@@ -6,7 +6,6 @@ export type TTeamOfEngineers = {
   serviceProviderCompany: Types.ObjectId; // objectId of ServiceProviderCompany model
   serviceProviderBranch: Types.ObjectId; // objectId of ServiceProviderBranch model
   createdBy: Types.ObjectId; // objectId of ServiceProviderBranchManager mode
-
   members: {
     isDeleted: boolean;
     member: Types.ObjectId; // objectId of ServiceProviderEngineer model

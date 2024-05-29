@@ -1,13 +1,15 @@
 import mongoose from 'mongoose';
 import { TSubscription } from '../subscription/subscription.interface';
 
-export type TUses = {
-  showaUser?: {
-    machines?: mongoose.Types.ObjectId[];
-    IOTs?: mongoose.Types.ObjectId[]; // IOT mean sensor modules attached
-    totalAvailableMachine?: number;
-    totalAvailableIOT?: number;
-  };
+export type TShowaUserForUses = {
+  machines?: mongoose.Types.ObjectId[];
+  IOTs?: mongoose.Types.ObjectId[]; // IOT mean sensor modules attached
+  totalAvailableMachine?: number;
+  totalAvailableIOT?: number;
+  totalAvailableShowaMB?: number;
+};
+export type TUsage = {
+  showaUser?: TShowaUserForUses;
   // serviceProviderAdmin?: { engineers: mongoose.Types.ObjectId[] };
 };
 
@@ -23,7 +25,7 @@ export type TSubscriptionPurchased = {
     updatedAt: Date;
   }; // @Jawed vy;  we need to make plane together
   isActive: boolean;
-  usages: TUses;
+  usage: TUsage;
   expDate: Date;
   price: TPurchasedPrice;
 };

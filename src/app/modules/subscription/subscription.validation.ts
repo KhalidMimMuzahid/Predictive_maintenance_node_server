@@ -30,19 +30,11 @@ const showaUserSchema = z.object({
           message: 'Required for premium package',
           path: ['packageType'],
         }),
-      validity: z.number().refine((val) => val !== undefined, {
-        message: 'Required for premium package',
-        path: ['packageType'],
-      }),
     })
     .optional(),
   standard: z
     .object({
       totalMachine: z.number().refine((val) => val !== undefined, {
-        message: 'Required for standard package',
-        path: ['packageType'],
-      }),
-      validity: z.number().refine((val) => val !== undefined, {
         message: 'Required for standard package',
         path: ['packageType'],
       }),
@@ -64,10 +56,6 @@ const showaUserSchema = z.object({
           message: 'Required for basic package',
           path: ['packageType'],
         }),
-      validity: z.number().refine((val) => val !== undefined, {
-        message: 'Required for basic package',
-        path: ['packageType'],
-      }),
     })
     .optional(),
 });
@@ -81,12 +69,12 @@ const packageSchema = z.object({
   //   totalEngineer: z.number(),
   // }).optional(),
 });
-
 // Define the zod schema for subscription
 const createSubscriptionSchema = z.object({
   subscriptionTitle: z.string(),
   package: packageSchema,
   price: priceSchema,
+  validity: z.number(),
   features: z.array(z.string()),
 });
 export const subscriptionValidation = {
