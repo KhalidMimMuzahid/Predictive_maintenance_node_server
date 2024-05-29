@@ -124,7 +124,10 @@ const getAllTeamsOfEngineers = async () => {
   const result = await Promise.all(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allTeamsOfEngineersData.map(async (team: any) => ({
-      companyName: team.serviceProviderCompany?.companyName,
+      company: {
+        _id: team.serviceProviderCompany?._id,
+        companyName: team.serviceProviderCompany?.companyName,
+      },
       location: team.serviceProviderCompany?.address,
       email: team.serviceProviderBranch?.email,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,7 +141,7 @@ const getAllTeamsOfEngineers = async () => {
     })),
   );
 
-  console.log(result);
+
   return result;
 };
 
