@@ -99,16 +99,17 @@ const makeTeamOfEngineerInToDB = async ({
 };
 
 const getAllTeamsOfEngineers = async () => {
-  const allTeamsOfEngineersData = await TeamOfEngineers.find({})
-    .populate({
+  const allTeamsOfEngineersData = await TeamOfEngineers.find({}).populate([
+    {
       path: 'serviceProviderCompany',
       select: 'companyName address ',
-    })
-    .populate({ path: 'serviceProviderBranch', select: 'email' })
-    .populate({
+    },
+    { path: 'serviceProviderBranch', select: 'email' },
+    {
       path: 'members.member',
       select: 'user name',
-    });
+    },
+  ]);
 
   const serviceProviderManagerDetails = async (
     serviceProviderBranchId: Types.ObjectId,
