@@ -42,6 +42,7 @@ const getAllTeamsOfEngineers: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
+    message: 'team of engineers data retrived successfully',
     data: result,
   });
 });
