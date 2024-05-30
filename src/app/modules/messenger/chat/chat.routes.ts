@@ -7,7 +7,7 @@ const router: Router = express.Router();
 
 router.post(
   '/create-personal-chat',
-  validateRequest(chatValidation.createPersonalChatValidationSchema),
+  // validateRequest(chatValidation.createPersonalChatValidationSchema),
   chatController.createPersonalChat,
 );
 
@@ -16,5 +16,6 @@ router.post(
   validateRequest(chatValidation.createGroupChatValidationSchema),
   chatController.createGroupChat,
 );
+router.get('/get-my-all-chats', chatController.getMyAllChats);
 
 export const chatRoutes = router;

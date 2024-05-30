@@ -8,36 +8,43 @@ import { Message } from '../message/message.model';
 import { hadDuplicateValue } from '../../../utils/hadDuplicateValue';
 import { TAddingMember, TCreatingGroup } from '../message/message.interface';
 
-const createPersonalChat = async (personalChatData: Partial<TChat>) => {
-  const { users } = personalChatData;
-  const user1 = users[0];
-  const user2 = users[1];
-
+const createPersonalChat = async ({
+  user1,
+  user2,
+}: {
+  user1: string;
+  user2: string;
+}) => {
+  if (user1 === user2) {
+    throw new AppError(httpStatus.BAD_REQUEST, `You can not add yourself`);
+  }
   const isUser1Exists = await User.findById(user1);
   if (!isUser1Exists) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `No user found with this _id: ${users[0]}`,
+      `No user found with this _id: ${user1}`,
     );
   }
   const isUser2Exists = await User.findById(user2);
   if (!isUser2Exists) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `No user found with this _id: ${users[1]}`,
+      `No user found with this _id: ${user2}`,
     );
   }
 
   // check those user has already been connected or not
-
-  const areTheyAlreadyConnected = await Chat.findOne({
-    users: { $all: users?.map((each) => new mongoose.Types.ObjectId(each)) },
+  const users = [user1, user2];
+  const areWeAlreadyConnected = await Chat.findOne({
+    users: {
+      $all: users?.map((each) => new mongoose.Types.ObjectId(each)),
+    },
     'group.groupAdmin': { $exists: false },
   });
-  if (areTheyAlreadyConnected) {
+  if (areWeAlreadyConnected) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `Those user has already been connected personally`,
+      `You are already been connected personally each other`,
     );
   }
   //implement session here cause we need to create event message ("You are connected at Date") here
@@ -63,21 +70,29 @@ const createPersonalChat = async (personalChatData: Partial<TChat>) => {
 
     const personalChat = personalChatArray[0];
 
-    const messageArray = await Message.create(
-      [
-        {
-          chat: personalChat?._id,
-          event: 'You are connected now',
-          type: 'event',
-        },
-      ],
-      {
-        session: session,
-      },
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const event: any = {};
+    event.type = 'addingMember';
+    const addingMember: Partial<TAddingMember> = {};
+    addingMember.addedByUser = new mongoose.Types.ObjectId(user1);
+    addingMember.addedUser = new mongoose.Types.ObjectId(user2);
+    event.addingMember = addingMember;
 
-    if (!messageArray?.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'failed to create chat');
+    const eventMessage = {
+      chat: personalChat?._id,
+      event,
+      type: 'event',
+    };
+
+    const createdMessagesArray = await Message.create([eventMessage], {
+      session: session,
+    });
+
+    if (!createdMessagesArray?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not create chat, please try again',
+      );
     }
 
     await session.commitTransaction();
@@ -218,7 +233,14 @@ const createGroupChat = async (groupChatData: Partial<TChat>) => {
     throw error;
   }
 };
+const getMyAllChats = async (user: mongoose.Types.ObjectId) => {
+  const result = await Chat.find({
+    users: user,
+  });
+  return result;
+};
 export const chatServices = {
   createPersonalChat,
   createGroupChat,
+  getMyAllChats,
 };

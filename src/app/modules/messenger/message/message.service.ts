@@ -20,8 +20,6 @@ const sendMessage = async ({
     throw new AppError(httpStatus.BAD_REQUEST, `chat is not found`);
   }
 
-
-
   console.log({ sender });
   if (
     !chatData?.users?.some((each) => each?.toString() === sender?.toString())
@@ -41,6 +39,35 @@ const sendMessage = async ({
 
   return message;
 };
+
+const getMessagesByChat = async ({
+  chat,
+  requester,
+}: {
+  chat: string;
+  requester: mongoose.Types.ObjectId;
+}) => {
+  const chatData = await Chat.findById(chat);
+  if (!chatData) {
+    throw new AppError(httpStatus.BAD_REQUEST, `chat is not found`);
+  }
+
+  if (
+    !chatData?.users?.some((each) => each?.toString() === requester?.toString())
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `you are not a member of this chat`,
+    );
+  }
+
+  const messages = await Message.find({
+    chat: new mongoose.Types.ObjectId(chat),
+  });
+
+  return messages;
+};
 export const messageServices = {
   sendMessage,
+  getMessagesByChat,
 };

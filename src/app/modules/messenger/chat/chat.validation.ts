@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-const createPersonalChatValidationSchema = z.object({
-  users: z.array(z.string()).length(2),
-});
+// const createPersonalChatValidationSchema = z.object({
+//   users: z.array(z.string()).length(2),
+// });
 const createGroupChatValidationSchema = z.object({
   users: z.array(z.string()).min(2),
   group: z
@@ -14,6 +14,6 @@ const createGroupChatValidationSchema = z.object({
 });
 
 export const chatValidation = {
-  createPersonalChatValidationSchema,
+  // createPersonalChatValidationSchema,
   createGroupChatValidationSchema,
 };

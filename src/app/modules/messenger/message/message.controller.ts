@@ -39,7 +39,30 @@ const sendMessage: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getMessagesByChat: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  const chat: string = req?.query?.chat as string;
+  if (!chat) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'chat is required to get messages',
+    );
+  }
+
+  const result = await messageServices.getMessagesByChat({
+    chat,
+    requester: auth._id,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'messages has retrieved successfully',
+    data: result,
+  });
+});
 export const messageController = {
   sendMessage,
+  getMessagesByChat,
 };
