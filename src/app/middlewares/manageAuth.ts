@@ -10,43 +10,44 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
     const parsedUrl = url.parse(req?.url);
     const pathname: string = parsedUrl?.pathname as string;
 
-if (
-  pathname?.endsWith('/') ||
-  pathname?.endsWith('sign-up') ||
-  pathname?.endsWith('sign-in') ||
-  pathname?.endsWith('add-sensor-data') ||
-  pathname?.endsWith('upload-photo') ||
-  pathname?.endsWith('upload-image') ||
-  pathname?.endsWith('/delete-my-account')
-) {
-  return next();
-} else {
-  const bearerToken = req.headers['authorization']?.split(' ')[1];
+    if (
+      pathname?.endsWith('/') ||
+      pathname?.endsWith('sign-up') ||
+      pathname?.endsWith('sign-in') ||
+      pathname?.endsWith('add-sensor-data') ||
+      pathname?.endsWith('upload-photo') ||
+      pathname?.endsWith('upload-image') ||
+      pathname?.endsWith('get-all-service-provider-companies') ||
+      pathname?.endsWith('/delete-my-account')
+    ) {
+      return next();
+    } else {
+      const bearerToken = req.headers['authorization']?.split(' ')[1];
 
-  let auth;
-  try {
-    auth = jwtFunc?.decodeToken(bearerToken as string);
-  } catch (error) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      'Your access token is expired or unauthorized user detected. \n please sign-in agin',
-    );
-  }
+      let auth;
+      try {
+        auth = jwtFunc?.decodeToken(bearerToken as string);
+      } catch (error) {
+        throw new AppError(
+          httpStatus.FORBIDDEN,
+          'Your access token is expired or unauthorized user detected. \n please sign-in agin',
+        );
+      }
 
-  delete auth.iat;
-  delete auth.exp;
-  if (!auth?.email || !auth?._id || !auth?.uid || !auth?.role) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      'Your access token is expired or unauthorized user detected. \n please sign-in agin',
-    );
-  }
+      delete auth.iat;
+      delete auth.exp;
+      if (!auth?.email || !auth?._id || !auth?.uid || !auth?.role) {
+        throw new AppError(
+          httpStatus.FORBIDDEN,
+          'Your access token is expired or unauthorized user detected. \n please sign-in agin',
+        );
+      }
 
-  auth._id = new Types.ObjectId(auth?._id);
-  // console.log({ auth });
-  req.headers.auth = auth;
-  return next();
-}
+      auth._id = new Types.ObjectId(auth?._id);
+      // console.log({ auth });
+      req.headers.auth = auth;
+      return next();
+    }
   } catch (error) {
     // console.log({ error });
     return next(error);

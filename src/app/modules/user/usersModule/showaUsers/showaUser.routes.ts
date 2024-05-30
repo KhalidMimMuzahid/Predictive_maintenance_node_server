@@ -20,7 +20,7 @@ router.get(
 router.get('/get-my-showa-contact', showaUserControllers.getShowaUserContacts);
 
 router.patch('/address', showaUserControllers.updateAddress);
-// router.put('/update-profile', showaUserControllers.updateProfile);
+router.put('/update-profile', showaUserControllers.updateProfile);
 
 router.post('/upload-photo', showaUserControllers.uploadProfilePhoto);
 

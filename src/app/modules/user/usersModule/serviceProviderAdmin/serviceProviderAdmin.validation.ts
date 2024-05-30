@@ -67,4 +67,11 @@ const userCreateValidationSchema = z.object({
   serviceProviderBranch: ServiceProviderBranchCreateValidationSchema.optional(),
 });
 
-export const serviceProviderAdminValidation = { userCreateValidationSchema };
+const addBranchValidationSchema = z.object({
+  serviceProviderBranch: ServiceProviderBranchCreateValidationSchema,
+});
+
+export const serviceProviderAdminValidation = {
+  userCreateValidationSchema,
+  addBranchValidationSchema,
+};

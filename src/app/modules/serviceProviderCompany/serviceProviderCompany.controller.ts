@@ -52,8 +52,8 @@ const getServiceProviderCompanyBy_id: RequestHandler = catchAsync(
 );
 const getAllServiceProviderCompanies: RequestHandler = catchAsync(
   async (req, res) => {
-    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-    checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    // checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
     const result =
       await serviceProviderCompanyServices.getAllServiceProviderCompanies();
     // send response
