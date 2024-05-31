@@ -91,7 +91,7 @@ const getLastMessageByChat = async ({
   const message = await Message.findOne({
     chat: new mongoose.Types.ObjectId(chat),
   })
-    .select('message seenBy')
+    .select('message seenBy createdAt')
     .sort({ _id: -1 });
 
   return message;
