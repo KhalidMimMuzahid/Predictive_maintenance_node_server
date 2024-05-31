@@ -13,6 +13,7 @@ const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>(
       type: { firstName: { type: String }, lastName: { type: String } },
       required: true,
     },
+    photoUrl: { type: String },
     serviceProviderCompany: {
       type: Schema.Types.ObjectId,
       ref: 'ServiceProviderCompany',

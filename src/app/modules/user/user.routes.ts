@@ -32,6 +32,10 @@ subModuleRoutes.forEach((route) => router.use(route.path, route.route));
 // );
 router.get('/sign-in', userControllers.signIn);
 router.get('/get-user', userControllers.getUserBy_id);
+router.get(
+  '/get-users-info-by-users-array',
+  userControllers.getUsersInfoByUsersArray,
+);
 router.get('/get-user-wallet-info', userControllers.getUserWalletInfo);
 router.get('/get-all-showa-customers', userControllers.getAllShowaCustomers);
 // End --------------------------------- XXXXX ----------------------------

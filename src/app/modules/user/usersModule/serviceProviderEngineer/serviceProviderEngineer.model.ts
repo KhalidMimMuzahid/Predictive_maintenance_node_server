@@ -11,6 +11,7 @@ export const ServiceProviderEngineerSchema: Schema =
         type: { firstName: { type: String }, lastName: { type: String } },
         required: true,
       },
+      photoUrl: { type: String },
       currentState: {
         status: {
           type: String,
