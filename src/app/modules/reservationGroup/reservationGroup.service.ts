@@ -319,7 +319,9 @@ const sendReservationGroupToBranch = async ({
     );
   }
 
-  const userData = await userServices.getUserBy_id(user?.toString() as string);
+  const userData = await userServices.getUserBy_id({
+    _id: user?.toString() as string,
+  });
   const serviceProviderCompany = userData[`${userData?.role}`]
     .serviceProviderCompany as mongoose.Types.ObjectId;
   if (!serviceProviderCompany) {

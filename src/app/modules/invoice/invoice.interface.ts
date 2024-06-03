@@ -23,6 +23,8 @@ export type TInvoice = {
   invoiceGroup: Types.ObjectId; // objectId of InvoiceGroup model
 
   user: Types.ObjectId; // objectId of the user model; who raise this reservation
+
+  // inspectionByEngineer: report
   postBiddingProcess?: TPostBiddingProcess;
 
   additionalProducts: {

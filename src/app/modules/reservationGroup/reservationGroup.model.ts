@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { TReservationRequestGroup } from './reservationGroup.interface';
 import { Schema } from 'mongoose';
+import { machineTypeArray } from '../reservation/reservation.const';
 export const PostBiddingProcessSchema = new Schema({
   biddingUser: {
     type: Schema.Types.ObjectId,
@@ -28,6 +29,12 @@ const ReservationRequestGroupSchema: Schema =
     {
       groupId: { type: String, required: true },
       groupName: { type: String, required: true, default: 'no-title' },
+
+      groupForMachineType: {
+        type: String,
+        enum: machineTypeArray,
+        required: true,
+      },
       reservationRequests: [
         { type: Schema.Types.ObjectId, ref: 'ReservationRequest' },
       ],

@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { TMachineType } from '../reservation/reservation.interface';
 export type TPostBiddingProcess = {
   biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation
   serviceProviderCompany: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
@@ -7,16 +8,14 @@ export type TPostBiddingProcess = {
   // biddingAmount: number; //May be we need this;
 };
 
-
-
-
-
-
-
 export type TReservationRequestGroup = {
   groupId: string; // customized unique Identifier
   groupName: string;
+  groupForMachineType: TMachineType;
   reservationRequests: Types.ObjectId[]; // objectId of TReservationRequest Model
+
+  bidStartingDate: Date;
+  bidEndingDate: Date;
   allBids: {
     _id: Types.ObjectId; // mongoose will generate this _id, we no need to think about this
     biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)

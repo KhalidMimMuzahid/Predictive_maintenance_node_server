@@ -77,8 +77,8 @@ const getUserBy_id = async ({
   extendedUserFields,
 }: {
   _id: string;
-  rootUserFields: string;
-  extendedUserFields: string;
+  rootUserFields?: string;
+  extendedUserFields?: string;
 }) => {
   // const
   const user = await User.findById(_id)

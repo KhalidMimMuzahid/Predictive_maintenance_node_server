@@ -41,6 +41,7 @@ export type TReservationRequest = {
   isSensorConnected: boolean; // machineType as figma; true if sensor is sensor-connected, false if not sensor-non-connected
   machineType: TMachineType2;
   problem: TProblem;
+
   schedule: TSchedule;
   invoice: Types.ObjectId; // objectId of invoice Model for this reservation
 
