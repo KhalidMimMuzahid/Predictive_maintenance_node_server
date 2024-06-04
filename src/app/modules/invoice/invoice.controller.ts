@@ -28,7 +28,7 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   }
   const results = await invoiceServices.addAdditionalProduct({
     user: auth?._id,
-    role: auth?.role,
+    role: auth?.role as 'showaAdmin' | 'serviceProviderEngineer',
     reservationRequest_id: reservationRequest,
     additionalProduct: additionalProduct,
   });
