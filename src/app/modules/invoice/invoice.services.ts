@@ -69,7 +69,7 @@ const addAdditionalProduct = async ({
   //     new mongoose.Types.ObjectId(reservationRequestGroup_id),
   //   ).populate({
   //     path: 'reservationRequests',
-  //     options: { strictPopulate: false },
+  //     options: { strictPopulate: false }   ,
   //   });
 
   // calculate the total number according to its tax and price and quantity
