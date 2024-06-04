@@ -68,8 +68,8 @@ const addAdditionalProduct = async ({
   //   const resGroup = await ReservationRequestGroup.findById(
   //     new mongoose.Types.ObjectId(reservationRequestGroup_id),
   //   ).populate({
-  //     path: 'reservationRequests',
-  //     options: { strictPopulate: false }   ,
+  //     path: 'reservationRequests'   ,
+  //     options: { strictPopulate: false }    ,
   //   });
 
   // calculate the total number according to its tax and price and quantity
