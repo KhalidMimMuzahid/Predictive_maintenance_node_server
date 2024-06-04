@@ -6,6 +6,7 @@ import { reservationGroupServices } from './reservationGroup.service';
 import { TAuth } from '../../interface/error';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import AppError from '../../errors/AppError';
+import { TBiddingDate } from './reservationGroup.interface';
 
 const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -15,17 +16,19 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const reservationRequests: string[] = req?.body
     ?.reservationRequests as string[];
   const groupName: string = req?.body?.groupName as string; // array of reservation request ids
-
+  const biddingDate: Partial<TBiddingDate> = req?.body?.biddingDate;
   if (!reservationRequests?.length || !groupName) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'reservationRequests and groupName are required to make group',
     );
   }
-  const result = await reservationGroupServices.createReservationRequestGroup(
+  const result = await reservationGroupServices.createReservationRequestGroup({
     reservationRequests,
     groupName,
-  );
+    biddingDate,
+  });
+  // const result = 'result';
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,

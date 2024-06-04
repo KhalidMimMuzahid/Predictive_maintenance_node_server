@@ -7,6 +7,10 @@ export type TPostBiddingProcess = {
   invoiceGroup?: Types.ObjectId; // objectId of InvoiceGroup model; when we assign this to a engineers team
   // biddingAmount: number; //May be we need this;
 };
+export type TBiddingDate = {
+  startDate?: Date;
+  endDate?: Date;
+};
 
 export type TReservationRequestGroup = {
   groupId: string; // customized unique Identifier
@@ -14,8 +18,8 @@ export type TReservationRequestGroup = {
   groupForMachineType: TMachineType;
   reservationRequests: Types.ObjectId[]; // objectId of TReservationRequest Model
 
-  bidStartingDate: Date;
-  bidEndingDate: Date;
+  biddingDate: TBiddingDate;
+
   allBids: {
     _id: Types.ObjectId; // mongoose will generate this _id, we no need to think about this
     biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)
@@ -25,3 +29,6 @@ export type TReservationRequestGroup = {
 
   postBiddingProcess?: TPostBiddingProcess;
 };
+
+
+

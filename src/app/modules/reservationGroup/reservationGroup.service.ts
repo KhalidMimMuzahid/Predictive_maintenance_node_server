@@ -5,19 +5,49 @@ import httpStatus from 'http-status';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { TRole } from '../user/user.interface';
 import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
-import { TPostBiddingProcess } from './reservationGroup.interface';
+import {
+  TBiddingDate,
+  TPostBiddingProcess,
+} from './reservationGroup.interface';
 import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import { ReservationRequest } from '../reservation/reservation.model';
+import { TMachineType } from '../reservation/reservation.interface';
 
-const createReservationRequestGroup = async (
-  reservationRequests: string[],
-  groupName: string,
-) => {
+const createReservationRequestGroup = async ({
+  reservationRequests,
+  groupName,
+  biddingDate: biddingDateString,
+}: {
+  reservationRequests: string[];
+  groupName: string;
+  biddingDate: Partial<TBiddingDate>;
+}) => {
   const session = await mongoose.startSession();
+
+  // const biddingDate = {
+  //   startDate: isNaN(
+  //     new Date(biddingDateString?.startDate) as unknown as number,
+  //   )
+  //     ? undefined
+  //     : new Date(biddingDateString?.startDate),
+  //   endDate: isNaN(new Date(biddingDateString?.endDate) as unknown as number)
+  //     ? undefined
+  //     : new Date(biddingDateString?.endDate),
+  // };
+  // // const biddingDate3 = {
+  // //   biddingDate2
+  // // }
+  // // console.log(biddingDate2);
+  // return biddingDate;
   try {
     session.startTransaction();
     const reservations = await ReservationRequest.find()
+      // .populate({
+      //   path: 'machine',
+      //   select: 'sensorModulesAttached',
+      //   options: { strictPopulate: false },
+      // })
       .where('_id')
       .in(reservationRequests)
       .session(session);
@@ -32,6 +62,10 @@ const createReservationRequestGroup = async (
       );
     }
 
+    const groupForMachineType: TMachineType = reservations[0]?.isSensorConnected
+      ? 'connected'
+      : 'non-connected';
+
     reservations?.forEach((reservation) => {
       if (reservation.reservationRequestGroup) {
         throw new AppError(
@@ -39,7 +73,20 @@ const createReservationRequestGroup = async (
           'Some of the reservation you provided has already been grouped',
         );
       }
+
+      const groupForMachineType2: TMachineType = reservation?.isSensorConnected
+        ? 'connected'
+        : 'non-connected';
+
+      if (groupForMachineType !== groupForMachineType2) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Reservation Group cannot have different type of reservation ',
+        );
+      }
     });
+
+    // return 'under construction';
 
     const lastAddedReservationGroup = await ReservationRequestGroup.findOne(
       {},
@@ -57,8 +104,22 @@ const createReservationRequestGroup = async (
           reservationRequests: reservationRequests.map(
             (each) => new mongoose.Types.ObjectId(each),
           ),
+          groupForMachineType,
           groupId: groupId,
           groupName: groupName,
+
+          biddingDate: {
+            startDate: isNaN(
+              new Date(biddingDateString?.startDate) as unknown as number,
+            )
+              ? undefined
+              : new Date(biddingDateString?.startDate),
+            endDate: isNaN(
+              new Date(biddingDateString?.endDate) as unknown as number,
+            )
+              ? undefined
+              : new Date(biddingDateString?.endDate),
+          },
         },
       ],
       { session: session },

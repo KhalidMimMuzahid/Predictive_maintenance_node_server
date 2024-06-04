@@ -48,7 +48,9 @@ const assignReservationGroupToTeam = async ({
     );
   }
 
-  const userData = await userServices.getUserBy_id(user?.toString() as string);
+  const userData = await userServices.getUserBy_id({
+    _id: user?.toString() as string,
+  });
 
   const serviceProviderBranch =
     getServiceProviderBranchForUser_EngineerAndManager(userData);

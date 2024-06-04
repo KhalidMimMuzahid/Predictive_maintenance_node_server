@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
-import { TReservationRequestGroup } from './reservationGroup.interface';
+import {
+  TBiddingDate,
+  TReservationRequestGroup,
+} from './reservationGroup.interface';
 import { Schema } from 'mongoose';
 import { machineTypeArray } from '../reservation/reservation.const';
 export const PostBiddingProcessSchema = new Schema({
@@ -24,6 +27,16 @@ export const PostBiddingProcessSchema = new Schema({
     // required: true,
   },
 });
+const BiddingDateSchema = new Schema<TBiddingDate>({
+  startDate: {
+    type: Date,
+    required: false,
+  },
+  endDate: {
+    type: Date,
+    required: false,
+  },
+});
 const ReservationRequestGroupSchema: Schema =
   new Schema<TReservationRequestGroup>(
     {
@@ -38,6 +51,11 @@ const ReservationRequestGroupSchema: Schema =
       reservationRequests: [
         { type: Schema.Types.ObjectId, ref: 'ReservationRequest' },
       ],
+
+      biddingDate: {
+        type: BiddingDateSchema,
+        required: false,
+      },
       allBids: [
         {
           biddingUser: {

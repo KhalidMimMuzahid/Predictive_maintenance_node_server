@@ -2,7 +2,9 @@ import { Types } from 'mongoose';
 import { TPostBiddingProcess } from '../reservationGroup/reservationGroup.interface';
 import { TIsDeleted } from '../common/common.interface';
 export type TAdditionalProduct = {
-  addedBy: Types.ObjectId; // ServiceProviderEngineer model
+  addedBy?: Types.ObjectId; // ServiceProviderEngineer model
+
+  addedByUserType: 'showaAdmin' | 'serviceProviderEngineer';
   productName: string;
   // quantity: number;
   // promo:number // percentage of promo ; by default 0%   // is it the same of discount offer? what is actually a promo?

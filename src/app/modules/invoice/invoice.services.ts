@@ -11,10 +11,12 @@ import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
 
 const addAdditionalProduct = async ({
   user,
+  role,
   reservationRequest_id,
   additionalProduct,
 }: {
   user: mongoose.Types.ObjectId;
+  role: 'showaAdmin' | 'serviceProviderEngineer';
   reservationRequest_id: string;
   additionalProduct: TAdditionalProduct;
 }) => {
@@ -30,16 +32,30 @@ const addAdditionalProduct = async ({
       'no invoice found for this reservation',
     );
   }
-
-  //   const isUserBelongsToThisTeam =
-  const { isUserBelongsToThisTeam, serviceProviderEngineer } =
-    await isEngineerBelongsToThisTeam(existingInvoice?.invoiceGroup, user);
-  if (!isUserBelongsToThisTeam || !serviceProviderEngineer) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'you are not the engineer for this reservation or something went wrong',
+  let isEngineerBelongsToThisTeamData: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    isUserBelongsToThisTeam: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    serviceProviderEngineer: any;
+  };
+  if (role === 'serviceProviderEngineer') {
+    isEngineerBelongsToThisTeamData = await isEngineerBelongsToThisTeam(
+      existingInvoice?.invoiceGroup,
+      user,
     );
+    if (
+      !isEngineerBelongsToThisTeamData?.isUserBelongsToThisTeam ||
+      !isEngineerBelongsToThisTeamData?.serviceProviderEngineer
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'you are not the engineer for this reservation or something went wrong',
+      );
+    }
   }
+
+  const { serviceProviderEngineer } = isEngineerBelongsToThisTeamData;
+
   if (existingInvoice.taskStatus === 'completed') {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -59,8 +75,8 @@ const addAdditionalProduct = async ({
   // calculate the total number according to its tax and price and quantity
   additionalProduct.cost.totalAmount =
     additionalProduct.cost.price * additionalProduct.cost.quantity;
-
-  additionalProduct.addedBy = serviceProviderEngineer;
+  additionalProduct.addedByUserType = role;
+  additionalProduct.addedBy = serviceProviderEngineer || undefined;
   // console.log({ additionalProduct });
   //   now push this additional data to additional products array
   existingInvoice.additionalProducts.products.push(additionalProduct);
@@ -69,6 +85,28 @@ const addAdditionalProduct = async ({
   await existingInvoice.save();
   return existingInvoice;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const changeStatusToCompleted = async ({
   user,
