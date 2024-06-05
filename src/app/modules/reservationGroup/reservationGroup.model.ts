@@ -51,7 +51,10 @@ const ReservationRequestGroupSchema: Schema =
       reservationRequests: [
         { type: Schema.Types.ObjectId, ref: 'ReservationRequest' },
       ],
-
+      taskStatus: {
+        type: String,
+        enum: ['ongoing', 'completed', 'canceled'],
+      },
       biddingDate: {
         type: BiddingDateSchema,
         required: false,

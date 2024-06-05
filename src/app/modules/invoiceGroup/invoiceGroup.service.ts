@@ -38,7 +38,7 @@ const assignReservationGroupToTeam = async ({
   if (!resGroup?.postBiddingProcess?.serviceProviderCompany) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'This Reservation group bidding has not been ended',
+      'This Reservation group has not been assigned to any company',
     );
   }
   if (!resGroup?.postBiddingProcess?.serviceProviderBranch) {
@@ -189,6 +189,7 @@ const assignReservationGroupToTeam = async ({
     }
 
     resGroup.postBiddingProcess.invoiceGroup = updatedInvoiceGroup?._id;
+    resGroup.taskStatus = 'ongoing';
     const updatedResGroup = await resGroup.save({ session: session });
 
     if (!updatedResGroup?.postBiddingProcess?.invoiceGroup) {

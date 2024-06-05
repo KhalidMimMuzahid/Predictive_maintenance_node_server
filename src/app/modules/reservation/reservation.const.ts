@@ -21,3 +21,5 @@ export const machineTypeArray2: TMachineType2[] = [
   'washing-machine',
   'general-machine',
 ];
+
+

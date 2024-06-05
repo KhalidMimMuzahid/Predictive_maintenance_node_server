@@ -1,5 +1,13 @@
 import { Types } from 'mongoose';
 import { TMachineType } from '../reservation/reservation.interface';
+
+export type TReservationGroupType =
+  | 'all'
+  | 'bid-closed-group'
+  | 'pending'
+  | 'ongoing'
+  | 'completed';
+
 export type TPostBiddingProcess = {
   biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation
   serviceProviderCompany: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
@@ -7,6 +15,7 @@ export type TPostBiddingProcess = {
   invoiceGroup?: Types.ObjectId; // objectId of InvoiceGroup model; when we assign this to a engineers team
   // biddingAmount: number; //May be we need this;
 };
+
 export type TBiddingDate = {
   startDate?: Date;
   endDate?: Date;
@@ -17,7 +26,7 @@ export type TReservationRequestGroup = {
   groupName: string;
   groupForMachineType: TMachineType;
   reservationRequests: Types.ObjectId[]; // objectId of TReservationRequest Model
-
+  taskStatus: 'ongoing' | 'completed' | 'canceled';
   biddingDate: TBiddingDate;
 
   allBids: {

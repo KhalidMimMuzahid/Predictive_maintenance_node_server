@@ -119,7 +119,13 @@ const getAllReservations: RequestHandler = catchAsync(async (req, res) => {
   if (!machineTypeArray.some((each) => each === machineType)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "machine type must be 'connected' or 'non-connected",
+      `machine type must be any of ${machineTypeArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
     );
   }
 

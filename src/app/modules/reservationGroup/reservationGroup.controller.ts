@@ -6,7 +6,13 @@ import { reservationGroupServices } from './reservationGroup.service';
 import { TAuth } from '../../interface/error';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import AppError from '../../errors/AppError';
-import { TBiddingDate } from './reservationGroup.interface';
+import {
+  TBiddingDate,
+  TReservationGroupType,
+} from './reservationGroup.interface';
+import { TMachineType } from '../reservation/reservation.interface';
+import { machineTypeArray } from '../reservation/reservation.const';
+import { reservationGroupTypeArray } from './reservationGroup.const';
 
 const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -46,8 +52,42 @@ const allReservationsGroup: RequestHandler = catchAsync(async (req, res) => {
     auth,
     accessUsers: ['showaAdmin'],
   });
+  const groupForMachineType: TMachineType = req?.query
+    ?.groupForMachineType as TMachineType;
 
-  const results = await reservationGroupServices.allReservationsGroup();
+  if (!machineTypeArray.some((each) => each === groupForMachineType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `machine type must be any of ${machineTypeArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  const reservationGroupType: TReservationGroupType = req?.query
+    ?.reservationGroupType as TReservationGroupType;
+
+  if (
+    !reservationGroupTypeArray.some((each) => each === reservationGroupType)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `machine type must be any of ${reservationGroupTypeArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  const results = await reservationGroupServices.allReservationsGroup({
+    groupForMachineType,
+    reservationGroupType,
+  });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,

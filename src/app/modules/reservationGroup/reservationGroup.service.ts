@@ -8,6 +8,7 @@ import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/s
 import {
   TBiddingDate,
   TPostBiddingProcess,
+  TReservationGroupType,
 } from './reservationGroup.interface';
 import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
@@ -177,13 +178,41 @@ const createReservationRequestGroup = async ({
 // biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)
 // serviceProviderCompany
 
-const allReservationsGroup = async () => {
+const allReservationsGroup = async ({
+  groupForMachineType,
+  reservationGroupType,
+}: {
+  groupForMachineType: TMachineType;
+  reservationGroupType: TReservationGroupType;
+}) => {
+  console.log({ groupForMachineType, reservationGroupType });
+
+  // -------------------************----------------------
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = { groupForMachineType };
+
+  if (reservationGroupType === 'all') {
+    // do nothing
+  } else if (reservationGroupType === 'bid-closed-group') {
+    //
+  } else if (reservationGroupType === 'pending') {
+    //
+  } else if (reservationGroupType === 'ongoing') {
+    //
+  } else if (reservationGroupType === 'completed') {
+    //
+  }
+
+  // ----------------*************-----------------------
   // reservationRequests
-  const result = await ReservationRequestGroup.find({}).populate([
+  const result = await ReservationRequestGroup.find(filterQuery).populate([
     {
       path: 'reservationRequests',
       options: { strictPopulate: false },
     },
+
+    // postBiddingProcess.invoiceGroup
+    // serviceProviderCompany
     {
       path: 'allBids.biddingUser',
       options: { strictPopulate: false },
