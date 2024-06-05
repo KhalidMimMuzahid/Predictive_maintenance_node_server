@@ -21,6 +21,8 @@ export type TProblem = {
   problemDescription?: string;
   images: { image: string; title?: string }[];
 };
+
+
 export type TSchedule = {
   category:
     | 'on-demand'
@@ -36,7 +38,7 @@ export type TReservationRequest = {
   requestId: string; // customized unique Identifier
   machine: Types.ObjectId; //ObjectId for Machine Model;
   status: 'pending' | 'accepted' | 'ongoing' | 'completed' | 'canceled'; // reservation request status; we have another status --> "expired" , we can generate this status in frontend by checking, if status is not completed and also the last date of schedule list is over
-  date: Date; // date when the reservation arises
+  // date: Date; // date when the reservation arises
   // location: TAddress; // where this machine is located
   isSensorConnected: boolean; // machineType as figma; true if sensor is sensor-connected, false if not sensor-non-connected
   machineType: TMachineType2;

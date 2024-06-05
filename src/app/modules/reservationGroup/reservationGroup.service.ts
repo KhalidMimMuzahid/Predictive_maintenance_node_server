@@ -68,6 +68,13 @@ const createReservationRequestGroup = async ({
       : 'non-connected';
 
     reservations?.forEach((reservation) => {
+      if (reservation?.schedule?.category === 'on-demand') {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'on-demand reservation request can not be grouped',
+        );
+      }
+
       if (reservation.reservationRequestGroup) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
@@ -95,7 +102,7 @@ const createReservationRequestGroup = async ({
     ).sort({ _id: -1 });
 
     const groupId = padNumberWithZeros(
-      Number(lastAddedReservationGroup?.groupId || '0000') + 1,
+      Number(lastAddedReservationGroup?.groupId || '00000') + 1,
       4,
     );
 

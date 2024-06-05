@@ -16,6 +16,14 @@ export type TPostBiddingProcess = {
   // biddingAmount: number; //May be we need this;
 };
 
+
+
+
+
+
+
+
+
 export type TBiddingDate = {
   startDate?: Date;
   endDate?: Date;
@@ -27,6 +35,8 @@ export type TReservationRequestGroup = {
   groupForMachineType: TMachineType;
   reservationRequests: Types.ObjectId[]; // objectId of TReservationRequest Model
   taskStatus: 'ongoing' | 'completed' | 'canceled';
+  isOnDemand: boolean;
+
   biddingDate: TBiddingDate;
 
   allBids: {

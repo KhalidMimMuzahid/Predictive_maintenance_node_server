@@ -55,6 +55,11 @@ const ReservationRequestGroupSchema: Schema =
         type: String,
         enum: ['ongoing', 'completed', 'canceled'],
       },
+      isOnDemand: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
       biddingDate: {
         type: BiddingDateSchema,
         required: false,

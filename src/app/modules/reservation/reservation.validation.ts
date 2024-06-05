@@ -20,7 +20,7 @@ export const createScheduleValidationSchema = z.object({
     'within-two-week',
     'custom-date-picked',
   ]),
-  schedules: z.array(z.string().datetime()).optional(),
+  schedules: z.array(z.string()).optional(),
 });
 
 const createReservationValidationSchema = z.object({

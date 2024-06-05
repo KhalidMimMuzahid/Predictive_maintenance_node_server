@@ -8,6 +8,7 @@ import {
   isEngineerBelongsToThisTeam,
 } from './invoice.utils';
 import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
+import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 
 const addAdditionalProduct = async ({
   user,
@@ -86,28 +87,6 @@ const addAdditionalProduct = async ({
   return existingInvoice;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const changeStatusToCompleted = async ({
   user,
   reservationRequest_id,
@@ -169,6 +148,19 @@ const changeStatusToCompleted = async ({
       if (!updatedInvoiceGroup) {
         throw new AppError(httpStatus.BAD_REQUEST, 'something went wrong');
       }
+
+      const updatedResGroup = await ReservationRequestGroup.findOneAndUpdate(
+        { 'postBiddingProcess.invoiceGroup': existingInvoice.invoiceGroup },
+        {
+          taskStatus: 'completed',
+        },
+        { session: session, new: true },
+      );
+
+      if (!updatedResGroup) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'something went wrong');
+      }
+
       existingInvoice.taskStatus = 'completed';
       const updatedExistingInvoice = await existingInvoice.save({
         session: session,

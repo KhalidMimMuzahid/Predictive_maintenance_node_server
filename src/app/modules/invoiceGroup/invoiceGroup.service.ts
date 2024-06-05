@@ -111,7 +111,7 @@ const assignReservationGroupToTeam = async ({
   const invoiceGroup: Partial<TInvoiceGroup> = {};
 
   invoiceGroup.invoiceGroupNo = padNumberWithZeros(
-    Number(lastCreatedInvoiceGroup?.invoiceGroupNo || '000000') + 1,
+    Number(lastCreatedInvoiceGroup?.invoiceGroupNo || '00000') + 1,
     6,
   );
   invoiceGroup.reservationRequestGroup = resGroup?._id;
@@ -157,7 +157,7 @@ const assignReservationGroupToTeam = async ({
       invoice.postBiddingProcess = resGroup?.postBiddingProcess;
 
       invoice.invoiceNo = padNumberWithZeros(
-        Number(lastCreatedInvoice?.invoiceNo || '0000000') + (i + 1),
+        Number(lastCreatedInvoice?.invoiceNo || '000000') + (i + 1),
         7,
       );
 
