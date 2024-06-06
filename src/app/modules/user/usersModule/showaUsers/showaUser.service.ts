@@ -124,7 +124,10 @@ const createShowaUserIntoDB = async (
   }
 };
 const getShowaUserFromDB = async (showaUser_id: string) => {
-  const showaUser = await ShowaUser.findById(showaUser_id);
+  const showaUser = await ShowaUser.findById(showaUser_id).populate({
+    path: 'user',
+    options: { strictPopulate: false },
+  });
   if (!showaUser) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
