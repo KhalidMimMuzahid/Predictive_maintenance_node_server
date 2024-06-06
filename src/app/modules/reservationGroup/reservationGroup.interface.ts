@@ -3,10 +3,12 @@ import { TMachineType } from '../reservation/reservation.interface';
 
 export type TReservationGroupType =
   | 'all'
-  | 'bid-closed-group'
   | 'pending'
+  | 'bid-closed-group'
+  | 'assigned-to-company'
   | 'ongoing'
-  | 'completed';
+  | 'completed'
+  | 'canceled';
 
 export type TPostBiddingProcess = {
   biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation

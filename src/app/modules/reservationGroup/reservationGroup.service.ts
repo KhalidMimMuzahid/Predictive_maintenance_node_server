@@ -15,6 +15,7 @@ import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderB
 import { ReservationRequest } from '../reservation/reservation.model';
 import { TMachineType } from '../reservation/reservation.interface';
 
+
 const createReservationRequestGroup = async ({
   reservationRequests,
   groupName,
@@ -41,6 +42,7 @@ const createReservationRequestGroup = async ({
   // // }
   // // console.log(biddingDate2);
   // return biddingDate;
+
   try {
     session.startTransaction();
     const reservations = await ReservationRequest.find()
@@ -192,43 +194,114 @@ const allReservationsGroup = async ({
   groupForMachineType: TMachineType;
   reservationGroupType: TReservationGroupType;
 }) => {
-  console.log({ groupForMachineType, reservationGroupType });
-
   // -------------------************----------------------
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filterQuery: any = { groupForMachineType };
+  const filterQuery: any = {
+    $and: [
+      {
+        groupForMachineType,
+        isOnDemand: false,
+      },
+    ],
+  };
 
   if (reservationGroupType === 'all') {
     // do nothing
-  } else if (reservationGroupType === 'bid-closed-group') {
-    //
   } else if (reservationGroupType === 'pending') {
     //
+
+    filterQuery?.$and.push({
+      $or: [
+        { 'postBiddingProcess.serviceProviderCompany': { $exists: false } },
+        { 'postBiddingProcess.serviceProviderCompany': null },
+      ],
+    });
+    filterQuery?.$and.push({
+      $or: [
+        { 'biddingDate.endDate': { $exists: false } },
+        { 'biddingDate.endDate': { $gt: new Date() } },
+      ],
+    });
+  } else if (reservationGroupType === 'bid-closed-group') {
+    filterQuery?.$and.push({
+      $or: [
+        { 'postBiddingProcess.serviceProviderCompany': { $exists: false } },
+        { 'postBiddingProcess.serviceProviderCompany': null },
+      ],
+    });
+    filterQuery?.$and.push({
+      $and: [
+        { 'biddingDate.endDate': { $exists: true } },
+        { 'biddingDate.endDate': { $lt: new Date() } },
+      ],
+    });
+  } else if (reservationGroupType === 'assigned-to-company') {
+    filterQuery?.$and.push({
+      $and: [
+        {
+          'postBiddingProcess.serviceProviderCompany': {
+            $exists: true,
+            $ne: null,
+          },
+        },
+        {
+          taskStatus: {
+            $or: {
+              $exists: false,
+              $eq: null,
+            },
+          },
+        },
+      ],
+    });
   } else if (reservationGroupType === 'ongoing') {
+    filterQuery?.$and.push({
+      taskStatus: 'ongoing',
+    });
     //
   } else if (reservationGroupType === 'completed') {
     //
+
+    filterQuery?.$and.push({
+      taskStatus: 'completed',
+    });
+  } else if (reservationGroupType === 'canceled') {
+    filterQuery?.$and.push({
+      taskStatus: 'canceled',
+    });
   }
 
   // ----------------*************-----------------------
   // reservationRequests
-  const result = await ReservationRequestGroup.find(filterQuery).populate([
-    {
-      path: 'reservationRequests',
-      options: { strictPopulate: false },
-    },
+  const result = await ReservationRequestGroup.find(filterQuery)
+    .select('user groupId groupName taskStatus biddingDate postBiddingProcess')
+    .populate([
+      {
+        path: 'reservationRequests',
+        select: 'status machineType invoice',
+        populate: {
+          path: 'user',
+          select: 'phone showaUser',
+          populate: {
+            path: 'showaUser',
+            select: 'name',
+            options: { strictPopulate: false },
+          },
 
-    // postBiddingProcess.invoiceGroup
-    // serviceProviderCompany
-    {
-      path: 'allBids.biddingUser',
-      options: { strictPopulate: false },
-    },
-    {
-      path: 'allBids.serviceProviderCompany',
-      options: { strictPopulate: false },
-    },
-  ]);
+          options: { strictPopulate: false },
+        },
+      },
+      // postBiddingProcess.invoiceGroup
+      // postBiddingProcess.serviceProviderCompany
+      // {
+      //   path: 'allBids.biddingUser',
+      //   options: { strictPopulate: false },
+      // },
+      // {
+      //   path: 'allBids.serviceProviderCompany',
+      //   options: { strictPopulate: false },
+      // },
+    ]);
 
   // return result?.map((each, i) => {
   //   return { ...each?._doc, groupName: `Group-${i + 1}` };
@@ -256,7 +329,12 @@ const addBid = async ({
       'No reservation request group with this id',
     );
   }
-
+  if (resGroup?.isOnDemand === true) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You can not bid a On-demand reservation request group',
+    );
+  }
   let serviceProviderCompany;
   if (role === 'serviceProviderAdmin') {
     const serviceProviderAdmin = await ServiceProviderAdmin.findOne({

@@ -1,7 +1,10 @@
 export const reservationGroupTypeArray = [
   'all',
-  'bid-closed-group',
   'pending',
+  'bid-closed-group',
+  'assigned-to-company',
   'ongoing',
   'completed',
+  'canceled',
 ];
+
