@@ -62,29 +62,38 @@ export const createServiceProviderCompanyAndAdmin = async ({
   }
 
   const createdServiceProviderAdmin = createdServiceProviderAdminArray[0];
-  const updatedUser = await User.findByIdAndUpdate(
-    createdUser?._id,
-    {
-      wallet: createdWalletForUser?._id,
-      serviceProviderAdmin: createdServiceProviderAdmin?._id,
-    },
-    { new: true, session: session },
-  );
-  if (!updatedUser) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
-  }
+createdUser.wallet = createdWalletForUser?._id;
+createdUser.serviceProviderAdmin = createdServiceProviderAdmin?._id;
+const updatedUser = await createdUser.save({ session });
 
-  serviceProviderCompany.serviceProviderAdmin = createdUser?._id;
-  serviceProviderCompany.status = 'success';
+// const updatedUser = await User.findByIdAndUpdate(
+//     createdUser?._id,
+//     {
+//       wallet: createdWalletForUser?._id,
+//       serviceProviderAdmin: createdServiceProviderAdmin?._id,
+//     },
+//     { new: true, session: session },
+//   );
 
-  const createdServiceProviderCompanyArray =
-    await ServiceProviderCompany.create([serviceProviderCompany], {
-      session: session,
-    });
-  if (!createdServiceProviderCompanyArray?.length) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
-  }
-  const createdServiceProviderCompany = createdServiceProviderCompanyArray[0];
+if (!updatedUser) {
+  throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
+}
+
+serviceProviderCompany.serviceProviderAdmin = createdUser?._id;
+serviceProviderCompany.status = 'success';
+
+const createdServiceProviderCompanyArray = await ServiceProviderCompany.create(
+  [serviceProviderCompany],
+  {
+    session: session,
+  },
+);
+if (!createdServiceProviderCompanyArray?.length) {
+  throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
+}
+const createdServiceProviderCompany = createdServiceProviderCompanyArray[0];
+
+console.log('problem: ', createdServiceProviderCompany);
 
 
   createdServiceProviderAdmin.serviceProviderCompany =
