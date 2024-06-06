@@ -93,12 +93,9 @@ if (!createdServiceProviderCompanyArray?.length) {
 }
 const createdServiceProviderCompany = createdServiceProviderCompanyArray[0];
 
-console.log('problem: ', createdServiceProviderCompany);
-
-
   createdServiceProviderAdmin.serviceProviderCompany =
     createdServiceProviderCompany?._id;
-  const updatedServiceProviderAdmin = createdServiceProviderAdmin.save({
+  const updatedServiceProviderAdmin = await createdServiceProviderAdmin.save({
     session: session,
   });
   if (!updatedServiceProviderAdmin) {
