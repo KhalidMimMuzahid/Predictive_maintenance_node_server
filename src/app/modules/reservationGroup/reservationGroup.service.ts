@@ -281,10 +281,10 @@ const allReservationsGroup = async ({
         select: 'status machineType invoice schedule problem',
         populate: {
           path: 'user',
-          select: 'phone showaUser',
+          select: 'phone showaUser gmail',
           populate: {
             path: 'showaUser',
-            select: 'name',
+            select: 'name addresses photoUrl',
             options: { strictPopulate: false },
           },
 
