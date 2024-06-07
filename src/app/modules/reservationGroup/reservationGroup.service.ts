@@ -316,7 +316,7 @@ const allReservationsGroup = async ({
         !each?.postBiddingProcess?.serviceProviderCompany &&
         (each?.biddingDate?.endDate || each?.biddingDate?.endDate < new Date())
       ) {
-        reservationGroup._doc.taskStatus = 'bid-closed-group';
+        reservationGroup._doc.taskStatus = 'bid-closed';
       } else if (
         each?.postBiddingProcess?.serviceProviderCompany &&
         !each?.taskStatus
@@ -356,6 +356,20 @@ const addBid = async ({
       'You can not bid a On-demand reservation request group',
     );
   }
+
+  if (
+    !resGroup?.biddingDate?.startDate ||
+    new Date() < resGroup?.biddingDate?.startDate ||
+    (resGroup?.biddingDate?.endDate
+      ? new Date() > resGroup?.biddingDate?.endDate
+      : false)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You can not bid a now. It is not bidding time for this reservation group',
+    );
+  }
+
   let serviceProviderCompany;
   if (role === 'serviceProviderAdmin') {
     const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
