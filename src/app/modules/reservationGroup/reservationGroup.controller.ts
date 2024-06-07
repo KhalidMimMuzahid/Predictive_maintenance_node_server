@@ -124,6 +124,38 @@ const addBid: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const setBiddingDate: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+  const biddingDate: Partial<TBiddingDate> = req?.body?.biddingDate;
+  if (
+    !reservationRequestGroup ||
+    (!biddingDate?.endDate && biddingDate?.endDate)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequestGroup and biddingDate are required to add biddingDate',
+    );
+  }
+  const results = await reservationGroupServices.setBiddingDate({
+    reservationRequestGroup_id: reservationRequestGroup,
+    biddingDate,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Bidding date has successfully set',
+    data: results,
+  });
+});
 const selectBiddingWinner: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -224,6 +256,7 @@ export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
   addBid,
+  setBiddingDate,
   selectBiddingWinner,
   sendReservationGroupToBranch,
   getReservationGroupById,

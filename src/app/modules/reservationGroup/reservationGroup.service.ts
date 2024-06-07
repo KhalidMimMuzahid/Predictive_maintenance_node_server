@@ -274,7 +274,9 @@ const allReservationsGroup = async ({
   // ----------------*************-----------------------
   // reservationRequests
   const result = await ReservationRequestGroup.find(filterQuery)
-    .select('user groupId groupName taskStatus biddingDate postBiddingProcess')
+    .select(
+      'user groupId groupName taskStatus biddingDate allBids postBiddingProcess',
+    )
     .populate([
       {
         path: 'reservationRequests',
@@ -293,10 +295,11 @@ const allReservationsGroup = async ({
       },
       // postBiddingProcess.invoiceGroup
       // postBiddingProcess.serviceProviderCompany
-      // {
-      //   path: 'allBids.biddingUser',
-      //   options: { strictPopulate: false },
-      // },
+      {
+        path: 'allBids.serviceProviderCompany',
+        select: 'status companyName photoUrl',
+        options: { strictPopulate: false },
+      },
       // {
       //   path: 'allBids.serviceProviderCompany',
       //   options: { strictPopulate: false },
@@ -416,6 +419,40 @@ const addBid = async ({
       { new: true },
     );
   return updatedReservationRequestGroup;
+};
+
+const setBiddingDate = async ({
+  reservationRequestGroup_id,
+  biddingDate,
+}: {
+  reservationRequestGroup_id: string;
+  biddingDate: Partial<TBiddingDate>;
+}) => {
+  const updatedBiddingDate = await ReservationRequestGroup.findByIdAndUpdate(
+    reservationRequestGroup_id,
+
+    {
+      'biddingDate.startDate': isNaN(
+        new Date(biddingDate?.startDate) as unknown as number,
+      )
+        ? undefined
+        : new Date(biddingDate?.startDate),
+
+      'biddingDate.endDate': isNaN(
+        new Date(biddingDate?.endDate) as unknown as number,
+      )
+        ? undefined
+        : new Date(biddingDate?.endDate),
+    },
+  );
+
+  if (!updatedBiddingDate) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'bidding date can not be set, please try again',
+    );
+  }
+  return true;
 };
 const selectBiddingWinner = async ({
   reservationRequestGroup_id,
@@ -630,6 +667,7 @@ const getReservationGroupById = async (reservationRequestGroup: string) => {
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
+  setBiddingDate,
   selectBiddingWinner,
   sendReservationGroupToBranch,
   allReservationsGroup,
