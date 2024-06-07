@@ -73,7 +73,7 @@ const createReservationRequestIntoDB = async ({
 
   reservationRequest.requestId = padNumberWithZeros(
     Number(lastCreatedRequest?.requestId || '000000') + 1,
-    4,
+    6,
   );
 
   reservationRequest.machine = machine;
@@ -147,7 +147,7 @@ const createReservationRequestIntoDB = async ({
 
       const groupId = padNumberWithZeros(
         Number(lastAddedReservationGroup?.groupId || '00000') + 1,
-        4,
+        5,
       );
 
       const reservationGroupArray = await ReservationRequestGroup.create(

@@ -105,7 +105,7 @@ const createReservationRequestGroup = async ({
 
     const groupId = padNumberWithZeros(
       Number(lastAddedReservationGroup?.groupId || '00000') + 1,
-      4,
+      5,
     );
 
     const reservationGroupArray = await ReservationRequestGroup.create(
@@ -278,7 +278,7 @@ const allReservationsGroup = async ({
     .populate([
       {
         path: 'reservationRequests',
-        select: 'status machineType invoice',
+        select: 'status machineType invoice schedule',
         populate: {
           path: 'user',
           select: 'phone showaUser',
@@ -302,12 +302,33 @@ const allReservationsGroup = async ({
       //   options: { strictPopulate: false },
       // },
     ]);
+  const reservationGroups = result?.map((each) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reservationGroup: any = { ...each };
+    if (!each?.taskStatus) {
+      if (
+        !each?.postBiddingProcess?.serviceProviderCompany &&
+        (!each?.biddingDate?.endDate || each?.biddingDate?.endDate > new Date())
+      ) {
+        // its 'pending'
+        reservationGroup._doc.taskStatus = 'pending';
+      } else if (
+        !each?.postBiddingProcess?.serviceProviderCompany &&
+        (each?.biddingDate?.endDate || each?.biddingDate?.endDate < new Date())
+      ) {
+        reservationGroup._doc.taskStatus = 'bid-closed-group';
+      } else if (
+        each?.postBiddingProcess?.serviceProviderCompany &&
+        !each?.taskStatus
+      ) {
+        reservationGroup._doc.taskStatus = 'assigned-to-company';
+      }
+    }
 
-  // return result?.map((each, i) => {
-  //   return { ...each?._doc, groupName: `Group-${i + 1}` };
-  // });
+    return reservationGroup?._doc;
+  });
 
-  return result;
+  return reservationGroups;
 };
 const addBid = async ({
   reservationRequestGroup_id,

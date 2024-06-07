@@ -112,7 +112,7 @@ const assignReservationGroupToTeam = async ({
 
   invoiceGroup.invoiceGroupNo = padNumberWithZeros(
     Number(lastCreatedInvoiceGroup?.invoiceGroupNo || '00000') + 1,
-    6,
+    5,
   );
   invoiceGroup.reservationRequestGroup = resGroup?._id;
 
@@ -158,7 +158,7 @@ const assignReservationGroupToTeam = async ({
 
       invoice.invoiceNo = padNumberWithZeros(
         Number(lastCreatedInvoice?.invoiceNo || '000000') + (i + 1),
-        7,
+        6,
       );
 
       return invoice;
