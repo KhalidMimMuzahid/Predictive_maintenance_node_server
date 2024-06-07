@@ -278,7 +278,7 @@ const allReservationsGroup = async ({
     .populate([
       {
         path: 'reservationRequests',
-        select: 'status machineType invoice schedule',
+        select: 'status machineType invoice schedule problem',
         populate: {
           path: 'user',
           select: 'phone showaUser',
