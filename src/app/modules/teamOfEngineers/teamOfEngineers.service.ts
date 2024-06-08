@@ -126,18 +126,20 @@ const getAllTeamsOfEngineers = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allTeamsOfEngineersData.map(async (team: any) => ({
       company: {
-        _id: team.serviceProviderCompany?._id,
-        companyName: team.serviceProviderCompany?.companyName,
+        _id: team?.serviceProviderCompany?._id,
+        companyName: team?.serviceProviderCompany?.companyName,
+        photoUrl: team?.serviceProviderCompany?.photoUrl,
       },
-      location: team.serviceProviderCompany?.address,
-      email: team.serviceProviderBranch?.email,
+      location: team?.serviceProviderCompany?.address,
+      email: team?.serviceProviderBranch?.email,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      members: team.members.map((member: any) => ({
+      members: team?.members.map((member: any) => ({
         name: member.member.name,
+        photoUrl: member?.member?.photoUrl,
         _id: member.member._id,
       })),
       serviceProviderBranchManager: await serviceProviderManagerDetails(
-        team.serviceProviderBranch._id,
+        team?.serviceProviderBranch._id,
       ),
     })),
   );
