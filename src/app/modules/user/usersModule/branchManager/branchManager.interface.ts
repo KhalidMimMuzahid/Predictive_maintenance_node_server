@@ -12,7 +12,7 @@ export type TServiceProviderBranchManager = {
   user: Types.ObjectId; // objectId of the user model
 
   name: { firstName: string; lastName: string };
-
+  photoUrl?: string;
   currentState: TCurrentStateForBranchManager;
   isDeleted: TIsDeleted;
 

@@ -11,7 +11,7 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>(
       enum: ['pending', 'accepted', 'ongoing', 'completed', 'canceled'],
       required: true,
     },
-    date: { type: Date, required: true },
+    // date: { type: Date, required: true },
     // location: { type: AddressSchema, required: true }, // Assuming TAddress will be an object
     isSensorConnected: { type: Boolean, required: true },
     machineType: {
@@ -36,7 +36,7 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>(
         required: true,
       },
       // date: { type: Date, required: true },
-      schedules: [{ type: String }],
+      schedules: [{ type: Date }],
     },
     invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },
     reservationRequestGroup: {

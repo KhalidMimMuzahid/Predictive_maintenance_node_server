@@ -25,6 +25,11 @@ export type TMachine = {
   model: string; // as mentioned in figma; model name of the machine
   environment: 'indoor' | 'outdoor'; // as mentioned in figma  like  "indoor" or "outdoor"
   sensorModulesAttached?: Types.ObjectId[]; // objectId of SensorModuleAttached
+
+  // subscription: {
+  //   subscriptionPurchased: Types.ObjectId;
+  //   expDate: Date;
+  // };
   isDeleted: TIsDeleted;
   // objectId of TAttachedSensor model
 };

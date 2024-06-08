@@ -5,11 +5,22 @@ import { chatServices } from './chat.service';
 import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { TAuth } from '../../../interface/error';
+import AppError from '../../../errors/AppError';
 
 const createPersonalChat: RequestHandler = catchAsync(async (req, res) => {
-  const personalChatData: Partial<TChat> = req.body as Partial<TChat>;
-
-  const result = await chatServices.createPersonalChat(personalChatData);
+  // const personalChatData: Partial<TChat> = req.body as Partial<TChat>;
+  const user: string = req?.query?.user as string;
+  if (!user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `user is required to add in your chat`,
+    );
+  }
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const result = await chatServices.createPersonalChat({
+    user1: auth?._id?.toString(),
+    user2: user,
+  });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -36,7 +47,20 @@ const createGroupChat: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getMyAllChats: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const result = await chatServices.getMyAllChats(auth?._id);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'my chats has retrieved successfully',
+    data: result,
+  });
+});
 export const chatController = {
   createPersonalChat,
   createGroupChat,
+  getMyAllChats,
 };

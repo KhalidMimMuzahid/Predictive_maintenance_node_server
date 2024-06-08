@@ -14,7 +14,7 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({
     auth,
-    accessUsers: ['serviceProviderEngineer'],
+    accessUsers: ['serviceProviderEngineer', 'showaAdmin'],
   });
 
   const reservationRequest: string = req?.query?.reservationRequest as string;
@@ -28,6 +28,7 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   }
   const results = await invoiceServices.addAdditionalProduct({
     user: auth?._id,
+    role: auth?.role as 'showaAdmin' | 'serviceProviderEngineer',
     reservationRequest_id: reservationRequest,
     additionalProduct: additionalProduct,
   });
@@ -39,6 +40,20 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -68,6 +83,24 @@ const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const getAllInvoices: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+
+  const result = await invoiceServices.getAllInvoices();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'invoices are retrieved successfully',
+    data: result,
+  });
+});
 const getAllInvoicesByUser: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -94,8 +127,10 @@ const getAllInvoicesByUser: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 export const invoiceController = {
   addAdditionalProducts,
   changeStatusToCompleted,
+  getAllInvoices,
   getAllInvoicesByUser,
 };

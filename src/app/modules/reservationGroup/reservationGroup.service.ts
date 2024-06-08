@@ -5,19 +5,52 @@ import httpStatus from 'http-status';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { TRole } from '../user/user.interface';
 import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
-import { TPostBiddingProcess } from './reservationGroup.interface';
+import {
+  TBiddingDate,
+  TPostBiddingProcess,
+  TReservationGroupType,
+} from './reservationGroup.interface';
 import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import { ReservationRequest } from '../reservation/reservation.model';
+import { TMachineType } from '../reservation/reservation.interface';
 
-const createReservationRequestGroup = async (
-  reservationRequests: string[],
-  groupName: string,
-) => {
+
+const createReservationRequestGroup = async ({
+  reservationRequests,
+  groupName,
+  biddingDate: biddingDateString,
+}: {
+  reservationRequests: string[];
+  groupName: string;
+  biddingDate: Partial<TBiddingDate>;
+}) => {
   const session = await mongoose.startSession();
+
+  // const biddingDate = {
+  //   startDate: isNaN(
+  //     new Date(biddingDateString?.startDate) as unknown as number,
+  //   )
+  //     ? undefined
+  //     : new Date(biddingDateString?.startDate),
+  //   endDate: isNaN(new Date(biddingDateString?.endDate) as unknown as number)
+  //     ? undefined
+  //     : new Date(biddingDateString?.endDate),
+  // };
+  // // const biddingDate3 = {
+  // //   biddingDate2
+  // // }
+  // // console.log(biddingDate2);
+  // return biddingDate;
+
   try {
     session.startTransaction();
     const reservations = await ReservationRequest.find()
+      // .populate({
+      //   path: 'machine',
+      //   select: 'sensorModulesAttached',
+      //   options: { strictPopulate: false },
+      // })
       .where('_id')
       .in(reservationRequests)
       .session(session);
@@ -32,14 +65,38 @@ const createReservationRequestGroup = async (
       );
     }
 
+    const groupForMachineType: TMachineType = reservations[0]?.isSensorConnected
+      ? 'connected'
+      : 'non-connected';
+
     reservations?.forEach((reservation) => {
+      if (reservation?.schedule?.category === 'on-demand') {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'on-demand reservation request can not be grouped',
+        );
+      }
+
       if (reservation.reservationRequestGroup) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
           'Some of the reservation you provided has already been grouped',
         );
       }
+
+      const groupForMachineType2: TMachineType = reservation?.isSensorConnected
+        ? 'connected'
+        : 'non-connected';
+
+      if (groupForMachineType !== groupForMachineType2) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Reservation Group cannot have different type of reservation ',
+        );
+      }
     });
+
+    // return 'under construction';
 
     const lastAddedReservationGroup = await ReservationRequestGroup.findOne(
       {},
@@ -47,8 +104,8 @@ const createReservationRequestGroup = async (
     ).sort({ _id: -1 });
 
     const groupId = padNumberWithZeros(
-      Number(lastAddedReservationGroup?.groupId || '0000') + 1,
-      4,
+      Number(lastAddedReservationGroup?.groupId || '00000') + 1,
+      5,
     );
 
     const reservationGroupArray = await ReservationRequestGroup.create(
@@ -57,8 +114,22 @@ const createReservationRequestGroup = async (
           reservationRequests: reservationRequests.map(
             (each) => new mongoose.Types.ObjectId(each),
           ),
+          groupForMachineType,
           groupId: groupId,
           groupName: groupName,
+
+          biddingDate: {
+            startDate: isNaN(
+              new Date(biddingDateString?.startDate) as unknown as number,
+            )
+              ? undefined
+              : new Date(biddingDateString?.startDate),
+            endDate: isNaN(
+              new Date(biddingDateString?.endDate) as unknown as number,
+            )
+              ? undefined
+              : new Date(biddingDateString?.endDate),
+          },
         },
       ],
       { session: session },
@@ -116,28 +187,157 @@ const createReservationRequestGroup = async (
 // biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)
 // serviceProviderCompany
 
-const allReservationsGroup = async () => {
+const allReservationsGroup = async ({
+  groupForMachineType,
+  reservationGroupType,
+}: {
+  groupForMachineType: TMachineType;
+  reservationGroupType: TReservationGroupType;
+}) => {
+  // -------------------************----------------------
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {
+    $and: [
+      {
+        groupForMachineType,
+        isOnDemand: false,
+      },
+    ],
+  };
+
+  if (reservationGroupType === 'all') {
+    // do nothing
+  } else if (reservationGroupType === 'pending') {
+    //
+
+    filterQuery?.$and.push({
+      $or: [
+        { 'postBiddingProcess.serviceProviderCompany': { $exists: false } },
+        { 'postBiddingProcess.serviceProviderCompany': null },
+      ],
+    });
+    filterQuery?.$and.push({
+      $or: [
+        { 'biddingDate.endDate': { $exists: false } },
+        { 'biddingDate.endDate': { $gt: new Date() } },
+      ],
+    });
+  } else if (reservationGroupType === 'bid-closed-group') {
+    filterQuery?.$and.push({
+      $or: [
+        { 'postBiddingProcess.serviceProviderCompany': { $exists: false } },
+        { 'postBiddingProcess.serviceProviderCompany': null },
+      ],
+    });
+    filterQuery?.$and.push({
+      $and: [
+        { 'biddingDate.endDate': { $exists: true } },
+        { 'biddingDate.endDate': { $lt: new Date() } },
+      ],
+    });
+  } else if (reservationGroupType === 'assigned-to-company') {
+    filterQuery?.$and.push({
+      $and: [
+        {
+          'postBiddingProcess.serviceProviderCompany': {
+            $exists: true,
+            $ne: null,
+          },
+        },
+        {
+          taskStatus: {
+            $or: {
+              $exists: false,
+              $eq: null,
+            },
+          },
+        },
+      ],
+    });
+  } else if (reservationGroupType === 'ongoing') {
+    filterQuery?.$and.push({
+      taskStatus: 'ongoing',
+    });
+    //
+  } else if (reservationGroupType === 'completed') {
+    //
+
+    filterQuery?.$and.push({
+      taskStatus: 'completed',
+    });
+  } else if (reservationGroupType === 'canceled') {
+    filterQuery?.$and.push({
+      taskStatus: 'canceled',
+    });
+  }
+
+  // ----------------*************-----------------------
   // reservationRequests
-  const result = await ReservationRequestGroup.find({}).populate([
-    {
-      path: 'reservationRequests',
-      options: { strictPopulate: false },
-    },
-    {
-      path: 'allBids.biddingUser',
-      options: { strictPopulate: false },
-    },
-    {
-      path: 'allBids.serviceProviderCompany',
-      options: { strictPopulate: false },
-    },
-  ]);
+  const result = await ReservationRequestGroup.find(filterQuery)
+    .select(
+      'user groupId groupName taskStatus biddingDate allBids postBiddingProcess',
+    )
+    .populate([
+      {
+        path: 'reservationRequests',
+        select: 'status machineType invoice schedule problem',
+        populate: {
+          path: 'user',
+          select: 'phone showaUser email',
+          populate: {
+            path: 'showaUser',
+            select: 'name addresses photoUrl',
+            options: { strictPopulate: false },
+          },
 
-  // return result?.map((each, i) => {
-  //   return { ...each?._doc, groupName: `Group-${i + 1}` };
-  // });
+          options: { strictPopulate: false },
+        },
+      },
+      // postBiddingProcess.invoiceGroup
+      // postBiddingProcess.serviceProviderCompany
 
-  return result;
+      {
+        path: 'postBiddingProcess.serviceProviderCompany',
+        select: 'companyName photoUrl',
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'allBids.serviceProviderCompany',
+        select: 'status companyName photoUrl',
+        options: { strictPopulate: false },
+      },
+      // {
+      //   path: 'allBids.serviceProviderCompany',
+      //   options: { strictPopulate: false },
+      // },
+    ]);
+  const reservationGroups = result?.map((each) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reservationGroup: any = { ...each };
+    if (!each?.taskStatus) {
+      if (
+        !each?.postBiddingProcess?.serviceProviderCompany &&
+        (!each?.biddingDate?.endDate || each?.biddingDate?.endDate > new Date())
+      ) {
+        // its 'pending'
+        reservationGroup._doc.taskStatus = 'pending';
+      } else if (
+        !each?.postBiddingProcess?.serviceProviderCompany &&
+        (each?.biddingDate?.endDate || each?.biddingDate?.endDate < new Date())
+      ) {
+        reservationGroup._doc.taskStatus = 'bid-closed';
+      } else if (
+        each?.postBiddingProcess?.serviceProviderCompany &&
+        !each?.taskStatus
+      ) {
+        reservationGroup._doc.taskStatus = 'assigned-to-company';
+      }
+    }
+
+    return reservationGroup?._doc;
+  });
+
+  return reservationGroups;
 };
 const addBid = async ({
   reservationRequestGroup_id,
@@ -157,6 +357,25 @@ const addBid = async ({
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'No reservation request group with this id',
+    );
+  }
+  if (resGroup?.isOnDemand === true) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You can not bid a On-demand reservation request group',
+    );
+  }
+
+  if (
+    !resGroup?.biddingDate?.startDate ||
+    new Date() < resGroup?.biddingDate?.startDate ||
+    (resGroup?.biddingDate?.endDate
+      ? new Date() > resGroup?.biddingDate?.endDate
+      : false)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You can not bid a now. It is not bidding time for this reservation group',
     );
   }
 
@@ -206,6 +425,40 @@ const addBid = async ({
       { new: true },
     );
   return updatedReservationRequestGroup;
+};
+
+const setBiddingDate = async ({
+  reservationRequestGroup_id,
+  biddingDate,
+}: {
+  reservationRequestGroup_id: string;
+  biddingDate: Partial<TBiddingDate>;
+}) => {
+  const updatedBiddingDate = await ReservationRequestGroup.findByIdAndUpdate(
+    reservationRequestGroup_id,
+
+    {
+      'biddingDate.startDate': isNaN(
+        new Date(biddingDate?.startDate) as unknown as number,
+      )
+        ? undefined
+        : new Date(biddingDate?.startDate),
+
+      'biddingDate.endDate': isNaN(
+        new Date(biddingDate?.endDate) as unknown as number,
+      )
+        ? undefined
+        : new Date(biddingDate?.endDate),
+    },
+  );
+
+  if (!updatedBiddingDate) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'bidding date can not be set, please try again',
+    );
+  }
+  return true;
 };
 const selectBiddingWinner = async ({
   reservationRequestGroup_id,
@@ -319,7 +572,9 @@ const sendReservationGroupToBranch = async ({
     );
   }
 
-  const userData = await userServices.getUserBy_id(user?.toString() as string);
+  const userData = await userServices.getUserBy_id({
+    _id: user?.toString() as string,
+  });
   const serviceProviderCompany = userData[`${userData?.role}`]
     .serviceProviderCompany as mongoose.Types.ObjectId;
   if (!serviceProviderCompany) {
@@ -418,6 +673,7 @@ const getReservationGroupById = async (reservationRequestGroup: string) => {
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
+  setBiddingDate,
   selectBiddingWinner,
   sendReservationGroupToBranch,
   allReservationsGroup,

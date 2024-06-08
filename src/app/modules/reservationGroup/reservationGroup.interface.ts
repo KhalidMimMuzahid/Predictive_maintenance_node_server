@@ -1,4 +1,15 @@
 import { Types } from 'mongoose';
+import { TMachineType } from '../reservation/reservation.interface';
+
+export type TReservationGroupType =
+  | 'all'
+  | 'pending'
+  | 'bid-closed-group'
+  | 'assigned-to-company'
+  | 'ongoing'
+  | 'completed'
+  | 'canceled';
+
 export type TPostBiddingProcess = {
   biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation
   serviceProviderCompany: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
@@ -13,10 +24,23 @@ export type TPostBiddingProcess = {
 
 
 
+
+
+export type TBiddingDate = {
+  startDate?: Date;
+  endDate?: Date;
+};
+
 export type TReservationRequestGroup = {
   groupId: string; // customized unique Identifier
   groupName: string;
+  groupForMachineType: TMachineType;
   reservationRequests: Types.ObjectId[]; // objectId of TReservationRequest Model
+  taskStatus: 'ongoing' | 'completed' | 'canceled';
+  isOnDemand: boolean;
+
+  biddingDate: TBiddingDate;
+
   allBids: {
     _id: Types.ObjectId; // mongoose will generate this _id, we no need to think about this
     biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation (service provider admin or sub admin)
@@ -26,3 +50,6 @@ export type TReservationRequestGroup = {
 
   postBiddingProcess?: TPostBiddingProcess;
 };
+
+
+

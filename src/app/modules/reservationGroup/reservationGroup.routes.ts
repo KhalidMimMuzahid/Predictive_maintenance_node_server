@@ -30,6 +30,11 @@ router.patch(
   reservationGroupController.addBid,
 );
 router.patch(
+  '/set-bidding-date',
+  validateRequest(reservationGroupValidation.setBiddingDateSchema),
+  reservationGroupController.setBiddingDate,
+);
+router.patch(
   '/select-bidding-winner',
   reservationGroupController.selectBiddingWinner,
 );

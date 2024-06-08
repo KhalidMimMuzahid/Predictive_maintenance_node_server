@@ -71,61 +71,152 @@ const signIn = async (uid: string) => {
 
   return { user, token };
 };
-const getUserBy_id = async (_id: string) => {
-  const user = await User.findById(_id).populate([
-    {
-      path: 'showaUser',
-      options: { strictPopulate: false },
-    },
+const getUserBy_id = async ({
+  _id,
+  rootUserFields,
+  extendedUserFields,
+}: {
+  _id: string;
+  rootUserFields?: string;
+  extendedUserFields?: string;
+}) => {
+  // const
+  const user = await User.findById(_id)
+    .select(rootUserFields)
+    .populate([
+      {
+        path: 'showaUser',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
 
-    {
-      path: 'showaAdmin',
-      options: { strictPopulate: false },
-    },
+      {
+        path: 'showaAdmin',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
 
-    {
-      path: 'showaSubAdmin',
-      options: { strictPopulate: false },
-    },
+      {
+        path: 'showaSubAdmin',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
 
-    {
-      path: 'serviceProviderAdmin',
-      options: { strictPopulate: false },
-      populate: {
-        path: 'serviceProviderCompany',
+      {
+        path: 'serviceProviderAdmin',
+        select: extendedUserFields,
         options: { strictPopulate: false },
         populate: {
-          path: 'branches',
+          path: 'serviceProviderCompany',
           options: { strictPopulate: false },
+          populate: {
+            path: 'branches',
+            options: { strictPopulate: false },
+          },
         },
       },
-    },
-    {
-      path: 'serviceProviderSubAdmin',
-      options: { strictPopulate: false },
-    },
-    {
-      path: 'serviceProviderEngineer',
-      options: { strictPopulate: false },
-    },
-    {
-      path: 'serviceProviderBranchManager',
-      options: { strictPopulate: false },
-    },
-    {
-      path: 'serviceProviderSupportStuff',
-      options: { strictPopulate: false },
-    },
-    // // for no we no need wallet in this api; cause for get wallet we have another api
-    {
-      path: 'wallet',
-      options: { strictPopulate: false },
-    },
-  ]);
+      {
+        path: 'serviceProviderSubAdmin',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderEngineer',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderBranchManager',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderSupportStuff',
+        select: extendedUserFields,
+        options: { strictPopulate: false },
+      },
+      // // for no we no need wallet in this api; cause for get wallet we have another api
+      {
+        path: 'wallet',
+        options: { strictPopulate: false },
+      },
+    ]);
 
   return user;
 };
+const getUsersInfoByUsersArray = async ({
+  usersArray,
+  rootUserFields,
+  extendedUserFields,
+}: {
+  usersArray: string[];
+  rootUserFields: string;
+  extendedUserFields: string;
+}) => {
+  const users = await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    usersArray.map(async (user: any) => {
+      const userData = await User.findById(user)
+        .select(rootUserFields)
+        .populate([
+          {
+            path: 'showaUser',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
 
+          {
+            path: 'showaAdmin',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
+
+          {
+            path: 'showaSubAdmin',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
+
+          {
+            path: 'serviceProviderAdmin',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+            populate: {
+              path: 'serviceProviderCompany',
+              options: { strictPopulate: false },
+              populate: {
+                path: 'branches',
+                options: { strictPopulate: false },
+              },
+            },
+          },
+          {
+            path: 'serviceProviderSubAdmin',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
+          {
+            path: 'serviceProviderEngineer',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
+          {
+            path: 'serviceProviderBranchManager',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
+          {
+            path: 'serviceProviderSupportStuff',
+            select: extendedUserFields,
+            options: { strictPopulate: false },
+          },
+        ]);
+      return userData;
+    }),
+  );
+
+  return users;
+};
 const getUserWalletInfo = async (uid: string) => {
   const user = await User.findOne({ uid: uid }).populate([
     {
@@ -154,6 +245,7 @@ const getAllShowaCustomersFromDB = async () => {
 export const userServices = {
   signIn,
   getUserBy_id,
+  getUsersInfoByUsersArray,
   getAllShowaCustomersFromDB,
   getUserWalletInfo,
 };

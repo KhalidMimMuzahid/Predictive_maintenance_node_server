@@ -15,6 +15,8 @@ import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import S3 from 'aws-sdk/clients/s3';
 import { Invoice } from '../invoice/invoice.model';
 import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
+import { addDays } from '../../utils/addDays';
+import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -59,21 +61,33 @@ const createReservationRequestIntoDB = async ({
   if (isAlreadyReservation) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'This machine is already reserved and its not completed',
+      'This machine is already reserved and it has not been completed or cancel yet',
     );
   }
   const reservationRequest: Partial<TReservationRequest> = {};
 
   const lastCreatedRequest = await ReservationRequest.findOne(
-    { user },
+    {},
     { requestId: 1 },
   ).sort({ _id: -1 });
 
   reservationRequest.requestId = padNumberWithZeros(
-    Number(lastCreatedRequest?.requestId || '0000') + 1,
-    4,
+    Number(lastCreatedRequest?.requestId || '000000') + 1,
+    6,
   );
 
+  reservationRequest.machine = machine;
+  reservationRequest.user = user;
+  reservationRequest.problem = problem;
+  reservationRequest.schedule = schedule;
+  reservationRequest.status = 'pending';
+  // reservationRequest.date = new Date(); // we should convert this date to japan/korean local time
+  reservationRequest.machineType = machineData?.category;
+
+  reservationRequest.isSensorConnected = machineData.sensorModulesAttached
+    ?.length
+    ? true
+    : false;
   if (schedule?.category === 'custom-date-picked') {
     if (schedule?.schedules?.length !== 1) {
       throw new AppError(
@@ -81,25 +95,106 @@ const createReservationRequestIntoDB = async ({
         "you've chosen custom-date-picked but you have not sent it ",
       );
     }
-  } else if (schedule?.category === 'on-demand') {
-    // do nothing: What does mean by "on-demand"?
+    const dateString = schedule?.schedules[0];
+    if (new Date() > new Date(dateString)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'The date you have chosen is past date, please select future date',
+      );
+    }
   } else if (schedule?.category === 'within-one-week') {
     // from now, add 7 days;  set schedule?.schedules[0]
+    schedule.schedules = [];
+    schedule.schedules.push(addDays(7));
   } else if (schedule?.category === 'within-two-week') {
     // from now, add 14 days;  set schedule?.schedules[0]
-  }
-  reservationRequest.machine = machine;
-  reservationRequest.user = user;
-  reservationRequest.problem = problem;
-  reservationRequest.schedule = schedule;
-  reservationRequest.status = 'pending';
-  reservationRequest.date = new Date(); // we should convert this date to japan/korean local time
-  reservationRequest.machineType = machineData?.category;
+    schedule.schedules = [];
+    schedule.schedules.push(addDays(14));
+  } else if (schedule?.category === 'on-demand') {
+    // do nothing: What does mean by "on-demand"?
 
-  reservationRequest.isSensorConnected = machineData.sensorModulesAttached
-    ?.length
-    ? true
-    : false;
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+
+      reservationRequest.schedule.schedules = undefined;
+      const createdReservationRequestArray = await ReservationRequest.create(
+        [reservationRequest],
+        {
+          session,
+        },
+      );
+      if (!createdReservationRequestArray?.length) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'could not create reservation request, please try again',
+        );
+      }
+
+      const createdReservationRequest = createdReservationRequestArray[0];
+      // console.log({ result });
+      // return result;
+
+      const groupForMachineType: TMachineType =
+        createdReservationRequest.isSensorConnected
+          ? 'connected'
+          : 'non-connected';
+
+      const lastAddedReservationGroup = await ReservationRequestGroup.findOne(
+        {},
+        { groupId: 1 },
+      ).sort({ _id: -1 });
+
+      const groupId = padNumberWithZeros(
+        Number(lastAddedReservationGroup?.groupId || '00000') + 1,
+        5,
+      );
+
+      const reservationGroupArray = await ReservationRequestGroup.create(
+        [
+          {
+            reservationRequests: [createdReservationRequest?._id],
+            groupForMachineType,
+            groupId: groupId,
+            groupName: 'Automated-grouped',
+            isOnDemand: true,
+          },
+        ],
+        { session: session },
+      );
+
+      if (!reservationGroupArray?.length) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'failed to create reservation group',
+        );
+      }
+      const reservationGroup = reservationGroupArray[0];
+
+      createdReservationRequest.reservationRequestGroup = reservationGroup?._id;
+      const updatedReservationRequest = await createdReservationRequest.save({
+        session,
+      });
+
+      if (updatedReservationRequest) {
+        if (!reservationGroupArray?.length) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'failed to create reservation request',
+          );
+        }
+      }
+
+      await session.commitTransaction();
+      await session.endSession();
+      return updatedReservationRequest;
+    } catch (error) {
+      await session.abortTransaction();
+      await session.endSession();
+      throw error;
+    }
+  }
+
   const result = await ReservationRequest.create(reservationRequest);
   return result;
 };

@@ -22,13 +22,19 @@ const signIn: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 const getUserBy_id: RequestHandler = catchAsync(async (req, res) => {
-  const _id = req?.query?._id;
+  const _id: string = req?.query?._id as string;
+  const rootUserFields: string = req?.query?.rootUserFields as string;
+  const extendedUserFields: string = req?.query?.extendedUserFields as string;
 
   //   console.log({ auth: req?.headers.auth });
   if (!_id) {
     throw new AppError(httpStatus.BAD_REQUEST, '_id is required to get user');
   }
-  const result = await userServices.getUserBy_id(_id as string);
+  const result = await userServices.getUserBy_id({
+    _id,
+    rootUserFields,
+    extendedUserFields,
+  });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -37,7 +43,32 @@ const getUserBy_id: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+const getUsersInfoByUsersArray: RequestHandler = catchAsync(
+  async (req, res) => {
+    const rootUserFields: string = req?.query?.rootUserFields as string;
+    const extendedUserFields: string = req?.query?.extendedUserFields as string;
+    const usersArray: string[] = req?.body?.usersArray as string[];
+    //   console.log({ auth: req?.headers.auth });
+    if (usersArray?.length < 2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'usersArray must  have at least 2 users',
+      );
+    }
+    const result = await userServices.getUsersInfoByUsersArray({
+      usersArray,
+      rootUserFields,
+      extendedUserFields,
+    });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'User retrieved successfully',
+      data: result,
+    });
+  },
+);
 const getUserWalletInfo: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -65,6 +96,7 @@ const getAllShowaCustomers: RequestHandler = catchAsync(async (req, res) => {
 export const userControllers = {
   signIn,
   getUserBy_id,
+  getUsersInfoByUsersArray,
   getAllShowaCustomers,
   getUserWalletInfo,
 };

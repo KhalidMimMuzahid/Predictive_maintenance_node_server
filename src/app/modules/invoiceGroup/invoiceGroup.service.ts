@@ -38,7 +38,7 @@ const assignReservationGroupToTeam = async ({
   if (!resGroup?.postBiddingProcess?.serviceProviderCompany) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'This Reservation group bidding has not been ended',
+      'This Reservation group has not been assigned to any company',
     );
   }
   if (!resGroup?.postBiddingProcess?.serviceProviderBranch) {
@@ -48,7 +48,9 @@ const assignReservationGroupToTeam = async ({
     );
   }
 
-  const userData = await userServices.getUserBy_id(user?.toString() as string);
+  const userData = await userServices.getUserBy_id({
+    _id: user?.toString() as string,
+  });
 
   const serviceProviderBranch =
     getServiceProviderBranchForUser_EngineerAndManager(userData);
@@ -109,8 +111,8 @@ const assignReservationGroupToTeam = async ({
   const invoiceGroup: Partial<TInvoiceGroup> = {};
 
   invoiceGroup.invoiceGroupNo = padNumberWithZeros(
-    Number(lastCreatedInvoiceGroup?.invoiceGroupNo || '000000') + 1,
-    6,
+    Number(lastCreatedInvoiceGroup?.invoiceGroupNo || '00000') + 1,
+    5,
   );
   invoiceGroup.reservationRequestGroup = resGroup?._id;
 
@@ -155,8 +157,8 @@ const assignReservationGroupToTeam = async ({
       invoice.postBiddingProcess = resGroup?.postBiddingProcess;
 
       invoice.invoiceNo = padNumberWithZeros(
-        Number(lastCreatedInvoice?.invoiceNo || '0000000') + (i + 1),
-        7,
+        Number(lastCreatedInvoice?.invoiceNo || '000000') + (i + 1),
+        6,
       );
 
       return invoice;
@@ -187,6 +189,7 @@ const assignReservationGroupToTeam = async ({
     }
 
     resGroup.postBiddingProcess.invoiceGroup = updatedInvoiceGroup?._id;
+    resGroup.taskStatus = 'ongoing';
     const updatedResGroup = await resGroup.save({ session: session });
 
     if (!updatedResGroup?.postBiddingProcess?.invoiceGroup) {

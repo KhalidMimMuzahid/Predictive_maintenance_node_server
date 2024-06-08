@@ -12,7 +12,7 @@ export type TServiceProviderEngineer = {
   user: Types.ObjectId; // objectId of the user model
 
   name: { firstName: string; lastName: string };
-
+  photoUrl?: string;
   currentState: TCurrentStateForEngineer;
   isDeleted: TIsDeleted;
   // ratings: {

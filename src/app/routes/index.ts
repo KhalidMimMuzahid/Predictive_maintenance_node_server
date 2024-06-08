@@ -16,6 +16,7 @@ import { walletRoutes } from '../modules/wallet/wallet.routes';
 import { messengerRoutes } from '../modules/messenger/messenger.routes';
 import { subscriptionRoutes } from '../modules/subscription/subscription.routes';
 import { extraDataRoutes } from '../modules/extraData/extraData.routes';
+import { subscriptionPurchasedRoutes } from '../modules/subscriptionPurchased/subscriptionPurchased.routes';
 
 const router = express.Router();
 
@@ -35,6 +36,7 @@ const moduleRoutes: any[] = [
   { path: '/wallet', route: walletRoutes },
   { path: '/messenger', route: messengerRoutes },
   { path: '/subscription', route: subscriptionRoutes },
+  { path: '/subscription-purchase', route: subscriptionPurchasedRoutes },
   { path: '/extra-data', route: extraDataRoutes },
 ];
 

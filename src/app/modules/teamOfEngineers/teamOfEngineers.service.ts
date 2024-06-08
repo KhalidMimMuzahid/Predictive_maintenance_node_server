@@ -5,6 +5,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
 import { TTeamOfEngineers } from './teamOfEngineers.interface';
+import { User } from '../user/user.model';
 
 const makeTeamOfEngineerInToDB = async ({
   teamName,
@@ -96,6 +97,56 @@ const makeTeamOfEngineerInToDB = async ({
 
   return createdTeamOfEngineers; // for testing
 };
+
+const getAllTeamsOfEngineers = async () => {
+  const allTeamsOfEngineersData = await TeamOfEngineers.find({}).populate([
+    {
+      path: 'serviceProviderCompany',
+      select: 'companyName address ',
+    },
+    { path: 'serviceProviderBranch', select: 'email' },
+    {
+      path: 'members.member',
+      select: 'user name',
+    },
+  ]);
+
+  const serviceProviderManagerDetails = async (
+    serviceProviderBranchId: Types.ObjectId,
+  ) => {
+    const manager = await ServiceProviderBranchManager.findOne({
+      'currentState.serviceProviderBranch': serviceProviderBranchId,
+    });
+    const name = manager?.name;
+    const contact = await User.findById(manager?.user);
+    return { name: name, phone: contact?.phone };
+  };
+
+  const result = await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allTeamsOfEngineersData.map(async (team: any) => ({
+      company: {
+        _id: team.serviceProviderCompany?._id,
+        companyName: team.serviceProviderCompany?.companyName,
+      },
+      location: team.serviceProviderCompany?.address,
+      email: team.serviceProviderBranch?.email,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      members: team.members.map((member: any) => ({
+        name: member.member.name,
+        _id: member.member._id,
+      })),
+      serviceProviderBranchManager: await serviceProviderManagerDetails(
+        team.serviceProviderBranch._id,
+      ),
+    })),
+  );
+
+
+  return result;
+};
+
 export const teamOfEngineersServices = {
   makeTeamOfEngineerInToDB,
+  getAllTeamsOfEngineers,
 };

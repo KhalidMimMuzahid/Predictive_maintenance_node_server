@@ -2,7 +2,9 @@ import { Types } from 'mongoose';
 import { TPostBiddingProcess } from '../reservationGroup/reservationGroup.interface';
 import { TIsDeleted } from '../common/common.interface';
 export type TAdditionalProduct = {
-  addedBy: Types.ObjectId; // ServiceProviderEngineer model
+  addedBy?: Types.ObjectId; // ServiceProviderEngineer model
+
+  addedByUserType: 'showaAdmin' | 'serviceProviderEngineer';
   productName: string;
   // quantity: number;
   // promo:number // percentage of promo ; by default 0%   // is it the same of discount offer? what is actually a promo?
@@ -23,6 +25,8 @@ export type TInvoice = {
   invoiceGroup: Types.ObjectId; // objectId of InvoiceGroup model
 
   user: Types.ObjectId; // objectId of the user model; who raise this reservation
+
+  // inspectionByEngineer: report
   postBiddingProcess?: TPostBiddingProcess;
 
   additionalProducts: {

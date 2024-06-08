@@ -23,6 +23,10 @@ router.get(
   '/get-sensors-by-machine',
   sensorModuleAttachedControllers.getAttachedSensorModulesByMachine,
 );
+router.get(
+  '/get-all-sensors-by-machine',
+  sensorModuleAttachedControllers.getAllAttachedSensorModulesByMachine,
+);
 
 router.get(
   '/get-sensor-module-attached-by-mac-address',

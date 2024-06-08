@@ -9,6 +9,7 @@ export const MachineSchema: Schema = new Schema<TMachine>(
     packageStatus: {
       type: String,
       enum: ['Pending', 'Running', 'Expired'],
+      default: 'Pending',
       required: true,
     },
     category: {
