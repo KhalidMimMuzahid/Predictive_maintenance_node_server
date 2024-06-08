@@ -295,6 +295,12 @@ const allReservationsGroup = async ({
       },
       // postBiddingProcess.invoiceGroup
       // postBiddingProcess.serviceProviderCompany
+
+      {
+        path: 'postBiddingProcess.serviceProviderCompany',
+        select: 'companyName photoUrl',
+        options: { strictPopulate: false },
+      },
       {
         path: 'allBids.serviceProviderCompany',
         select: 'status companyName photoUrl',
