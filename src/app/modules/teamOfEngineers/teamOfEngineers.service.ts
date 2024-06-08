@@ -102,12 +102,12 @@ const getAllTeamsOfEngineers = async () => {
   const allTeamsOfEngineersData = await TeamOfEngineers.find({}).populate([
     {
       path: 'serviceProviderCompany',
-      select: 'companyName address ',
+      select: 'companyName address photoUrl',
     },
     { path: 'serviceProviderBranch', select: 'email' },
     {
       path: 'members.member',
-      select: 'user name',
+      select: 'user name photoUrl',
     },
   ]);
 
