@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import mongoose, { Schema } from 'mongoose';
-import { TInvoice } from './invoice.interface';
+import { TAdditionalProduct, TInvoice } from './invoice.interface';
 import { PostBiddingProcessSchema } from '../reservationGroup/reservationGroup.model';
 import { IsDeletedSchema } from '../common/common.model';
 
@@ -31,12 +31,19 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>(
     additionalProducts: {
       type: new Schema({
         products: [
-          {
+          new Schema<TAdditionalProduct>({
+            // if  addedByUserType is showaAdmin; then we don't have this field
             addedBy: {
               type: Schema.Types.ObjectId,
               ref: 'ServiceProviderEngineer',
+              required: false,
+            },
+            addedByUserType: {
+              type: String,
+              enum: ['showaAdmin', 'serviceProviderEngineer'],
               required: true,
             },
+
             productName: { type: String, required: true },
             // quantity: { type: Number, required: true },
 
@@ -46,7 +53,7 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>(
               tax: { type: Number, default: 0 },
               totalAmount: { type: Number, required: true },
             },
-          },
+          }),
         ],
         totalAmount: { type: Number, required: true, default: 0 },
         isPaid: { type: Boolean, required: true, default: false },

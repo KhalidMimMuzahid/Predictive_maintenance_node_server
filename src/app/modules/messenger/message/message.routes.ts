@@ -10,5 +10,7 @@ router.post(
   validateRequest(messageValidation.messageValidationSchema),
   messageController.sendMessage,
 );
+router.get('/get-messages-by-chat', messageController.getMessagesByChat);
+router.get('/get-last-message-by-chat', messageController.getLastMessageByChat);
 
 export const messageRoutes = router;

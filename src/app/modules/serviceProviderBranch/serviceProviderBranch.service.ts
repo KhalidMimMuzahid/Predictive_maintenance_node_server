@@ -18,9 +18,9 @@ const createServiceProviderBranchInToDB = async ({
   try {
     session.startTransaction();
 
-    const userData = await userServices.getUserBy_id(
-      user?.toString() as string,
-    );
+    const userData = await userServices.getUserBy_id({
+      _id: user?.toString() as string,
+    });
 
     if (!userData[`${userData?.role}`].serviceProviderCompany) {
       throw new AppError(

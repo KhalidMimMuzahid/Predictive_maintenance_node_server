@@ -6,6 +6,13 @@ import { reservationGroupServices } from './reservationGroup.service';
 import { TAuth } from '../../interface/error';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import AppError from '../../errors/AppError';
+import {
+  TBiddingDate,
+  TReservationGroupType,
+} from './reservationGroup.interface';
+import { TMachineType } from '../reservation/reservation.interface';
+import { machineTypeArray } from '../reservation/reservation.const';
+import { reservationGroupTypeArray } from './reservationGroup.const';
 
 const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -15,17 +22,19 @@ const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const reservationRequests: string[] = req?.body
     ?.reservationRequests as string[];
   const groupName: string = req?.body?.groupName as string; // array of reservation request ids
-
+  const biddingDate: Partial<TBiddingDate> = req?.body?.biddingDate;
   if (!reservationRequests?.length || !groupName) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'reservationRequests and groupName are required to make group',
     );
   }
-  const result = await reservationGroupServices.createReservationRequestGroup(
+  const result = await reservationGroupServices.createReservationRequestGroup({
     reservationRequests,
     groupName,
-  );
+    biddingDate,
+  });
+  // const result = 'result';
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -43,8 +52,42 @@ const allReservationsGroup: RequestHandler = catchAsync(async (req, res) => {
     auth,
     accessUsers: ['showaAdmin'],
   });
+  const groupForMachineType: TMachineType = req?.query
+    ?.groupForMachineType as TMachineType;
 
-  const results = await reservationGroupServices.allReservationsGroup();
+  if (!machineTypeArray.some((each) => each === groupForMachineType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `machine type must be any of ${machineTypeArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  const reservationGroupType: TReservationGroupType = req?.query
+    ?.reservationGroupType as TReservationGroupType;
+
+  if (
+    !reservationGroupTypeArray.some((each) => each === reservationGroupType)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `machine type must be any of ${reservationGroupTypeArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+  const results = await reservationGroupServices.allReservationsGroup({
+    groupForMachineType,
+    reservationGroupType,
+  });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -81,6 +124,38 @@ const addBid: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const setBiddingDate: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin'],
+  });
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+  const biddingDate: Partial<TBiddingDate> = req?.body?.biddingDate;
+  if (
+    !reservationRequestGroup ||
+    (!biddingDate?.endDate && biddingDate?.endDate)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequestGroup and biddingDate are required to add biddingDate',
+    );
+  }
+  const results = await reservationGroupServices.setBiddingDate({
+    reservationRequestGroup_id: reservationRequestGroup,
+    biddingDate,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Bidding date has successfully set',
+    data: results,
+  });
+});
 const selectBiddingWinner: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -181,6 +256,7 @@ export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
   addBid,
+  setBiddingDate,
   selectBiddingWinner,
   sendReservationGroupToBranch,
   getReservationGroupById,

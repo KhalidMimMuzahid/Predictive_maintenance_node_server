@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
-import { TReservationRequestGroup } from './reservationGroup.interface';
+import {
+  TBiddingDate,
+  TReservationRequestGroup,
+} from './reservationGroup.interface';
 import { Schema } from 'mongoose';
+import { machineTypeArray } from '../reservation/reservation.const';
 export const PostBiddingProcessSchema = new Schema({
   biddingUser: {
     type: Schema.Types.ObjectId,
@@ -23,14 +27,43 @@ export const PostBiddingProcessSchema = new Schema({
     // required: true,
   },
 });
+const BiddingDateSchema = new Schema<TBiddingDate>({
+  startDate: {
+    type: Date,
+    required: false,
+  },
+  endDate: {
+    type: Date,
+    required: false,
+  },
+});
 const ReservationRequestGroupSchema: Schema =
   new Schema<TReservationRequestGroup>(
     {
       groupId: { type: String, required: true },
       groupName: { type: String, required: true, default: 'no-title' },
+
+      groupForMachineType: {
+        type: String,
+        enum: machineTypeArray,
+        required: true,
+      },
       reservationRequests: [
         { type: Schema.Types.ObjectId, ref: 'ReservationRequest' },
       ],
+      taskStatus: {
+        type: String,
+        enum: ['ongoing', 'completed', 'canceled'],
+      },
+      isOnDemand: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      biddingDate: {
+        type: BiddingDateSchema,
+        required: false,
+      },
       allBids: [
         {
           biddingUser: {
@@ -60,3 +93,5 @@ export const ReservationRequestGroup = mongoose.model<TReservationRequestGroup>(
   'ReservationRequestGroup',
   ReservationRequestGroupSchema,
 );
+
+

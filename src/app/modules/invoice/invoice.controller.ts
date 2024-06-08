@@ -14,7 +14,7 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({
     auth,
-    accessUsers: ['serviceProviderEngineer'],
+    accessUsers: ['serviceProviderEngineer', 'showaAdmin'],
   });
 
   const reservationRequest: string = req?.query?.reservationRequest as string;
@@ -28,6 +28,7 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   }
   const results = await invoiceServices.addAdditionalProduct({
     user: auth?._id,
+    role: auth?.role as 'showaAdmin' | 'serviceProviderEngineer',
     reservationRequest_id: reservationRequest,
     additionalProduct: additionalProduct,
   });
@@ -39,6 +40,20 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 

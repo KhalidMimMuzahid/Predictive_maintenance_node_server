@@ -20,8 +20,8 @@ const addNonConnectedMachineInToDB = async (payload: TMachine) => {
     { machineNo: 1 },
   ).sort({ _id: -1 });
   machineData.machineNo = padNumberWithZeros(
-    Number(lastAddedMachine?.machineNo || '0000') + 1,
-    4,
+    Number(lastAddedMachine?.machineNo || '00000') + 1,
+    5,
   );
   const machine = await Machine.create(machineData);
   return machine;
@@ -97,8 +97,8 @@ const addSensorConnectedMachineInToDB = async (payload: {
       { machineNo: 1 },
     ).sort({ _id: -1 });
     machineData.machineNo = padNumberWithZeros(
-      Number(lastAddedMachine?.machineNo || '0000') + 1,
-      4,
+      Number(lastAddedMachine?.machineNo || '00000') + 1,
+      5,
     );
 
     const machineArray = await Machine.create([machineData], {
