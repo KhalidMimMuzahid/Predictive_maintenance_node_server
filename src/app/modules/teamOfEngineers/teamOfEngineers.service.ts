@@ -5,7 +5,8 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
 import { TTeamOfEngineers } from './teamOfEngineers.interface';
-import { User } from '../user/user.model';
+
+import { TUser } from '../user/user.interface';
 
 const makeTeamOfEngineerInToDB = async ({
   teamName,
@@ -116,10 +117,24 @@ const getAllTeamsOfEngineers = async () => {
   ) => {
     const manager = await ServiceProviderBranchManager.findOne({
       'currentState.serviceProviderBranch': serviceProviderBranchId,
-    });
-    const name = manager?.name;
-    const contact = await User.findById(manager?.user);
-    return { name: name, phone: contact?.phone };
+    })
+      .select('name photoUrl')
+      .populate({
+        path: 'user',
+        select: 'email phone',
+        options: { strictPopulate: false },
+      });
+
+    // console.log({ manager });
+    // const name = manager?.name;
+    // const contact = await User.findById(manager?.user);
+
+    const user = manager?.user as unknown as TUser;
+    return {
+      name: manager?.name,
+      phone: user?.phone,
+      photoUrl: manager?.photoUrl,
+    };
   };
 
   const result = await Promise.all(
@@ -143,7 +158,6 @@ const getAllTeamsOfEngineers = async () => {
       ),
     })),
   );
-
 
   return result;
 };
