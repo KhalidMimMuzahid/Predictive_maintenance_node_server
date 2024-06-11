@@ -26,4 +26,6 @@ router.post(
 );
 router.get('/get-my-all-chats', chatController.getMyAllChats);
 
+router.get('/get-chat-by-chat_id', chatController.getChatByChat_id);
+
 export const chatRoutes = router;

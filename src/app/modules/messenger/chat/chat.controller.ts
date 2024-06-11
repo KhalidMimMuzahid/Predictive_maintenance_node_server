@@ -85,11 +85,37 @@ const getMyAllChats: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+
+const getChatByChat_id: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const chat_id = req?.query?.chat_id as string;
+
+  if (!chat_id) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `chat_id is required to get chat`,
+    );
+  }
+  const result = await chatServices.getChatByChat_id({
+    user: auth?._id,
+    chat_id,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'chat has retrieved successfully',
+    data: result,
+  });
+});
 export const chatController = {
   createPersonalChat,
   createPersonalChatByPhoneOrEmail,
   createGroupChat,
   getMyAllChats,
+  getChatByChat_id,
 };
 
 

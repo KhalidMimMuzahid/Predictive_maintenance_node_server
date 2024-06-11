@@ -10,10 +10,24 @@ import httpStatus from 'http-status';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { SensorModule } from '../sensorModule/sensorModule.model';
 
+// implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async (payload: TMachine) => {
   checkMachineData(payload); // we are validation machine data for handling washing/general machine data according to it's category
 
   const machineData = payload;
+
+  // check purchased subscription here
+
+  // const subscriptionPurchased = await SubscriptionPurchased.findOne({
+  //   user: machineData?.user,
+  //   isActive: true,
+
+  //   $gt: {
+  //     'usage.showaUser.totalAvailableMachine': 0,
+  //   },
+  // });
+  // console.log(subscriptionPurchased);
+
   machineData.status = 'normal';
   const lastAddedMachine = await Machine.findOne(
     { user: machineData?.user },
@@ -23,10 +37,12 @@ const addNonConnectedMachineInToDB = async (payload: TMachine) => {
     Number(lastAddedMachine?.machineNo || '00000') + 1,
     5,
   );
+
   const machine = await Machine.create(machineData);
   return machine;
 };
 
+// implement usages of purchased subscription ; for both of machine and IOT
 const addSensorConnectedMachineInToDB = async (payload: {
   sensorModuleMacAddress: string;
   machineData: TMachine;
@@ -60,6 +76,11 @@ const addSensorConnectedMachineInToDB = async (payload: {
   sensorModuleAttached.moduleType = sensorModule?.moduleType;
 
   sensorModule.status = 'sold-out';
+
+  //  -------------------
+
+  // find purchase sensor for this user and that has available IOT and machine
+  // ----------------------
 
   const session = await mongoose.startSession();
 
@@ -143,6 +164,7 @@ const addSensorConnectedMachineInToDB = async (payload: {
   }
 };
 
+// implement usages of purchased subscription   ;  for machine
 const addModuleToMachineInToDB = async (
   sensorModuleMacAddress: string,
   machine_id: Types.ObjectId,
@@ -420,6 +442,7 @@ const getMachineBy_id = async (machine: string) => {
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
+
   addSensorAttachedModuleInToMachineIntoDB,
   updateMachinePackageStatus,
   getMyWashingMachineService,

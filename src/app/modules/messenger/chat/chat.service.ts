@@ -254,9 +254,35 @@ const getMyAllChats = async (user: mongoose.Types.ObjectId) => {
   ]);
   return result;
 };
+const getChatByChat_id = async ({
+  user,
+  chat_id,
+}: {
+  user: mongoose.Types.ObjectId;
+  chat_id: string;
+}) => {
+  const result = await Chat.findOne({
+    _id: chat_id,
+    users: user,
+  }).populate([
+    {
+      path: 'reservationRequests',
+      options: { strictPopulate: false },
+    },
+  ]);
+
+  if (!result) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `no chat found for this chat_id`,
+    );
+  }
+  return result;
+};
 export const chatServices = {
   createPersonalChat,
   createPersonalChatByPhoneOrEmail,
   createGroupChat,
   getMyAllChats,
+  getChatByChat_id,
 };
