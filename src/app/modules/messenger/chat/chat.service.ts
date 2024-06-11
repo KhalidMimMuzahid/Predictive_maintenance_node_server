@@ -263,7 +263,7 @@ const getChatByChat_id = async ({
 }) => {
   const result = await Chat.findOne({
     _id: chat_id,
-    users: user,
+    // users: user,
   }).populate([
     {
       path: 'reservationRequests',
