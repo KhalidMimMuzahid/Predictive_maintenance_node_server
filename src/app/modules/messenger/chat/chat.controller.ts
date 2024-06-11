@@ -34,6 +34,7 @@ const createPersonalChatByPhoneOrEmail: RequestHandler = catchAsync(
   async (req, res) => {
     // const personalChatData: Partial<TChat> = req.body as Partial<TChat>;
     const phoneOrEmail: string = req?.query?.phoneOrEmail as string;
+
     if (!phoneOrEmail) {
       throw new AppError(
         httpStatus.BAD_REQUEST,

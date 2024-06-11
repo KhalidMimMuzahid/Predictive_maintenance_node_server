@@ -66,8 +66,9 @@ const createPersonalChatByPhoneOrEmail = async ({
   user1: string;
   phoneOrEmail: string;
 }) => {
+
   const user2Data = await User.findOne({
-    $or: [{ email: phoneOrEmail }, { phone: phoneOrEmail }],
+    $or: [{ email: phoneOrEmail }, { phone: `+${phoneOrEmail.substring(1)}` }],
   }).select('_id email phone');
 
   const user2 = user2Data?._id?.toString();
@@ -75,7 +76,7 @@ const createPersonalChatByPhoneOrEmail = async ({
   if (!user2) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `No user found with this _id: ${phoneOrEmail}`,
+      `No user found with this ${phoneOrEmail}`,
     );
   }
 
