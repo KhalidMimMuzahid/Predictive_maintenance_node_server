@@ -29,6 +29,31 @@ const createPersonalChat: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const createPersonalChatByPhoneOrEmail: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const personalChatData: Partial<TChat> = req.body as Partial<TChat>;
+    const phoneOrEmail: string = req?.query?.phoneOrEmail as string;
+    if (!phoneOrEmail) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `phone or email is required to add in your chat`,
+      );
+    }
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const result = await chatServices.createPersonalChatByPhoneOrEmail({
+      user1: auth?._id?.toString(),
+      phoneOrEmail,
+    });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Personal chat has created successfully',
+      data: result,
+    });
+  },
+);
 const createGroupChat: RequestHandler = catchAsync(async (req, res) => {
   const groupChatData: Partial<TChat> = req.body as Partial<TChat>;
 
@@ -61,6 +86,9 @@ const getMyAllChats: RequestHandler = catchAsync(async (req, res) => {
 });
 export const chatController = {
   createPersonalChat,
+  createPersonalChatByPhoneOrEmail,
   createGroupChat,
   getMyAllChats,
 };
+
+

@@ -11,6 +11,14 @@ router.post(
   chatController.createPersonalChat,
 );
 
+
+router.post(
+  '/create-personal-chat-by-phone-or-email',
+  // validateRequest(chatValidation.createPersonalChatValidationSchema),
+  chatController.createPersonalChatByPhoneOrEmail,
+);
+
+
 router.post(
   '/create-group-chat',
   validateRequest(chatValidation.createGroupChatValidationSchema),
