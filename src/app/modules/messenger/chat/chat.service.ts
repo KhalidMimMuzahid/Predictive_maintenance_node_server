@@ -246,15 +246,18 @@ const createGroupChat = async (groupChatData: Partial<TChat>) => {
 const getMyAllChats = async (user: mongoose.Types.ObjectId) => {
   const result = await Chat.find({
     users: user,
-  }).populate([
-    {
-      path: 'reservationRequests',
-      options: { strictPopulate: false },
-    },
-  ]);
+  })
+    .sort({ updatedAt: -1 })
+    .populate([
+      {
+        path: 'reservationRequests',
+        options: { strictPopulate: false },
+      },
+    ]);
   return result;
 };
 const getChatByChat_id = async ({
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   user,
   chat_id,
 }: {
