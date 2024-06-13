@@ -33,7 +33,7 @@ export type TSensorModuleAttached = {
   purpose?: string; // showa admin can set this value when it will be installed in the machine by showa admin/engineer
   sectionName: string; // showa admin can set this value
   isSwitchedOn: boolean; // when the sensor is active then it's value is true
-  currentSubscription?: Types.ObjectId; // objectId of Subscription model
   moduleType: TModuleType;
   sensorData?: TModule[];
+  subscriptionPurchased: Types.ObjectId;
 };

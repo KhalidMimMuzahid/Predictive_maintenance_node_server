@@ -18,11 +18,6 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
     purpose: { type: String },
     sectionName: { type: String, required: true },
     isSwitchedOn: { type: Boolean, required: true },
-    currentSubscription: {
-      type: Schema.Types.ObjectId,
-      ref: 'Subscription',
-      // required: true,
-    },
 
     moduleType: {
       type: String,
@@ -39,6 +34,11 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
         ),
       },
     ],
+    subscriptionPurchased: {
+      type: Schema.Types.ObjectId,
+      ref: 'SubscriptionPurchased',
+      required: true,
+    },
   },
   {
     timestamps: true,

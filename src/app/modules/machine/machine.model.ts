@@ -33,6 +33,13 @@ export const MachineSchema: Schema = new Schema<TMachine>(
     sensorModulesAttached: [
       { type: Schema.Types.ObjectId, ref: 'SensorModuleAttached' },
     ],
+
+    subscriptionPurchased: {
+      type: Schema.Types.ObjectId,
+      ref: 'SubscriptionPurchased',
+      required: true,
+    },
+
     isDeleted: {
       type: IsDeletedSchema,
       required: true,

@@ -9,11 +9,43 @@ import { SensorModuleAttached } from './sensorModuleAttached.model';
 import { validateSensorData } from './sensorModuleAttached.utils';
 import { Request } from 'express';
 import mongoose from 'mongoose';
+import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 
-const addSensorAttachedModuleIntoDB = async (
-  macAddress: string,
-  sensorModuleAttached: Partial<TSensorModuleAttached>,
-) => {
+const addSensorAttachedModuleIntoDB = async ({
+  macAddress,
+  subscriptionPurchased,
+  sensorModuleAttached,
+}: {
+  macAddress: string;
+  subscriptionPurchased: string;
+  sensorModuleAttached: Partial<TSensorModuleAttached>;
+}) => {
+  // ------------------- XXXX ------------ checking subscription start
+  const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
+    _id: new mongoose.Types.ObjectId(subscriptionPurchased),
+    user: sensorModuleAttached.user,
+  }).select('isActive usage expDate');
+
+  if (!subscriptionPurchasedData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'subscriptionPurchased you provided is found as you purchased it yet',
+    );
+  }
+
+  if (!subscriptionPurchasedData?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'your subscription has expired, please renew your subscription',
+    );
+  }
+  if (!subscriptionPurchasedData?.usage?.showaUser?.totalAvailableIOT) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already used your all available IOT. Please purchase a new subscription',
+    );
+  }
+  // ------------------- XXXX ----------------checking subscription end
   const sensorModule = await SensorModule.findOne({ macAddress });
   if (!sensorModule) {
     throw new AppError(
@@ -35,24 +67,59 @@ const addSensorAttachedModuleIntoDB = async (
   sensorModuleAttached.moduleType = sensorModule?.moduleType;
 
   sensorModule.status = 'sold-out';
-  const updatedSensorModule = await sensorModule.save();
 
-  if (!updatedSensorModule) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'could not purchase sensor module',
-    );
-  }
+  sensorModuleAttached.subscriptionPurchased = subscriptionPurchasedData?._id;
 
-  const createdSensorModuleAttached =
-    await SensorModuleAttached.create(sensorModuleAttached);
-  if (!createdSensorModuleAttached) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'could not purchase sensor module',
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const updatedSensorModule = await sensorModule.save({ session });
+
+    if (!updatedSensorModule) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not purchase sensor module',
+      );
+    }
+
+    const createdSensorModuleAttachedArray = await SensorModuleAttached.create(
+      [sensorModuleAttached],
+      { session },
     );
+    if (!createdSensorModuleAttachedArray?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'could not purchase sensor module',
+      );
+    }
+
+    const createdSensorModuleAttached = createdSensorModuleAttachedArray[0];
+
+    subscriptionPurchasedData.usage.showaUser.IOTs.push(
+      createdSensorModuleAttached?._id,
+    );
+
+    subscriptionPurchasedData.usage.showaUser.totalAvailableIOT -= 1;
+
+    const updatedSubscriptionPurchasedData =
+      await subscriptionPurchasedData.save({ session });
+
+    if (!updatedSubscriptionPurchasedData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Could not purchase sensor module, please try again',
+      );
+    }
+    await session.commitTransaction();
+    await session.endSession();
+
+    return createdSensorModuleAttached;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
-  return createdSensorModuleAttached;
 };
 
 const addSensorDataInToDB = async ({

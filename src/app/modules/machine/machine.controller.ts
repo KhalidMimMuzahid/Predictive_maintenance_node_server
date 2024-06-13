@@ -12,10 +12,21 @@ import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttac
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    const subscriptionPurchased = req?.query?.subscriptionPurchased as string;
+    if (!subscriptionPurchased) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'subscriptionPurchased is required for adding machine',
+      );
+    }
     const machineData: TMachine = req.body;
     machineData.user = auth?._id;
-    const result =
-      await machineServices.addNonConnectedMachineInToDB(machineData);
+
+    const result = await machineServices.addNonConnectedMachineInToDB({
+      subscriptionPurchased,
+      machineData,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -29,24 +40,28 @@ const addSensorNonConnectedMachine: RequestHandler = catchAsync(
 const addSensorConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    const subscriptionPurchased = req?.query?.subscriptionPurchased as string;
+    const sensorModuleMacAddress: string = req.query.macAddress as string;
+    if (!sensorModuleMacAddress || !subscriptionPurchased) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'macAddress and subscriptionPurchased are required for adding sensor connected machine',
+      );
+    }
+
     const machineData: TMachine = req.body.machine;
     const sensorModuleAttached: Partial<TSensorModuleAttached> =
       req?.body?.sensorModuleAttached;
     sensorModuleAttached.user = auth?._id;
 
-    const sensorModuleMacAddress: string = req.query.macAddress as string;
-    if (!sensorModuleMacAddress) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'macAddress is required for adding sensor connected machine',
-      );
-    }
     machineData.user = auth?._id;
 
     sensorModuleAttached.user = auth._id;
 
     const result = await machineServices.addSensorConnectedMachineInToDB({
       sensorModuleMacAddress,
+      subscriptionPurchased,
       machineData,
       sensorModuleAttached,
     });
@@ -62,8 +77,15 @@ const addSensorConnectedMachine: RequestHandler = catchAsync(
 const addSensorModuleInToMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    const subscriptionPurchased = req?.query?.subscriptionPurchased as string;
+    const machine_id = req.query?.machine_id as string;
 
-    const { machine_id } = req.query;
+    if (!machine_id || !subscriptionPurchased) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'machine_id and subscriptionPurchased must be provided to add sensor to machine',
+      );
+    }
     const sensorModuleMacAddress: string = req.query.macAddress as string;
     if (!sensorModuleMacAddress) {
       throw new AppError(
@@ -76,16 +98,24 @@ const addSensorModuleInToMachine: RequestHandler = catchAsync(
       req?.body?.sensorModuleAttached;
     sensorModuleAttached.user = auth?._id;
 
-    if (!machine_id) {
+    if (!sensorModuleAttached) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'machine_id and attachedSensorModuleAttached_id must be provided to add sensor to machine',
+        'sensorModuleAttached must be provided to add sensor to machine',
       );
     }
+
+
+
+
+
+
+
     const result = await machineServices.addModuleToMachineInToDB(
-      sensorModuleMacAddress,
-      new Types.ObjectId(machine_id as string),
-      sensorModuleAttached,
+     { sensorModuleMacAddress,
+      subscriptionPurchased,
+      machine_id: new Types.ObjectId(machine_id),
+      sensorModuleAttached,}
     );
     // send response
     sendResponse(res, {
@@ -96,6 +126,7 @@ const addSensorModuleInToMachine: RequestHandler = catchAsync(
     });
   },
 );
+
 const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -276,9 +307,13 @@ const getMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
 });
 export const machineController = {
   addSensorNonConnectedMachine,
+
   addSensorConnectedMachine,
+
   addSensorModuleInToMachine,
+
   addSensorAttachedModuleInToMachine,
+
   updateMachinePackageStatus,
   getMyWashingMachine,
   getMyGeneralMachine,

@@ -9,12 +9,42 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { SensorModule } from '../sensorModule/sensorModule.model';
+import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 
 // implement usages of purchased subscription  ; only for machine
-const addNonConnectedMachineInToDB = async (payload: TMachine) => {
-  checkMachineData(payload); // we are validation machine data for handling washing/general machine data according to it's category
+const addNonConnectedMachineInToDB = async ({
+  subscriptionPurchased,
+  machineData,
+}: {
+  subscriptionPurchased: string;
+  machineData: TMachine;
+}) => {
+  const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
+    _id: new mongoose.Types.ObjectId(subscriptionPurchased),
+    user: machineData?.user,
+  }).select('isActive usage expDate');
 
-  const machineData = payload;
+  if (!subscriptionPurchasedData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'subscriptionPurchased you provided is found as you purchased it yet',
+    );
+  }
+
+  if (!subscriptionPurchasedData?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'your subscription has expired, please renew your subscription',
+    );
+  }
+  if (!subscriptionPurchasedData?.usage?.showaUser?.totalAvailableMachine) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already used your all available machine. Please purchase a new subscription',
+    );
+  }
+
+  checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
 
   // check purchased subscription here
 
@@ -37,18 +67,89 @@ const addNonConnectedMachineInToDB = async (payload: TMachine) => {
     Number(lastAddedMachine?.machineNo || '00000') + 1,
     5,
   );
+  machineData.subscriptionPurchased = subscriptionPurchasedData?._id;
 
-  const machine = await Machine.create(machineData);
-  return machine;
+  // implement session here
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const machineArray = await Machine.create([machineData], { session });
+
+    if (!machineArray?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Could not create machine, please try again',
+      );
+    }
+
+    const machine = machineArray[0];
+    subscriptionPurchasedData.usage.showaUser.machines.push(machine?._id);
+
+    subscriptionPurchasedData.usage.showaUser.totalAvailableMachine -= 1;
+
+    const updatedSubscriptionPurchasedData =
+      await subscriptionPurchasedData.save({ session });
+
+    if (!updatedSubscriptionPurchasedData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Could not create machine, please try again',
+      );
+    }
+    await session.commitTransaction();
+    await session.endSession();
+
+    return machine;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 
 // implement usages of purchased subscription ; for both of machine and IOT
-const addSensorConnectedMachineInToDB = async (payload: {
+const addSensorConnectedMachineInToDB = async ({
+  sensorModuleMacAddress,
+  subscriptionPurchased,
+  machineData,
+  sensorModuleAttached,
+}: {
   sensorModuleMacAddress: string;
+  subscriptionPurchased: string;
   machineData: TMachine;
   sensorModuleAttached: Partial<TSensorModuleAttached>;
 }) => {
-  const { sensorModuleMacAddress, machineData, sensorModuleAttached } = payload;
+  const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
+    _id: new mongoose.Types.ObjectId(subscriptionPurchased),
+    user: machineData?.user,
+  }).select('isActive usage expDate');
+
+  if (!subscriptionPurchasedData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'subscriptionPurchased you provided is found as you purchased it yet',
+    );
+  }
+
+  if (!subscriptionPurchasedData?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'your subscription has expired, please renew your subscription',
+    );
+  }
+  if (!subscriptionPurchasedData?.usage?.showaUser?.totalAvailableMachine) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already used your all available machine. Please purchase a new subscription',
+    );
+  }
+  if (!subscriptionPurchasedData?.usage?.showaUser?.totalAvailableIOT) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already used your all available IOT. Please purchase a new subscription',
+    );
+  }
+
   checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
 
   // create sensor module attached
@@ -74,7 +175,7 @@ const addSensorConnectedMachineInToDB = async (payload: {
 
   sensorModuleAttached.isSwitchedOn = false;
   sensorModuleAttached.moduleType = sensorModule?.moduleType;
-
+  sensorModuleAttached.subscriptionPurchased = subscriptionPurchasedData?._id;
   sensorModule.status = 'sold-out';
 
   //  -------------------
@@ -112,6 +213,7 @@ const addSensorConnectedMachineInToDB = async (payload: {
 
     machineData.sensorModulesAttached = [createdSensorModuleAttached?._id];
     machineData.status = 'normal';
+    machineData.subscriptionPurchased = subscriptionPurchasedData?._id;
 
     const lastAddedMachine = await Machine.findOne(
       { user: machineData?.user },
@@ -146,6 +248,7 @@ const addSensorConnectedMachineInToDB = async (payload: {
     createdSensorModuleAttached.machine = machine?._id;
     const updatedSensorModuleAttached = await createdSensorModuleAttached.save({
       validateBeforeSave: true,
+      session,
     });
 
     if (!updatedSensorModuleAttached) {
@@ -154,6 +257,26 @@ const addSensorConnectedMachineInToDB = async (payload: {
         'could not created machine, please try again',
       );
     }
+
+    subscriptionPurchasedData.usage.showaUser.machines.push(machine?._id);
+    subscriptionPurchasedData.usage.showaUser.IOTs.push(
+      updatedSensorModuleAttached?._id,
+    );
+
+    subscriptionPurchasedData.usage.showaUser.totalAvailableMachine -= 1;
+
+    subscriptionPurchasedData.usage.showaUser.totalAvailableIOT -= 1;
+
+    const updatedSubscriptionPurchasedData =
+      await subscriptionPurchasedData.save({ session });
+
+    if (!updatedSubscriptionPurchasedData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Could not add machine, please try again',
+      );
+    }
+
     await session.commitTransaction();
     await session.endSession();
     return machine;
@@ -165,11 +288,44 @@ const addSensorConnectedMachineInToDB = async (payload: {
 };
 
 // implement usages of purchased subscription   ;  for machine
-const addModuleToMachineInToDB = async (
-  sensorModuleMacAddress: string,
-  machine_id: Types.ObjectId,
-  sensorModuleAttached: Partial<TSensorModuleAttached>,
-) => {
+const addModuleToMachineInToDB = async ({
+  sensorModuleMacAddress,
+  subscriptionPurchased,
+  machine_id,
+  sensorModuleAttached,
+}: {
+  sensorModuleMacAddress: string;
+  subscriptionPurchased: string;
+  machine_id: Types.ObjectId;
+  sensorModuleAttached: Partial<TSensorModuleAttached>;
+}) => {
+  // ------------------- XXXX ------------ checking subscription start
+  const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
+    _id: new mongoose.Types.ObjectId(subscriptionPurchased),
+    user: sensorModuleAttached.user,
+  }).select('isActive usage expDate');
+
+  if (!subscriptionPurchasedData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'subscriptionPurchased you provided is found as you purchased it yet',
+    );
+  }
+
+  if (!subscriptionPurchasedData?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'your subscription has expired, please renew your subscription',
+    );
+  }
+  if (!subscriptionPurchasedData?.usage?.showaUser?.totalAvailableIOT) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already used your all available IOT. Please purchase a new subscription',
+    );
+  }
+  // ------------------- XXXX ----------------checking subscription end
+
   const sensorModule = await SensorModule.findOne({
     macAddress: sensorModuleMacAddress,
   });
@@ -191,6 +347,8 @@ const addModuleToMachineInToDB = async (
 
   sensorModuleAttached.isSwitchedOn = false;
   sensorModuleAttached.moduleType = sensorModule?.moduleType;
+
+  sensorModuleAttached.subscriptionPurchased = subscriptionPurchasedData?._id;
 
   sensorModule.status = 'sold-out';
 
@@ -222,9 +380,14 @@ const addModuleToMachineInToDB = async (
     const createdSensorModuleAttached = createdSensorModuleAttachedArray[0];
     // create machine
 
-    const machine = await Machine.findByIdAndUpdate(machine_id, {
-      $addToSet: { sensorModulesAttached: createdSensorModuleAttached?._id },
-    });
+    const machine = await Machine.findByIdAndUpdate(
+      machine_id,
+      {
+        $addToSet: { sensorModulesAttached: createdSensorModuleAttached?._id },
+      },
+
+      { session },
+    );
     if (!machine) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -236,6 +399,7 @@ const addModuleToMachineInToDB = async (
     createdSensorModuleAttached.machine = machine?._id;
     const updatedSensorModuleAttached = await createdSensorModuleAttached.save({
       validateBeforeSave: true,
+      session,
     });
 
     if (!updatedSensorModuleAttached) {
@@ -244,6 +408,23 @@ const addModuleToMachineInToDB = async (
         'could not update machine, please try again',
       );
     }
+
+    subscriptionPurchasedData.usage.showaUser.IOTs.push(
+      updatedSensorModuleAttached?._id,
+    );
+
+    subscriptionPurchasedData.usage.showaUser.totalAvailableIOT -= 1;
+
+    const updatedSubscriptionPurchasedData =
+      await subscriptionPurchasedData.save({ session });
+
+    if (!updatedSubscriptionPurchasedData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Could not add sensor module, please try again',
+      );
+    }
+
     await session.commitTransaction();
     await session.endSession();
     return machine;
