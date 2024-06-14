@@ -132,17 +132,28 @@ const addSensorDataInToDB = async ({
   sensorData: TModule;
   req: Request;
 }) => {
-  const sensorModuleAttached = await SensorModuleAttached.findOne(
-    {
-      macAddress,
-    },
-    { moduleType: 1 },
-  );
+  const sensorModuleAttached = await SensorModuleAttached.findOne({
+    macAddress,
+  })
+    .select('subscriptionPurchased moduleType')
+    .populate({
+      path: 'subscriptionPurchased',
+      select: 'isActive',
+      options: { strictPopulate: false },
+    });
 
   if (!sensorModuleAttached) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'no sensor module has found with this macAddress',
+    );
+  }
+  const subscriptionPurchased =
+    sensorModuleAttached?.subscriptionPurchased as unknown as TSubscriptionPurchased;
+  if (!subscriptionPurchased?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Your subscription has expired for this machine, please renew your subscription',
     );
   }
 
@@ -217,11 +228,13 @@ const getSensorDataFromDB = async ({
 
   const sensorModuleAttachedData = await SensorModuleAttached.findOne({
     macAddress,
-  }).populate({
-    path: 'subscriptionPurchased',
-    select: 'isActive',
-    options: { strictPopulate: false },
-  });
+  })
+    .select('subscriptionPurchased')
+    .populate({
+      path: 'subscriptionPurchased',
+      select: 'isActive',
+      options: { strictPopulate: false },
+    });
 
   const subscriptionPurchased =
     sensorModuleAttachedData?.subscriptionPurchased as unknown as TSubscriptionPurchased;
@@ -243,7 +256,6 @@ const getSensorDataFromDB = async ({
     },
   ]);
 
-  console.log(result);
   if (result?.length === 0) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
