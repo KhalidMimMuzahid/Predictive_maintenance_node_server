@@ -10,6 +10,7 @@ import { validateSensorData } from './sensorModuleAttached.utils';
 import { Request } from 'express';
 import mongoose from 'mongoose';
 import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
+import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
 
 const addSensorAttachedModuleIntoDB = async ({
   macAddress,
@@ -212,6 +213,25 @@ const getSensorDataFromDB = async ({
   page: number;
   limit: number;
 }) => {
+  // we must check the user role here, if it is customer then we need to check subscription validation; if it is admin then we may skip this part
+
+  const sensorModuleAttachedData = await SensorModuleAttached.findOne({
+    macAddress,
+  }).populate({
+    path: 'subscriptionPurchased',
+    select: 'isActive',
+    options: { strictPopulate: false },
+  });
+
+  const subscriptionPurchased =
+    sensorModuleAttachedData?.subscriptionPurchased as unknown as TSubscriptionPurchased;
+  if (!subscriptionPurchased?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Your subscription has expired for this machine, please renew your subscription',
+    );
+  }
+
   const result = await SensorModuleAttached.aggregate([
     { $match: { macAddress: macAddress } },
     {
@@ -222,6 +242,8 @@ const getSensorDataFromDB = async ({
       },
     },
   ]);
+
+  console.log(result);
   if (result?.length === 0) {
     throw new AppError(
       httpStatus.BAD_REQUEST,

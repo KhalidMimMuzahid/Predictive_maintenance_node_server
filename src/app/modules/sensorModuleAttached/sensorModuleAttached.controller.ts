@@ -183,7 +183,9 @@ const getSensorModuleAttachedByMacAddress: RequestHandler = catchAsync(
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
   addSensorData,
+
   getSensorData,
+
   getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,
   getAllAttachedSensorModulesByMachine,
