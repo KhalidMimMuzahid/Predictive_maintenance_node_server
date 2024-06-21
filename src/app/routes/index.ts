@@ -17,6 +17,7 @@ import { messengerRoutes } from '../modules/messenger/messenger.routes';
 import { subscriptionRoutes } from '../modules/subscription/subscription.routes';
 import { extraDataRoutes } from '../modules/extraData/extraData.routes';
 import { subscriptionPurchasedRoutes } from '../modules/subscriptionPurchased/subscriptionPurchased.routes';
+import { feedRoutes } from '../modules/feed/feed.routes';
 
 const router = express.Router();
 
@@ -38,6 +39,7 @@ const moduleRoutes: any[] = [
   { path: '/subscription', route: subscriptionRoutes },
   { path: '/subscription-purchase', route: subscriptionPurchasedRoutes },
   { path: '/extra-data', route: extraDataRoutes },
+  { path: '/feed', route: feedRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
