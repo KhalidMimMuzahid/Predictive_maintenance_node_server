@@ -35,25 +35,31 @@ const advertisementSchema = new Schema<TAdvertisement>({
 // Schema for TPost
 const postSchema = new Schema<TPost>(
   {
-    location: { type: String, required: true },
+    location: { type: String },
     viewPrivacy: {
       type: String,
       enum: ['public', 'friends', 'only-me', 'specific-friends'],
+
       required: true,
     },
     commentPrivacy: {
       type: String,
       enum: ['public', 'friends', 'only-me', 'specific-friends'],
-      required: true,
+      default: 'public',
     },
 
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    isSponsored: { type: Boolean, required: true, default: false },
+
     sharingStatus: {
-      isShared: { type: Boolean, required: true },
+      isShared: { type: Boolean, required: true, default: false },
       post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
     },
-    type: { type: String, enum: ['userPost', 'advertisement'], required: true },
+    isSponsored: { type: Boolean, required: true, default: false },
+    type: {
+      type: String,
+      enum: ['userPost', 'advertisement', 'shared'],
+      required: true,
+    },
     userPost: {
       type: userPostSchema,
       required: function () {
@@ -97,16 +103,8 @@ const postSchema = new Schema<TPost>(
         ),
       },
     ],
-    shares: [
-      {
-        post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-      },
-    ],
-    seenBy: [
-      {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      },
-    ],
+    shares: { type: [mongoose.Schema.Types.ObjectId], ref: 'Post' },
+    seenBy: { type: [mongoose.Schema.Types.ObjectId], ref: 'User' },
   },
   { timestamps: true },
 );

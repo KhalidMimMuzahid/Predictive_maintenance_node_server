@@ -23,7 +23,10 @@ export type TAdvertisement = {
     extension: string;
   }[];
 };
-
+export type TSharingStatus = {
+  isShared: boolean;
+  post: mongoose.Types.ObjectId; // object id of another post
+};
 export type TPost = {
   location: string;
   viewPrivacy: 'public' | 'friends' | 'only-me' | 'specific-friends';
@@ -31,13 +34,10 @@ export type TPost = {
   user: mongoose.Types.ObjectId;
   isSponsored: boolean;
 
-  sharingStatus: {
-    isShared: boolean;
-    posts: mongoose.Types.ObjectId[]; // object id of another post
-  };
+  sharingStatus: TSharingStatus;
   // following: mongoose.Types.ObjectId;
   // followers: mongoose.Types.ObjectId;
-  type: 'userPost' | 'advertisement';
+  type: 'userPost' | 'advertisement' | 'shared';
   userPost: TUserPost;
   advertisement: TAdvertisement;
   likes: mongoose.Types.ObjectId[];
@@ -49,11 +49,7 @@ export type TPost = {
       comment: string;
     }[];
   }[];
-  shares: {
-    post: mongoose.Types.ObjectId; // post after sharing
-  }[];
+  shares: mongoose.Types.ObjectId[]; // post after sharing
 
-  seenBy: {
-    user: mongoose.Types.ObjectId;
-  }[];
+  seenBy: mongoose.Types.ObjectId[];
 };

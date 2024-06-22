@@ -38,8 +38,8 @@ const moduleRoutes: any[] = [
   { path: '/messenger', route: messengerRoutes },
   { path: '/subscription', route: subscriptionRoutes },
   { path: '/subscription-purchase', route: subscriptionPurchasedRoutes },
-  { path: '/extra-data', route: extraDataRoutes },
   { path: '/feed', route: feedRoutes },
+  { path: '/extra-data', route: extraDataRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
