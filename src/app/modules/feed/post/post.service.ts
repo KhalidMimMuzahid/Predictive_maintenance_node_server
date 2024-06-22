@@ -70,13 +70,13 @@ const sharePost = async ({
     'viewPrivacy sharingStatus shares',
   );
 
-  console.log(originalPost);
   if (!originalPost) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       `no post found with the post you provided`,
     );
   }
+
   if (!originalPost?.sharingStatus?.isShared) {
     postData.type = 'shared';
     postData.user = auth._id;
@@ -92,48 +92,67 @@ const sharePost = async ({
     postData.sharingStatus = sharingStatus;
   } else {
     // do it for shared post
+    const originalNestedPost = await Post.findById(
+      originalPost?.sharingStatus?.post?.toString(),
+    ).select('viewPrivacy sharingStatus shares');
+
+    postData.type = 'shared';
+    postData.user = auth._id;
+    postData.likes = [];
+    postData.comments = [];
+    postData.shares = [];
+    postData.seenBy = [];
+    const sharingStatus: TSharingStatus = {
+      isShared: true,
+      post: originalNestedPost?._id,
+    };
+
+    postData.sharingStatus = sharingStatus;
   }
-  //   postData.userPost = undefined;
-  //   postData.advertisement = undefined;
-  // if (!postData[`${postData?.type}`]) {
-  //   throw new AppError(
-  //     httpStatus.BAD_REQUEST,
-  //     `must have ${postData?.type} object`,
-  //   );
-  // }
 
-  // if (postData?.type === 'userPost') {
-  //   postData.advertisement = undefined;
-  // } else if (postData?.type === 'advertisement') {
-  //   postData.userPost = undefined;
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
 
-  //   postData.advertisement.scheduledDate = {
-  //     startDate: isNaN(
-  //       new Date(
-  //         postData.advertisement.scheduledDate?.startDate,
-  //       ) as unknown as number,
-  //     )
-  //       ? undefined
-  //       : new Date(postData.advertisement.scheduledDate?.startDate),
-  //     endDate: isNaN(
-  //       new Date(
-  //         postData.advertisement.scheduledDate?.endDate,
-  //       ) as unknown as number,
-  //     )
-  //       ? undefined
-  //       : new Date(postData.advertisement.scheduledDate?.endDate),
-  //   };
-  // }
-  // postData.user = auth._id;
-  // postData.likes = [];
-  // postData.comments = [];
-  // postData.shares = [];
-  // postData.seenBy = [];
+    const sharedPostDataArray = await Post.create([postData], { session });
+    if (!sharedPostDataArray?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `something went wrong, please try again`,
+      );
+    }
+    const sharedPostData = sharedPostDataArray[0];
+    originalPost.shares.push(sharedPostData?._id);
+    const updatedOriginalPost = await originalPost.save({ session });
 
-  // userPost or advertisement
+    if (!updatedOriginalPost) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `something went wrong, please try again`,
+      );
+    }
+    if (originalPost?.sharingStatus?.isShared) {
+      // do it for shared post
+      const updatedOriginalNestedPost = await Post.findByIdAndUpdate(
+        originalPost?.sharingStatus?.post?.toString(),
+        { $push: { shares: sharedPostData?._id } },
+      );
+      if (!updatedOriginalNestedPost) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          `something went wrong, please try again`,
+        );
+      }
+    }
 
-  const sharedPostData = await Post.create(postData);
-  return sharedPostData;
+    await session.commitTransaction();
+    await session.endSession();
+    return true;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 const getPostsForMyFeed = async ({
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
