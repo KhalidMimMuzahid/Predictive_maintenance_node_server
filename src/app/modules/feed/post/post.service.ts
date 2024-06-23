@@ -154,6 +154,18 @@ const sharePost = async ({
     throw error;
   }
 };
+
+const likePost = async ({ post, auth }: { post: string; auth: TAuth }) => {
+  // const updatedPost =
+  await Post.findByIdAndUpdate(post, {
+    $addToSet: { likes: auth?._id },
+  });
+
+  // console.log(updatedPost);
+
+  return null;
+};
+
 const getPostsForMyFeed = async ({
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   user,
@@ -166,5 +178,6 @@ const getPostsForMyFeed = async ({
 export const postServices = {
   createPost,
   sharePost,
+  likePost,
   getPostsForMyFeed,
 };

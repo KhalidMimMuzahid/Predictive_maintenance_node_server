@@ -15,6 +15,8 @@ router.post(
   validateRequest(postValidation.sharedPostValidationSchema),
   postController.sharePost,
 );
+
+router.patch('/like-post', postController.likePost);
 router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
 
 export const postRoutes = router;

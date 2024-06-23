@@ -64,6 +64,36 @@ const sharePost: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+const likePost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const post = req?.query?.post as string;
+  // we are checking the permission of this api
+
+  if (!post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post is required to share a post`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const results = await postServices.likePost({
+    post,
+    auth,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post has been liked successfully',
+    data: results,
+  });
+});
 const getPostsForMyFeed: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -88,5 +118,6 @@ const getPostsForMyFeed: RequestHandler = catchAsync(async (req, res) => {
 export const postController = {
   createPost,
   sharePost,
+  likePost,
   getPostsForMyFeed,
 };
