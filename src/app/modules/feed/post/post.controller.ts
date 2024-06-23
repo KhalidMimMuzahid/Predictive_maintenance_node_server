@@ -166,7 +166,7 @@ const removeComment: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   const post = req?.query?.post as string;
   const comment = req?.query?.comment as string;
-  // we are checking the permission of this api
+  // we are checking the permission of this api .
 
   if (!post || !comment) {
     throw new AppError(
