@@ -73,7 +73,7 @@ const likePost: RequestHandler = catchAsync(async (req, res) => {
   if (!post) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `post is required to share a post`,
+      `post is required to like a post`,
     );
   }
   checkUserAccessApi({
@@ -94,6 +94,107 @@ const likePost: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+const unlikePost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const post = req?.query?.post as string;
+  // we are checking the permission of this api
+
+  if (!post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post is required to unlike a post`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const results = await postServices.unlikePost({
+    post,
+    auth,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post has been un-liked successfully',
+    data: results,
+  });
+});
+const commentPost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const post = req?.query?.post as string;
+  // we are checking the permission of this api
+
+  if (!post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post is required to comment a post`,
+    );
+  }
+  const comment = req?.body?.comment as string;
+  if (!comment) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `comment is required to comment a post`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const results = await postServices.commentPost({
+    post,
+    comment,
+    auth,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post has been commented successfully',
+    data: results,
+  });
+});
+
+const removeComment: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const post = req?.query?.post as string;
+  const comment = req?.query?.comment as string;
+  // we are checking the permission of this api
+
+  if (!post || !comment) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post and comment are required to remove comment`,
+    );
+  }
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const results = await postServices.removeComment({
+    post,
+    comment,
+    // auth,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post has been commented successfully',
+    data: results,
+  });
+});
+
 const getPostsForMyFeed: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -119,5 +220,8 @@ export const postController = {
   createPost,
   sharePost,
   likePost,
+  unlikePost,
+  commentPost,
+  removeComment,
   getPostsForMyFeed,
 };

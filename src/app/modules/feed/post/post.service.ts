@@ -165,7 +165,63 @@ const likePost = async ({ post, auth }: { post: string; auth: TAuth }) => {
 
   return null;
 };
+const unlikePost = async ({ post, auth }: { post: string; auth: TAuth }) => {
+  // const updatedPost =
+  await Post.findByIdAndUpdate(post, {
+    $pull: { likes: auth?._id },
+  });
 
+  // console.log(updatedPost);
+
+  return null;
+};
+
+const commentPost = async ({
+  post,
+  comment,
+  auth,
+}: {
+  post: string;
+  comment: string;
+  auth: TAuth;
+}) => {
+  // const updatedPost =
+  await Post.findByIdAndUpdate(post, {
+    $push: {
+      comments: {
+        user: auth?._id,
+        comment,
+        replays: [],
+      },
+    },
+  });
+
+  // console.log(updatedPost);
+
+  return null;
+};
+
+const removeComment = async ({
+  post,
+  comment, // auth,
+}: {
+  post: string;
+  comment: string;
+  // auth: TAuth;
+}) => {
+  // const updatedPost =
+  await Post.findByIdAndUpdate(post, {
+    $pull: {
+      comments: {
+        _id: new mongoose.Types.ObjectId(comment),
+      },
+    },
+  });
+
+  // console.log(updatedPost);
+
+  return null;
+};
 const getPostsForMyFeed = async ({
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   user,
@@ -179,5 +235,8 @@ export const postServices = {
   createPost,
   sharePost,
   likePost,
+  unlikePost,
+  commentPost,
+  removeComment,
   getPostsForMyFeed,
 };

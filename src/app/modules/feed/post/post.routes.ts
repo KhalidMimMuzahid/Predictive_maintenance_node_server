@@ -6,17 +6,26 @@ import { postValidation } from './post.validation';
 const router: Router = express.Router();
 
 router.post(
-  '/create-post',
+  '/create',
   validateRequest(postValidation.createPostValidationSchema),
   postController.createPost,
 );
 router.post(
-  '/share-post',
+  '/share',
   validateRequest(postValidation.sharedPostValidationSchema),
   postController.sharePost,
 );
 
-router.patch('/like-post', postController.likePost);
+router.patch('/add-like', postController.likePost);
+router.patch('/remove-like', postController.unlikePost);
+router.patch('/add-comment', postController.commentPost);
+router.patch('/remove-comment', postController.removeComment);
+
+
+
+
+
+
 router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
 
 export const postRoutes = router;
