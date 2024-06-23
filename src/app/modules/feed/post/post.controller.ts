@@ -4,7 +4,7 @@ import { TAuth } from '../../../interface/error';
 import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
 import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
-import { TPost } from './post.interface';
+import { TPost, TReplay } from './post.interface';
 import { postServices } from './post.service';
 import AppError from '../../../errors/AppError';
 
@@ -194,7 +194,51 @@ const removeComment: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const addReplayIntoComment: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  // we are checking the permission of this api .
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
 
+  const post = req?.query?.post as string;
+  const comment = req?.query?.comment as string;
+
+  if (!post || !comment) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post and comment are required to remove comment`,
+    );
+  }
+
+  const replay = req?.body?.replay as string;
+  if (!replay) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `replay is required to replay into a comment`,
+    );
+  }
+
+  const replayData: TReplay = {
+    comment: replay,
+    user: auth?._id,
+  };
+
+  const result = await postServices.addReplayIntoComment({
+    post,
+    comment,
+    replayData,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post has been commented successfully',
+    data: result,
+  });
+});
 const getPostsForMyFeed: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -223,5 +267,7 @@ export const postController = {
   unlikePost,
   commentPost,
   removeComment,
+
+  addReplayIntoComment,
   getPostsForMyFeed,
 };

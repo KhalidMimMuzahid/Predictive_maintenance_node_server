@@ -20,6 +20,7 @@ router.patch('/add-like', postController.likePost);
 router.patch('/remove-like', postController.unlikePost);
 router.patch('/add-comment', postController.commentPost);
 router.patch('/remove-comment', postController.removeComment);
+router.patch('/add-replay-into-comment', postController.addReplayIntoComment);
 
 
 

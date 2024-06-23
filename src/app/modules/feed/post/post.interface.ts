@@ -27,6 +27,11 @@ export type TSharingStatus = {
   isShared: boolean;
   post: mongoose.Types.ObjectId; // object id of another post
 };
+
+export type TReplay = {
+  user: mongoose.Types.ObjectId;
+  comment: string;
+};
 export type TPost = {
   location: string;
   viewPrivacy: 'public' | 'friends' | 'only-me' | 'specific-friends';
@@ -44,10 +49,7 @@ export type TPost = {
   comments: {
     user: mongoose.Types.ObjectId;
     comment: string;
-    replays: {
-      user: mongoose.Types.ObjectId;
-      comment: string;
-    }[];
+    replays: TReplay[];
   }[];
   shares: mongoose.Types.ObjectId[]; // post after sharing
 

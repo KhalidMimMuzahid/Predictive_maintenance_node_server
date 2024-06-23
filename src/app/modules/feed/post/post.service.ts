@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
-import { TPost, TSharingStatus } from './post.interface';
+import { TPost, TReplay, TSharingStatus } from './post.interface';
 import Post from './post.model';
 import mongoose from 'mongoose';
 
@@ -222,6 +222,43 @@ const removeComment = async ({
 
   return null;
 };
+
+const addReplayIntoComment = async ({
+  post,
+  comment,
+  replayData,
+}: {
+  post: string;
+  comment: string;
+  replayData: TReplay;
+}) => {
+  // const post = await Post.findOneAndUpdate(
+  //   {
+  //     _id: postId,
+  //     'comments._id': commentId
+  //   },
+  //   {
+  //     // Push the new reply to the replays array of the matched comment
+  //     $push: { 'comments.$.replays': replyData }
+  //   },
+  //   { new: true } // Return the updated document
+  // );
+
+  // const updatedPost =
+  await Post.findOneAndUpdate(
+    {
+      _id: new mongoose.Types.ObjectId(post),
+      'comments._id': new mongoose.Types.ObjectId(comment),
+    },
+    {
+      $push: { 'comments.$.replays': replayData },
+    },
+  );
+
+  // console.log(updatedPost);
+
+  return null;
+};
 const getPostsForMyFeed = async ({
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   user,
@@ -238,5 +275,6 @@ export const postServices = {
   unlikePost,
   commentPost,
   removeComment,
+  addReplayIntoComment,
   getPostsForMyFeed,
 };
