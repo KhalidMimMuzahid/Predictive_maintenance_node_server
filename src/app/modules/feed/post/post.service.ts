@@ -259,6 +259,33 @@ const addReplayIntoComment = async ({
 
   return null;
 };
+
+const removeReplayFromComment = async ({
+  post,
+  comment,
+  replay,
+}: {
+  post: string;
+  comment: string;
+  replay: string;
+}) => {
+  // const updatedPost =
+  await Post.findOneAndUpdate(
+    {
+      _id: new mongoose.Types.ObjectId(post),
+      'comments._id': new mongoose.Types.ObjectId(comment),
+    },
+    {
+      $pull: {
+        'comments.$.replays': { _id: new mongoose.Types.ObjectId(replay) },
+      },
+    },
+  );
+
+  // console.log(updatedPost);
+
+  return null;
+};
 const getPostsForMyFeed = async ({
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   user,
@@ -276,5 +303,6 @@ export const postServices = {
   commentPost,
   removeComment,
   addReplayIntoComment,
+  removeReplayFromComment,
   getPostsForMyFeed,
 };

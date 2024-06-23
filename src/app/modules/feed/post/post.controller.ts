@@ -208,7 +208,7 @@ const addReplayIntoComment: RequestHandler = catchAsync(async (req, res) => {
   if (!post || !comment) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `post and comment are required to remove comment`,
+      `post and comment are required to add replay into comment`,
     );
   }
 
@@ -239,6 +239,41 @@ const addReplayIntoComment: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const removeReplayFromComment: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  // we are checking the permission of this api .
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const post = req?.query?.post as string;
+  const comment = req?.query?.comment as string;
+  const replay = req?.query?.replay as string;
+
+  if (!post || !comment || !replay) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post, comment and replay are required to remove comment`,
+    );
+  }
+
+  const result = await postServices.removeReplayFromComment({
+    post,
+    comment,
+    replay,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post has been commented successfully',
+    data: result,
+  });
+});
+
 const getPostsForMyFeed: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -269,5 +304,6 @@ export const postController = {
   removeComment,
 
   addReplayIntoComment,
+  removeReplayFromComment,
   getPostsForMyFeed,
 };
