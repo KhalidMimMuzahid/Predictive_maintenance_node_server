@@ -121,6 +121,35 @@ const followUser: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+const unfollowUser: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const user = req?.query?.user as string;
+  // we are checking the permission of this api
+
+  if (!user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `user is required to unfollow user`,
+    );
+  }
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const results = await userServices.unfollowUser({
+    user,
+    auth,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'user has  been followed successfully',
+    data: results,
+  });
+});
 export const userControllers = {
   signIn,
   getUserBy_id,
@@ -128,4 +157,5 @@ export const userControllers = {
   getAllShowaCustomers,
   getUserWalletInfo,
   followUser,
+  unfollowUser,
 };

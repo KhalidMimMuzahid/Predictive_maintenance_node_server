@@ -259,6 +259,23 @@ const followUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
 
   return null;
 };
+
+const unfollowUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
+  // const updatedPost =
+  const userData = await User.findById(user).select('_id');
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, `user you provide is not found`);
+  }
+  await User.findByIdAndUpdate(auth?._id?.toString(), {
+    $pull: { followings: userData?._id },
+  });
+
+  // console.log(updatedPost);
+
+  return null;
+};
+
 export const userServices = {
   signIn,
   getUserBy_id,
@@ -266,4 +283,5 @@ export const userServices = {
   getAllShowaCustomersFromDB,
   getUserWalletInfo,
   followUser,
+  unfollowUser,
 };
