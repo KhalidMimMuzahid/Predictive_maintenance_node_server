@@ -38,5 +38,7 @@ router.post(
 );
 router.get('/get-user-wallet-info', userControllers.getUserWalletInfo);
 router.get('/get-all-showa-customers', userControllers.getAllShowaCustomers);
+router.patch('/follow-user', userControllers.followUser);
+
 // End --------------------------------- XXXXX ----------------------------
 export const userRoutes = router;

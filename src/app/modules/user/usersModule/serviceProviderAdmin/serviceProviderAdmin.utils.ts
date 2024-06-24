@@ -20,6 +20,7 @@ export const createServiceProviderCompanyAndAdmin = async ({
   serviceProviderAdmin: Partial<TServiceProviderAdmin>;
   serviceProviderCompany: Partial<TServiceProviderCompany>;
 }) => {
+  rootUser.followings = [];
   const createdUserArray = await User.create([rootUser], {
     session: session,
   });

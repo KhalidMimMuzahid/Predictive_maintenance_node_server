@@ -25,6 +25,7 @@ const createServiceProviderEngineerIntoDB = async ({
 }) => {
   //create a user object
   rootUser.role = 'serviceProviderEngineer';
+  rootUser.followings = [];
   // rootUser.isDeleted= false // we no need to set it ; cause we have already set it as a default value in mongoose model
   // rootUser.status =  'approved'  // same as above
 

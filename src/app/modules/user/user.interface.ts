@@ -22,6 +22,7 @@ export type TUser = {
   email: string;
   role: TRole;
   phone: string;
+  followings: Types.ObjectId[];
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   // stripeId: string;
   wallet?: Types.ObjectId | TWallet; // it user is ObjectId of the Wallet model
