@@ -292,6 +292,22 @@ const getPostsForMyFeed = async ({
 }: {
   user: mongoose.Types.ObjectId;
 }) => {
+  /* ------------------- ************ -------------------- 
+
+  Here we have a user (_id of my own user)
+  After getting my user data from mongodb we will get following list ;
+
+  And We have multiple posts ; each post have its user and  viewPrivacy fields; user will contain _id of user who create this post and viewPrivacy's value can have only 'public' for now
+
+  step 1: first find your all following users list\
+  step 2: find all those post, where post.user matches the in your following user list.
+  
+  where query must have those logic:
+   step 3: additionally we need total comments count and list of last if 2 comments of each post. 
+           note that: we need last two comments 
+   step 5: additionally we need total likes count and list of last 3 likes and if this likes list have your own _id then i this likes list your _id must have include, it doesn't matter that you are the user who likes this post as a last three users or not
+   step 6: additionally we need total shares count only
+  ------------------- ************ -------------------- */
   const result = await Post.find({});
   return result;
 };
