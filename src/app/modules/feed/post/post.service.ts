@@ -300,9 +300,10 @@ const getPostsForMyFeed = async ({
   And We have multiple posts ; each post have its user and  viewPrivacy fields; user will contain _id of user who create this post and viewPrivacy's value can have only 'public' for now
 
   step 1: first find your all following users list\
-  step 2: find all those post, where post.user matches the in your following user list.
+  step 2: find all those post, where post.user matches the in your following user list and must maintain the seenBy array, I it has include your _id , then skip those post..
   
   where query must have those logic:
+
    step 3: additionally we need total comments count and list of last if 2 comments of each post. 
            note that: we need last two comments 
    step 5: additionally we need total likes count and list of last 3 likes and if this likes list have your own _id then i this likes list your _id must have include, it doesn't matter that you are the user who likes this post as a last three users or not
