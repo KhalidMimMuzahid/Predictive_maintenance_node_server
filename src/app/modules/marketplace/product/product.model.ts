@@ -24,18 +24,17 @@ const productSchema = new Schema<TProduct>({
   taxStatusClass: { type: String, required: true },
 
   size: { type: [String], required: true },
-  weight: { type: Number, required: true },
-  length: { type: Number, required: true },
-  width: { type: Number, required: true },
-  height: { type: Number, required: true },
+  weight: { type: Number },
+  length: { type: Number },
+  width: { type: Number },
+  height: { type: Number },
 
   stockManagement: {
     availableStock: { type: Number, required: true },
-    stockKeepingUnit: { type: Number, required: true },
+    stockKeepingUnit: { type: Number },
     stockStatus: {
       type: String,
       enum: ['available', 'not-available'],
-      required: true,
     },
     individualSold: { type: Boolean, required: true },
     trackStockQuantity: { type: Boolean, required: true },
@@ -50,7 +49,7 @@ const productSchema = new Schema<TProduct>({
   ],
 
   feedback: {
-    rate: { type: Number, min: 0, max: 5, required: true },
+    rate: { type: Number, min: 0, max: 5 },
     reviews: [
       {
         review: { type: String, required: true },

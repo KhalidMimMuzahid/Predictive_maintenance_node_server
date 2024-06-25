@@ -24,28 +24,14 @@ const createProductValidationSchema = z.object({
     individualSold: z.boolean(),
     trackStockQuantity: z.boolean(),
   }),
-  photos: z.array(
-    z.object({
-      photoUrl: z.string().url(),
-      color: z.string(),
-      title: z.string(),
-    }),
-  ),
-  feedback: z
-    .object({
-      rate: z.number().min(0).max(5),
-      reviews: z
-        .array(
-          z.object({
-            review: z.string(),
-            rate: z.number().min(0).max(5),
-            user: z.string().refine((val) => /^[a-fA-F0-9]{24}$/.test(val), {
-              message: 'Invalid ObjectId format',
-            }),
-          }),
-        )
-        .optional(),
-    })
+  photos: z
+    .array(
+      z.object({
+        photoUrl: z.string().url(),
+        color: z.string().optional(),
+        title: z.string().optional(),
+      }),
+    )
     .optional(),
 });
 export const productValidation = {
