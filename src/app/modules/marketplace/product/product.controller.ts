@@ -11,7 +11,10 @@ const createProduct: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
   // we are checking the permission of this api
-  checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'serviceProviderAdmin'],
+  });
   const product: Partial<TProduct> = req?.body as Partial<TProduct>;
 
   const result = await productServices.createProduct({
@@ -22,7 +25,7 @@ const createProduct: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Reservation Request created successfully',
+    message: 'product has added successfully',
     data: result,
   });
 });

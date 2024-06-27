@@ -3,7 +3,10 @@
 import { Types } from 'mongoose';
 export type TProduct = {
   productId: string;
+  ownedBy: 'serviceProviderCompany' | 'showa';
   addedBy: Types.ObjectId;
+  shop?: Types.ObjectId;
+
   name: string; // title
   details: string; // description
   model: string;

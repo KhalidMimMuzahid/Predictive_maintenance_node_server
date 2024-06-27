@@ -1,11 +1,17 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { TProduct } from './product.interface';
 
 // Define the schema for the TProduct type
 const productSchema = new Schema<TProduct>(
   {
     productId: { type: String, required: true },
+    ownedBy: {
+      type: String,
+      enum: ['serviceProviderCompany', 'showa'],
+      required: true,
+    },
     addedBy: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
     name: { type: String, required: true },
     details: { type: String, required: true },
     model: { type: String, required: true },
@@ -55,7 +61,7 @@ const productSchema = new Schema<TProduct>(
         {
           review: { type: String, required: true },
           rate: { type: Number, min: 0, max: 5, required: true },
-          user: { type: Types.ObjectId, required: true, ref: 'User' },
+          user: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
         },
       ],
     },

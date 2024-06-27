@@ -19,6 +19,12 @@ const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>(
       ref: 'ServiceProviderCompany',
       // required: true,
     },
+
+    shop: {
+      type: Schema.Types.ObjectId,
+      ref: 'Shop',
+      // required: true,
+    },
     isDeleted: {
       type: IsDeletedSchema,
       required: true,

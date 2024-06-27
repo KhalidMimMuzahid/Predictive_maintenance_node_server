@@ -4,6 +4,7 @@ import { TAuth } from '../../../interface/error';
 import { TPost, TReplay, TSharingStatus } from './post.interface';
 import Post from './post.model';
 import mongoose from 'mongoose';
+import { User } from '../../user/user.model';
 
 const createPost = async ({
   postData,
@@ -292,25 +293,110 @@ const getPostsForMyFeed = async ({
 }: {
   user: mongoose.Types.ObjectId;
 }) => {
-  /* ------------------- ************ -------------------- 
+  const followingUsers = await User.findById(user).select('followings');
+  if (!followingUsers) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Please follow some users to get posts`,
+    );
+  }
 
+  const result = await Post.find({
+    user: {
+      $in: followingUsers?.followings,
+    },
+  }).populate({
+    path: 'user',
+    select:
+      'showaUser showaAdmin showaSubAdmin serviceProviderAdmin serviceProviderSubAdmin serviceProviderEngineer serviceProviderBranchManager',
+    populate: [
+      {
+        path: 'showaUser',
+        select: 'photoUrl name',
+
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'showaAdmin',
+        select: 'photoUrl name',
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'showaSubAdmin',
+        select: 'photoUrl name',
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderAdmin',
+        select: 'photoUrl name',
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderSubAdmin',
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderEngineer',
+        select: 'photoUrl name',
+        options: { strictPopulate: false },
+      },
+      {
+        path: 'serviceProviderBranchManager',
+        select: 'photoUrl name',
+        options: { strictPopulate: false },
+      },
+    ],
+  });
+
+  await Post.updateMany(
+    {
+      user: { $in: followingUsers },
+    },
+    {
+      $addToSet: { seenBy: user },
+    },
+  );
+
+  const res = result.map((post) => {
+    // post.seenBy.push(user);
+    console.log(post);
+    const postData = post.advertisement || post.userPost;
+    const commentsCount = post.comments.length;
+    const lastTwoComments =
+      post.comments.length > 2 ? post.comments.slice(-2) : post.comments;
+    const likesCount = post.likes.length;
+    const seenByCount = post.seenBy.length;
+    const userData = post.user;
+    return {
+      postData,
+      commentsCount,
+      lastTwoComments,
+      likesCount,
+      seenByCount,
+      userData,
+    };
+  });
+
+  console.log(res);
+
+  /* ------------------- ************ --------------------
+  
   Here we have a user (_id of my own user)
   After getting my user data from mongodb we will get following list ;
-
-  And We have multiple posts ; each post have its user and  viewPrivacy fields; user will contain _id of user who create this post and viewPrivacy's value can have only 'public' for now
-
+  
+  And We have multiple posts ; each post have its user and viewPrivacy fields; user will contain _id of user who create this post and viewPrivacy's value can have only 'public' for now
+  
   step 1: first find your all following users list\
-  step 2: find all those post, where post.user matches the in your following user list and must maintain the seenBy array, I it has include your _id , then skip those post..
+  step 2: find all those post, where post.user matches the in your following user list.
   
   where query must have those logic:
-
-   step 3: additionally we need total comments count and list of last if 2 comments of each post. 
-           note that: we need last two comments 
-   step 5: additionally we need total likes count and list of last 3 likes and if this likes list have your own _id then i this likes list your _id must have include, it doesn't matter that you are the user who likes this post as a last three users or not
-   step 6: additionally we need total shares count only
+  step 3: additionally we need total comments count and list of last if 2 comments of each post.
+           note that: we need last two comments
+  step 5: additionally we need total likes count and list of last 3 likes and if this likes list have your own _id then i this likes list your _id must have include, it doesn't matter that you are the user who likes this post as a last three users or not
+  step 6: additionally we need total shares count only
   ------------------- ************ -------------------- */
-  const result = await Post.find({});
-  return result;
+  // const result = await Post.find({});
+  return res;
 };
 export const postServices = {
   createPost,
