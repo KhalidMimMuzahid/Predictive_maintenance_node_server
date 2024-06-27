@@ -6,6 +6,7 @@ export type TServiceProviderAdmin = {
   name: { firstName: string; lastName: string };
   photoUrl?: string;
   serviceProviderCompany: Types.ObjectId;
+  shop?: Types.ObjectId;
   // language?: TLanguage;
   // // fullName: firstName + " " + lastName // this fullName field will be virtual
   // phone: string;
