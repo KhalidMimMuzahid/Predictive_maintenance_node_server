@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { TOrder } from './order.interface';
+import { paymentTypesArray } from './order.const';
 
 // Define the schema for the TProduct type
 const orderSchema = new Schema<TOrder>(
@@ -10,6 +11,11 @@ const orderSchema = new Schema<TOrder>(
     status: {
       type: String,
       enum: ['pending', 'in-progress', 'delivered'],
+      required: true,
+    },
+    paymentType: {
+      type: String,
+      enum: paymentTypesArray,
       required: true,
     },
     cost: {

@@ -10,18 +10,18 @@ const createProductValidationSchema = z.object({
   regularPrice: z.number(),
   salePrice: z.number(),
   taxStatus: z.enum(['applicable', 'not-applicable']),
-  taxStatusClass: z.string(),
+  taxRate: z.number(),
   size: z.array(z.string()),
-  weight: z.number(),
-  length: z.number(),
-  width: z.number(),
-  height: z.number(),
+
+  packageSize: z.object({
+    weight: z.number(),
+    length: z.number(),
+    width: z.number(),
+    height: z.number(),
+  }),
 
   stockManagement: z.object({
     availableStock: z.number(),
-    stockKeepingUnit: z.number(),
-    stockStatus: z.enum(['available', 'not-available']),
-    individualSold: z.boolean(),
     trackStockQuantity: z.boolean(),
   }),
   photos: z

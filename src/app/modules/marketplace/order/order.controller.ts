@@ -6,6 +6,8 @@ import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
 import { orderServices } from './order.service';
+import { paymentTypesArray } from './order.const';
+import { TPaymentType } from './order.interface';
 
 const orderProduct: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -15,13 +17,24 @@ const orderProduct: RequestHandler = catchAsync(async (req, res) => {
   const product = req?.query?.product as string;
   const quantityString = req?.query?.quantity as string;
   const quantity = parseInt(quantityString);
-  const paymentType: string = req?.query?.paymentType as string;
-  console.log(paymentType);
-
+  const paymentType: TPaymentType = req?.query?.paymentType as TPaymentType;
   if (!product || !quantity || !paymentType) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'product, quantity and paymentType are required to order a product   ',
+    );
+  }
+
+  if (!paymentTypesArray.some((each) => each === paymentType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `payment type must be any of ${paymentTypesArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
     );
   }
 
@@ -39,6 +52,9 @@ const orderProduct: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+
 
 export const orderController = {
   orderProduct,

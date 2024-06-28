@@ -19,20 +19,23 @@ export type TProduct = {
   salePrice: number;
 
   taxStatus: 'applicable' | 'not-applicable';
-  taxStatusClass: string; // supply-3402
+  taxRate: number; // taxStatusClass
 
   size: string[];
-  weight: number; // in kgs
-  length: number; //
-  width: number; //
-  height: number; //
+
+  packageSize: {
+    weight: number; // in kgs
+    length: number; //
+    width: number; //
+    height: number; //
+  };
 
   stockManagement: {
-    stockKeepingUnit: number;
-    availableStock: number;
-    stockStatus: 'available' | 'not-available'; // "Available" or "Not Available"
-    individualSold: boolean; //
-    trackStockQuantity: boolean; //
+    // stockKeepingUnit: number;
+    availableStock: number; // stockKeepingUnit
+    // stockStatus: 'available' | 'not-available'; // "Available" or "Not Available"
+    // individualSold: boolean; //
+    trackStockQuantity: boolean; // if it is on then , it the stocks reaches to 5 or less than that, then send notification to seller
   };
   photos: {
     photoUrl: string;

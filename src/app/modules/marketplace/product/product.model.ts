@@ -28,22 +28,19 @@ const productSchema = new Schema<TProduct>(
       enum: ['applicable', 'not-applicable'],
       required: true,
     },
-    taxStatusClass: { type: String, required: true },
+    taxRate: { type: Number, required: true },
 
     size: { type: [String], required: true },
-    weight: { type: Number },
-    length: { type: Number },
-    width: { type: Number },
-    height: { type: Number },
+
+    packageSize: {
+      weight: { type: Number },
+      length: { type: Number },
+      width: { type: Number },
+      height: { type: Number },
+    },
 
     stockManagement: {
       availableStock: { type: Number, required: true },
-      stockKeepingUnit: { type: Number },
-      stockStatus: {
-        type: String,
-        enum: ['available', 'not-available'],
-      },
-      individualSold: { type: Boolean, required: true },
       trackStockQuantity: { type: Boolean, required: true },
     },
 

@@ -1,5 +1,8 @@
 import { Types } from 'mongoose';
 
+
+export type TPaymentType = 'cash-on-delivery' | 'showa-balance';
+
 export type TOrder = {
   //
   orderId: string;
@@ -7,6 +10,8 @@ export type TOrder = {
   product: Types.ObjectId;
 
   status: 'pending' | 'in-progress' | 'delivered';
+
+  paymentType: TPaymentType;
   cost: {
     price: number;
     quantity: number;
@@ -16,8 +21,8 @@ export type TOrder = {
   };
   paidStatus: {
     isPaid: boolean;
-    paidAt: Date;
-    transaction: Types.ObjectId;
+    paidAt?: Date;
+    transaction?: Types.ObjectId;
   };
 };
 
