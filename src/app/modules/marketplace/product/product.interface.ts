@@ -9,9 +9,9 @@ export type TProduct = {
 
   name: string; // title
   details: string; // description
+  brand: string; // last string is for others created by admin
   model: string;
 
-  brand: string; // last string is for others created by admin
   category: string; // created by admin
   subCategory: string; // created by admin
 
