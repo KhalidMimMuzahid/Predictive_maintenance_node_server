@@ -5,6 +5,7 @@ import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
 import { TProduct, TProductFilter } from './product.interface';
 import Product from './product.model';
 import Shop from '../shop/shop.model';
+import PredefinedValue from '../../predefinedValue/predefinedValue.model';
 
 const createProduct = async ({
   auth,
@@ -17,6 +18,33 @@ const createProduct = async ({
     _id: -1,
   });
 
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'marketplace',
+      'marketplace.type': 'product',
+    },
+    { 'marketplace.product.categories': 1 },
+  );
+  const category = predefinedValue?.marketplace?.product?.categories?.find(
+    (each) => each?.category === product?.category,
+  );
+
+  if (!category) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'product category must be available in category list',
+    );
+  }
+
+  const isSubCategoryAvailable = category?.subCategories?.some(
+    (each) => each === product?.subCategory,
+  );
+  if (!isSubCategoryAvailable) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'sub category must be available in category list',
+    );
+  }
   product.productId = padNumberWithZeros(
     Number(lastProduct?.productId || '000000') + 1,
     6,
