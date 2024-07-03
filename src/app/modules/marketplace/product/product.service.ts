@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
-import { TProduct } from './product.interface';
+import { TProduct, TProductFilter } from './product.interface';
 import Product from './product.model';
 import Shop from '../shop/shop.model';
 
@@ -44,7 +44,57 @@ const createProduct = async ({
   }
   return result;
 };
+const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQueries: any[] = [];
 
+  if (filterQuery?.productName) {
+    filterQueries.push({
+      name: { $regex: filterQuery?.productName, $options: 'i' },
+    });
+  }
+  if (filterQuery?.brandName) {
+    filterQueries.push({ brand: filterQuery?.brandName });
+  }
+  if (filterQuery?.modelName) {
+    filterQueries.push({ model: filterQuery?.modelName });
+  }
+  if (filterQuery?.category) {
+    filterQueries.push({ category: filterQuery?.category });
+  }
+  if (filterQuery?.subCategory) {
+    filterQueries.push({ subCategory: filterQuery?.subCategory });
+  }
+
+  if (filterQuery?.maxPrice || filterQuery?.minPrice) {
+    const priceRange = {
+      $and: [],
+    };
+
+    if (filterQuery?.maxPrice) {
+      priceRange.$and.push({
+        salePrice: { $lte: Number(filterQuery?.maxPrice) },
+      });
+    }
+    if (filterQuery?.minPrice) {
+      priceRange.$and.push({
+        salePrice: { $gte: Number(filterQuery?.minPrice) },
+      });
+    }
+    filterQueries.push(priceRange);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = {};
+  if (filterQueries?.length) {
+    query = {
+      $and: filterQueries,
+    };
+  }
+  const products = await Product.find(query);
+  console.log(products?.length);
+  return products;
+};
 export const productServices = {
   createProduct,
+  getAllProducts,
 };

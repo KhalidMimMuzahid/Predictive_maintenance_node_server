@@ -1,6 +1,19 @@
 // export type TCategories = 'accessories'
 // brand  :{brandName, brandLogo}
 import { Types } from 'mongoose';
+
+
+
+export type TProductFilter = {
+  productName: string;
+  brandName: string;
+  modelName: string;
+  category: string;
+  subCategory: string;
+  minPrice: string;
+  maxPrice: string;
+};
+
 export type TProduct = {
   productId: string;
   ownedBy: 'serviceProviderCompany' | 'showa';
