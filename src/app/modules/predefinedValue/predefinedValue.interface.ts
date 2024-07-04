@@ -16,6 +16,9 @@ export type TMarketplace = {
 };
 
 export type TPredefinedValue = {
-  type: 'marketplace';
+  type: 'marketplace' | 'sensorModuleAttached';
   marketplace?: TMarketplace;
+  // sensorModuleAttached: {
+  //   sectionName: string;
+  // };
 };

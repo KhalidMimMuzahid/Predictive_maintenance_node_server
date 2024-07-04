@@ -11,6 +11,9 @@ import { manageAuth } from './app/middlewares/manageAuth';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
+import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
+import { CronJob } from 'cron';
+
 const app: Application = express();
 const server = createServer(app);
 
@@ -47,6 +50,14 @@ async function main() {
     await mongoose.connect(config.database_url as string);
     server.listen(config.port, () => {
       console.log(`Showa app listening on port ${config.port}`);
+    });
+
+    // -------- ************* ---------------  // all cron functions are here
+    CronJob.from({
+      cronTime: '0 */1 * * * *',
+      onTick: cronFunctions.sendIotDataToAIServer,
+      start: true,
+      timeZone: 'America/Los_Angeles',
     });
   } catch (error) {
     console.log(error);
