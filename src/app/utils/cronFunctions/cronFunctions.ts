@@ -2,9 +2,6 @@ import { Machine } from '../../modules/machine/machine.model';
 import { SensorModuleAttached } from '../../modules/sensorModuleAttached/sensorModuleAttached.model';
 
 const sendIotDataToAIServer = async () => {
-  // const job =
-  console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-
   // we must get all machine using subscriptionPurchased and where isActive value is true
   const allMachines = await Machine.find(
     {
@@ -20,8 +17,8 @@ const sendIotDataToAIServer = async () => {
             $in: machine?.sensorModulesAttached,
           },
         },
-        { sensorData: { $slice: [-10] } },
-      ).select('sectionName sensorData moduleType');
+        { sensorData: { $slice: [-10, 10] } },
+      ).select('sectionName moduleType');
       return {
         _id: machine?._id,
         sensorModulesAttached: allIots,
@@ -29,7 +26,8 @@ const sendIotDataToAIServer = async () => {
     }),
   );
 
-  console.log(allMachineIotData); //  now we need to do promise all for this all machines
+  // console.log(allMachineIotData); //  now we need to do promise all for this all machines
+  return allMachineIotData;
 };
 
 export const cronFunctions = { sendIotDataToAIServer };

@@ -4,6 +4,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { extraDataServices } from './extraData.service';
 import sendResponse from '../../utils/sendResponse';
+import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
   const emailOrPhone: string = req?.query?.emailOrPhone as string;
@@ -24,6 +25,18 @@ const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+// those router is only for testings
+const sendIotDataAiServer: RequestHandler = catchAsync(async (req, res) => {
+  const result = await cronFunctions.sendIotDataToAIServer();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'success',
+    data: result,
+  });
+});
 export const extraDataController = {
   deleteMyAccount,
+  sendIotDataAiServer,
 };
