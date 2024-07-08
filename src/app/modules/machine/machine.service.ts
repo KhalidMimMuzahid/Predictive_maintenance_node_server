@@ -1,4 +1,4 @@
-import { TMachine } from './machine.interface';
+import { TMachine, TMachineHealthStatus } from './machine.interface';
 import { Machine } from './machine.model';
 
 import { checkMachineData } from './machine.utils';
@@ -58,7 +58,7 @@ const addNonConnectedMachineInToDB = async ({
   // });
   // console.log(subscriptionPurchased);
 
-  machineData.status = 'normal';
+  machineData.healthStatus = 'good';
   const lastAddedMachine = await Machine.findOne(
     { user: machineData?.user },
     { machineNo: 1 },
@@ -212,7 +212,7 @@ const addSensorConnectedMachineInToDB = async ({
     // create machine
 
     machineData.sensorModulesAttached = [createdSensorModuleAttached?._id];
-    machineData.status = 'normal';
+    machineData.healthStatus = 'good';
     machineData.subscriptionPurchased = subscriptionPurchasedData?._id;
 
     const lastAddedMachine = await Machine.findOne(
@@ -556,58 +556,6 @@ const deleteMachineService = async (
   return deletedMachine;
 };
 
-// const changeStatusService = async (id: string) => {
-//   try {
-//     const machine = await Machine.findById(id);
-//     if (!machine) {
-//       throw new AppError(
-//         httpStatus.BAD_REQUEST,
-//         'There is no machine with this id!',
-//       );
-//     }
-//     if (machine.status === 'normal') {
-//       machine.status = 'abnormal';
-//     } else {
-//       machine.status = 'normal';
-//     }
-//     const updatedMachine = await machine.save();
-//     return updatedMachine;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
-// const addSensorService = async (payload: TAttachedSensor, id: String) => {
-//   const session = await mongoose.startSession();
-//   try {
-//     session.startTransaction();
-//     const machine = await Machine.findById(id).session(session);
-
-//     if (!machine) {
-//       throw new AppError(
-//         httpStatus.BAD_REQUEST,
-//         'There is no machine with this id!',
-//       );
-//     }
-//     const sensorArray = await AttachedSensor.create([payload], {
-//       session: session,
-//     });
-//     if (!sensorArray?.length) {
-//       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create sesnor');
-//     }
-//     machine.sensors?.push(sensorArray[0]._id);
-//     const updatedMachine = await machine.save({ session: session });
-
-//     await session.commitTransaction();
-//     await session.endSession();
-
-//     return updatedMachine;
-//   } catch (error) {
-//     await session.abortTransaction();
-//     await session.endSession();
-//     throw error;
-//   }
-// };
 const getAllMachineBy_id = async (user_id: string) => {
   const machine = await Machine.find({
     user: new mongoose.Types.ObjectId(user_id),
@@ -620,6 +568,43 @@ const getMachineBy_id = async (machine: string) => {
 
   return machineData;
 };
+
+const machineHealthStatus = async ({
+  machine,
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  machineHealthData,
+}: {
+  machine: Types.ObjectId;
+  machineHealthData: Partial<TMachineHealthStatus>;
+}) => {
+  const machineData = await Machine.findById(machine, {
+    healthStatus: 1,
+    sensorModulesAttached: 1,
+  });
+
+  if (!machineData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no machine has found with this machine',
+    );
+  }
+  // console.log({
+  //   machine,
+  //   machineHealthData,
+  // });
+  machineData.healthStatus = machineHealthData?.healthStatus;
+  await machineData.save();
+  await Promise.all(
+    machineHealthData?.sensorModulesAttached?.map(async (each) => {
+      await SensorModuleAttached.findByIdAndUpdate(each?._id?.toString(), {
+        healthStatus: each?.healthStatus,
+      });
+    }),
+  );
+
+  return null;
+};
+
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
@@ -634,6 +619,11 @@ export const machineServices = {
   getMachineBy_id,
   deleteMachineService,
   addModuleToMachineInToDB,
+  machineHealthStatus,
   // changeStatusService,
   // addSensorService,
 };
+
+// {
+//   _id: new ObjectId('666297956c7f2e81f8c4f2cc')
+//   }

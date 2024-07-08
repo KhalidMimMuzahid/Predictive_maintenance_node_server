@@ -3,10 +3,10 @@ import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { machineServices } from './machine.service';
-import { TMachine } from './machine.interface';
+import { TMachine, TMachineHealthStatus } from './machine.interface';
 import { TAuth } from '../../interface/error';
 import AppError from '../../errors/AppError';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
@@ -105,18 +105,12 @@ const addSensorModuleInToMachine: RequestHandler = catchAsync(
       );
     }
 
-
-
-
-
-
-
-    const result = await machineServices.addModuleToMachineInToDB(
-     { sensorModuleMacAddress,
+    const result = await machineServices.addModuleToMachineInToDB({
+      sensorModuleMacAddress,
       subscriptionPurchased,
       machine_id: new Types.ObjectId(machine_id),
-      sensorModuleAttached,}
-    );
+      sensorModuleAttached,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -305,15 +299,35 @@ const getMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const machineHealthStatus: RequestHandler = catchAsync(async (req, res) => {
+  // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const machine: string = req.query?.machine as string;
+  if (!machine) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'machine is required to update machine health status',
+    );
+  }
+  const machineHealthData = req?.body as Partial<TMachineHealthStatus>;
+
+  const result = await machineServices.machineHealthStatus({
+    machine: new mongoose.Types.ObjectId(machine),
+    machineHealthData,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine status has updated successfully',
+    data: result,
+  });
+});
 export const machineController = {
   addSensorNonConnectedMachine,
-
   addSensorConnectedMachine,
-
   addSensorModuleInToMachine,
-
   addSensorAttachedModuleInToMachine,
-
   updateMachinePackageStatus,
   getMyWashingMachine,
   getMyGeneralMachine,
@@ -322,6 +336,7 @@ export const machineController = {
   getAllMachineBy_id, // its user_id
   getMachineBy_id,
   deleteMachine,
+  machineHealthStatus,
   // changeStatus,
   // addSensor,
 };

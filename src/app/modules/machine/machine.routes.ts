@@ -44,6 +44,11 @@ router.get(
 router.get('/getAllMachineBy_id', machineController.getAllMachineBy_id);
 router.get('/getMachineBy_id', machineController.getMachineBy_id);
 router.delete('/', machineController.deleteMachine);
+router.patch(
+  '/machine-health-status',
+  validateRequest(machineValidation.machineHealthStatusSchema),
+  machineController.machineHealthStatus,
+);
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);
 export const machineRoutes = router;

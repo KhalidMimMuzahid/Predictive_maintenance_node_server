@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { THealthStatus } from '../machine/machine.interface';
 
 // for module-1:
 export type TModule1 = { vibration: [number]; temperature: [number] };
@@ -28,7 +29,7 @@ export type TSensorModuleAttached = {
   macAddress: string;
   isAttached: boolean; // if true, means this module sensor is attached to the machine (then machine field must be empty); if it is false, means this sensor module is purchased by user but not added to any machine yet (machine field must have _id of machine object)
   machine?: Types.ObjectId; // objectId of Machine model  ; if machine field is not empty , that means this machine is connected to this sensor
-
+  healthStatus: THealthStatus;
   user: Types.ObjectId; // objectId of User model who purchase this sensor
   purpose?: string; // showa admin can set this value when it will be installed in the machine by showa admin/engineer
   sectionName: string; // showa admin can set this value
