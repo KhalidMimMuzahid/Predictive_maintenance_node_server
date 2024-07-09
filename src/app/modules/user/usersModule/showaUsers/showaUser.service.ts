@@ -17,6 +17,7 @@ const createShowaUserIntoDB = async (
   rootUser: Partial<TUser>,
   showaUser: Partial<TShowaUser>,
 ) => {
+  rootUser.followings = [];
   //create a user object
   // rootUser.role ='showa-user' // we no need to set it ; cause we have already set it as a default value in mongoose model
   // rootUser.isDeleted= false // same as above

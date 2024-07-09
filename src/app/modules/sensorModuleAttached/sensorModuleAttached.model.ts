@@ -13,16 +13,18 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
     },
     isAttached: { type: Boolean, required: true, default: false },
     machine: { type: Schema.Types.ObjectId, ref: 'Machine' },
+
+    healthStatus: {
+      type: String,
+      enum: ['bad', 'good', 'moderate'],
+      required: true,
+      default: 'good',
+    },
     macAddress: { type: String, unique: true, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     purpose: { type: String },
     sectionName: { type: String, required: true },
     isSwitchedOn: { type: Boolean, required: true },
-    currentSubscription: {
-      type: Schema.Types.ObjectId,
-      ref: 'Subscription',
-      // required: true,
-    },
 
     moduleType: {
       type: String,
@@ -39,6 +41,11 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
         ),
       },
     ],
+    subscriptionPurchased: {
+      type: Schema.Types.ObjectId,
+      ref: 'SubscriptionPurchased',
+      required: true,
+    },
   },
   {
     timestamps: true,

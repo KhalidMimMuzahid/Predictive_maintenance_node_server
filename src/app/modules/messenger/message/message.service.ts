@@ -20,7 +20,6 @@ const sendMessage = async ({
     throw new AppError(httpStatus.BAD_REQUEST, `chat is not found`);
   }
 
-  console.log({ sender });
   if (
     !chatData?.users?.some((each) => each?.toString() === sender?.toString())
   ) {
@@ -36,6 +35,13 @@ const sendMessage = async ({
 
     [`${messageData?.type}`]: messageData[`${messageData?.type}`],
   });
+
+  await Chat.findOneAndUpdate(
+    { _id: new mongoose.Types.ObjectId(chat) },
+    {},
+    { new: true, runValidators: true },
+  );
+
 
   return message;
 };

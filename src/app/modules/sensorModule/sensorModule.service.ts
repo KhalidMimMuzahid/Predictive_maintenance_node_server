@@ -17,6 +17,7 @@ const addSensorModuleIntoDB = async (sensorModule: TSensorModule) => {
       'MacAddress has already in used',
     );
   }
+
   sensorModule.status = 'in-stock';
   const createdSensorModule = await SensorModule.create(sensorModule);
 

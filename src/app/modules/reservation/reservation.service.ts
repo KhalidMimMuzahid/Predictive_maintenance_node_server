@@ -17,6 +17,7 @@ import { Invoice } from '../invoice/invoice.model';
 import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
 import { addDays } from '../../utils/addDays';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
+import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -37,7 +38,11 @@ const createReservationRequestIntoDB = async ({
       '_id of machine you provided is invalid',
     );
   }
-  const machineData = await Machine.findById(machine);
+  const machineData = await Machine.findById(machine).populate({
+    path: 'subscriptionPurchased',
+    select: 'isActive',
+    options: { strictPopulate: false },
+  });
 
   if (!machineData) {
     throw new AppError(
@@ -51,6 +56,15 @@ const createReservationRequestIntoDB = async ({
       'you are not owner of this machine',
     );
   }
+  const subscriptionPurchased =
+    machineData?.subscriptionPurchased as unknown as TSubscriptionPurchased;
+  if (!subscriptionPurchased?.isActive) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Your subscription has expired for this machine, please renew your subscription',
+    );
+  }
+
   const isAlreadyReservation = await ReservationRequest.findOne({
     user: user,
     machine: machine,

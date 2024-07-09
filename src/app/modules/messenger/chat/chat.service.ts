@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import { Message } from '../message/message.model';
 import { hadDuplicateValue } from '../../../utils/hadDuplicateValue';
 import { TAddingMember, TCreatingGroup } from '../message/message.interface';
+import { createPersonalChatFunc } from './chat.utils';
 
 const createPersonalChat = async ({
   user1,
@@ -49,61 +50,70 @@ const createPersonalChat = async ({
   }
   //implement session here cause we need to create event message ("You are connected at Date") here
 
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
+  const result = createPersonalChatFunc({
+    user1,
+    user2,
+    users,
+  });
 
-    const personalChatArray = await Chat.create(
-      [
-        {
-          users: users?.map((each) => new mongoose.Types.ObjectId(each)),
-        },
-      ],
-      {
-        session: session,
-      },
+  return result;
+};
+
+const createPersonalChatByPhoneOrEmail = async ({
+  user1,
+  phoneOrEmail,
+}: {
+  user1: string;
+  phoneOrEmail: string;
+}) => {
+
+  const user2Data = await User.findOne({
+    $or: [{ email: phoneOrEmail }, { phone: `+${phoneOrEmail.substring(1)}` }],
+  }).select('_id email phone');
+
+  const user2 = user2Data?._id?.toString();
+
+  if (!user2) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `No user found with this ${phoneOrEmail}`,
     );
-
-    if (!personalChatArray?.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'failed to create chat');
-    }
-
-    const personalChat = personalChatArray[0];
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const event: any = {};
-    event.type = 'addingMember';
-    const addingMember: Partial<TAddingMember> = {};
-    addingMember.addedByUser = new mongoose.Types.ObjectId(user1);
-    addingMember.addedUser = new mongoose.Types.ObjectId(user2);
-    event.addingMember = addingMember;
-
-    const eventMessage = {
-      chat: personalChat?._id,
-      event,
-      type: 'event',
-    };
-
-    const createdMessagesArray = await Message.create([eventMessage], {
-      session: session,
-    });
-
-    if (!createdMessagesArray?.length) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'could not create chat, please try again',
-      );
-    }
-
-    await session.commitTransaction();
-    await session.endSession();
-
-    return personalChat;
-  } catch (error) {
-    await session.abortTransaction();
-    await session.endSession();
-    throw error;
   }
+
+  if (user1 === user2) {
+    throw new AppError(httpStatus.BAD_REQUEST, `You can not add yourself`);
+  }
+  const isUser1Exists = await User.findById(user1);
+  if (!isUser1Exists) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `No user found with this _id: ${user1}`,
+    );
+  }
+
+  // check those user has already been connected or not
+  const users = [user1, user2];
+  const areWeAlreadyConnected = await Chat.findOne({
+    users: {
+      $all: users?.map((each) => new mongoose.Types.ObjectId(each)),
+    },
+    'group.groupAdmin': { $exists: false },
+  });
+  if (areWeAlreadyConnected) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `You are already been connected personally each other`,
+    );
+  }
+  //implement session here cause we need to create event message ("You are connected at Date") here
+
+  const result = createPersonalChatFunc({
+    user1,
+    user2,
+    users,
+  });
+
+  return result;
 };
 const createGroupChat = async (groupChatData: Partial<TChat>) => {
   const { group } = groupChatData;
@@ -236,16 +246,46 @@ const createGroupChat = async (groupChatData: Partial<TChat>) => {
 const getMyAllChats = async (user: mongoose.Types.ObjectId) => {
   const result = await Chat.find({
     users: user,
+  })
+    .sort({ updatedAt: -1 })
+    .populate([
+      {
+        path: 'reservationRequests',
+        options: { strictPopulate: false },
+      },
+    ]);
+  return result;
+};
+const getChatByChat_id = async ({
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  user,
+  chat_id,
+}: {
+  user: mongoose.Types.ObjectId;
+  chat_id: string;
+}) => {
+  const result = await Chat.findOne({
+    _id: chat_id,
+    // users: user,
   }).populate([
     {
       path: 'reservationRequests',
       options: { strictPopulate: false },
     },
   ]);
+
+  if (!result) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `no chat found for this chat_id`,
+    );
+  }
   return result;
 };
 export const chatServices = {
   createPersonalChat,
+  createPersonalChatByPhoneOrEmail,
   createGroupChat,
   getMyAllChats,
+  getChatByChat_id,
 };

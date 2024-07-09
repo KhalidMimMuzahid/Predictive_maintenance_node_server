@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { User } from './user.model';
 import { jwtFunc } from '../../utils/jwtFunction';
+import { TAuth } from '../../interface/error';
 
 // 'showaAdmin'
 // 'showaSubAdmin'
@@ -242,10 +243,45 @@ const getAllShowaCustomersFromDB = async () => {
 
   return showaCustomers;
 };
+
+const followUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
+  // const updatedPost =
+  const userData = await User.findById(user).select('_id');
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, `user you provide is not found`);
+  }
+  await User.findByIdAndUpdate(auth?._id?.toString(), {
+    $addToSet: { followings: userData?._id },
+  });
+
+  // console.log(updatedPost);
+
+  return null;
+};
+
+const unfollowUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
+  // const updatedPost =
+  const userData = await User.findById(user).select('_id');
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, `user you provide is not found`);
+  }
+  await User.findByIdAndUpdate(auth?._id?.toString(), {
+    $pull: { followings: userData?._id },
+  });
+
+  // console.log(updatedPost);
+
+  return null;
+};
+
 export const userServices = {
   signIn,
   getUserBy_id,
   getUsersInfoByUsersArray,
   getAllShowaCustomersFromDB,
   getUserWalletInfo,
+  followUser,
+  unfollowUser,
 };
