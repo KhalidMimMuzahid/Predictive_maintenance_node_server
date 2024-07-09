@@ -123,7 +123,7 @@ const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
   return products;
 };
 
-const getSingleProduct = async (productId: string) => {
+const getProductByProduct_id = async (productId: string) => {
   const product = await Product.findOne({ _id: productId });
 
   if (!product) {
@@ -139,5 +139,5 @@ const getSingleProduct = async (productId: string) => {
 export const productServices = {
   createProduct,
   getAllProducts,
-  getSingleProduct,
+  getProductByProduct_id,
 };

@@ -6,6 +6,7 @@ import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { TProduct, TProductFilter } from './product.interface';
 import { productServices } from './product.service';
+import AppError from '../../../errors/AppError';
 
 const createProduct: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -60,18 +61,20 @@ const getAllProducts: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-const getSingleProduct: RequestHandler = catchAsync(async (req, res) => {
+const getProductByProduct_id: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
   const productId = req?.query?.productId as string;
-
+  if (!productId) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Product id is required');
+  }
   // we are checking the permission of this api
   checkUserAccessApi({
     auth,
     accessUsers: 'all',
   });
 
-  const result = await productServices.getSingleProduct(productId);
+  const result = await productServices.getProductByProduct_id(productId);
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -84,5 +87,5 @@ const getSingleProduct: RequestHandler = catchAsync(async (req, res) => {
 export const productController = {
   createProduct,
   getAllProducts,
-  getSingleProduct,
+  getProductByProduct_id,
 };
