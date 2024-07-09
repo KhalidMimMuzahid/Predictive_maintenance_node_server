@@ -13,22 +13,28 @@ import { Types } from 'mongoose';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const subscriptionPurchased = req?.query?.subscriptionPurchased as string;
+
+  const macAddress: string = req?.query?.macAddress as string;
+
+  if (!subscriptionPurchased || !macAddress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'macAddress and subscriptionPurchased is required for purchasing sensor module',
+    );
+  }
+
   const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
 
   sensorModuleAttached.user = auth._id;
-  const macAddress: string = req?.query?.macAddress as string;
 
-  if (!macAddress) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'macAddress is required to to purchase sensor module',
-    );
-  }
   const result =
-    await sensorAttachedModuleServices.addSensorAttachedModuleIntoDB(
+    await sensorAttachedModuleServices.addSensorAttachedModuleIntoDB({
       macAddress,
+      subscriptionPurchased,
       sensorModuleAttached,
-    );
+    });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -177,7 +183,9 @@ const getSensorModuleAttachedByMacAddress: RequestHandler = catchAsync(
 export const sensorModuleAttachedControllers = {
   addSensorAttachedModule,
   addSensorData,
+
   getSensorData,
+
   getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,
   getAllAttachedSensorModulesByMachine,

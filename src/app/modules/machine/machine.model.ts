@@ -5,7 +5,11 @@ import { TMachine } from './machine.interface';
 export const MachineSchema: Schema = new Schema<TMachine>(
   {
     machineNo: { type: String, required: true },
-    status: { type: String, enum: ['abnormal', 'normal'], required: true },
+    healthStatus: {
+      type: String,
+      enum: ['bad', 'good', 'moderate'],
+      required: true,
+    },
     packageStatus: {
       type: String,
       enum: ['Pending', 'Running', 'Expired'],
@@ -33,6 +37,13 @@ export const MachineSchema: Schema = new Schema<TMachine>(
     sensorModulesAttached: [
       { type: Schema.Types.ObjectId, ref: 'SensorModuleAttached' },
     ],
+
+    subscriptionPurchased: {
+      type: Schema.Types.ObjectId,
+      ref: 'SubscriptionPurchased',
+      required: true,
+    },
+
     isDeleted: {
       type: IsDeletedSchema,
       required: true,

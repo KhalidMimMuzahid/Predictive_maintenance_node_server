@@ -5,7 +5,8 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
 import { TTeamOfEngineers } from './teamOfEngineers.interface';
-import { User } from '../user/user.model';
+
+import { TUser } from '../user/user.interface';
 
 const makeTeamOfEngineerInToDB = async ({
   teamName,
@@ -102,12 +103,12 @@ const getAllTeamsOfEngineers = async () => {
   const allTeamsOfEngineersData = await TeamOfEngineers.find({}).populate([
     {
       path: 'serviceProviderCompany',
-      select: 'companyName address ',
+      select: 'companyName address photoUrl',
     },
     { path: 'serviceProviderBranch', select: 'email' },
     {
       path: 'members.member',
-      select: 'user name',
+      select: 'user name photoUrl',
     },
   ]);
 
@@ -116,32 +117,47 @@ const getAllTeamsOfEngineers = async () => {
   ) => {
     const manager = await ServiceProviderBranchManager.findOne({
       'currentState.serviceProviderBranch': serviceProviderBranchId,
-    });
-    const name = manager?.name;
-    const contact = await User.findById(manager?.user);
-    return { name: name, phone: contact?.phone };
+    })
+      .select('name photoUrl')
+      .populate({
+        path: 'user',
+        select: 'email phone',
+        options: { strictPopulate: false },
+      });
+
+    // console.log({ manager });
+    // const name = manager?.name;
+    // const contact = await User.findById(manager?.user);
+
+    const user = manager?.user as unknown as TUser;
+    return {
+      name: manager?.name,
+      phone: user?.phone,
+      photoUrl: manager?.photoUrl,
+    };
   };
 
   const result = await Promise.all(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allTeamsOfEngineersData.map(async (team: any) => ({
       company: {
-        _id: team.serviceProviderCompany?._id,
-        companyName: team.serviceProviderCompany?.companyName,
+        _id: team?.serviceProviderCompany?._id,
+        companyName: team?.serviceProviderCompany?.companyName,
+        photoUrl: team?.serviceProviderCompany?.photoUrl,
       },
-      location: team.serviceProviderCompany?.address,
-      email: team.serviceProviderBranch?.email,
+      location: team?.serviceProviderCompany?.address,
+      email: team?.serviceProviderBranch?.email,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      members: team.members.map((member: any) => ({
+      members: team?.members.map((member: any) => ({
         name: member.member.name,
+        photoUrl: member?.member?.photoUrl,
         _id: member.member._id,
       })),
       serviceProviderBranchManager: await serviceProviderManagerDetails(
-        team.serviceProviderBranch._id,
+        team?.serviceProviderBranch._id,
       ),
     })),
   );
-
 
   return result;
 };

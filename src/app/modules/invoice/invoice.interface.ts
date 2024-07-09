@@ -6,6 +6,7 @@ export type TAdditionalProduct = {
 
   addedByUserType: 'showaAdmin' | 'serviceProviderEngineer';
   productName: string;
+
   // quantity: number;
   // promo:number // percentage of promo ; by default 0%   // is it the same of discount offer? what is actually a promo?
 
@@ -34,6 +35,7 @@ export type TInvoice = {
     totalAmount: number;
     isPaid?: boolean;
   };
+
   taskStatus: 'ongoing' | 'completed' | 'canceled'; // last three status of reservationRequest Model status, you can see the reservationRequest Model
 
   feedbackByUser?: {

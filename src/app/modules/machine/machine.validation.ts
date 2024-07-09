@@ -35,7 +35,16 @@ const createConnectedMachineValidationSchema = z.object({
   machine: createMachineValidationSchema,
   sensorModuleAttached: createSensorModuleAttachedSchema,
 });
+const sensorModuleSchema = z.object({
+  _id: z.string(),
+  healthStatus: z.enum(['bad', 'good', 'moderate']),
+});
+const machineHealthStatusSchema = z.object({
+  healthStatus: z.enum(['bad', 'good', 'moderate']),
+  sensorModulesAttached: z.array(sensorModuleSchema),
+});
 export const machineValidation = {
   createNonConnectedMachineValidationSchema,
   createConnectedMachineValidationSchema,
+  machineHealthStatusSchema,
 };

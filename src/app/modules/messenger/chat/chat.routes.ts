@@ -11,11 +11,21 @@ router.post(
   chatController.createPersonalChat,
 );
 
+
+router.post(
+  '/create-personal-chat-by-phone-or-email',
+  // validateRequest(chatValidation.createPersonalChatValidationSchema),
+  chatController.createPersonalChatByPhoneOrEmail,
+);
+
+
 router.post(
   '/create-group-chat',
   validateRequest(chatValidation.createGroupChatValidationSchema),
   chatController.createGroupChat,
 );
 router.get('/get-my-all-chats', chatController.getMyAllChats);
+
+router.get('/get-chat-by-chat_id', chatController.getChatByChat_id);
 
 export const chatRoutes = router;
