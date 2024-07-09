@@ -12,4 +12,6 @@ router.post(
 );
 router.get('/get-all-products', productController.getAllProducts);
 
+router.get('/get-single-product', productController.getSingleProduct);
+
 export const productRoutes = router;

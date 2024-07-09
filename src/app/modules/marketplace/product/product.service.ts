@@ -122,7 +122,22 @@ const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
   console.log(products?.length);
   return products;
 };
+
+const getSingleProduct = async (productId: string) => {
+  const product = await Product.findOne({ _id: productId });
+
+  if (!product) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Product not found with the given ID',
+    );
+  }
+
+  return product;
+};
+
 export const productServices = {
   createProduct,
   getAllProducts,
+  getSingleProduct,
 };

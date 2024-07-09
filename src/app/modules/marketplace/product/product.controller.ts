@@ -59,7 +59,30 @@ const getAllProducts: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getSingleProduct: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const productId = req?.query?.productId as string;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await productServices.getSingleProduct(productId);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'products has retrieved successfully',
+    data: result,
+  });
+});
+
 export const productController = {
   createProduct,
   getAllProducts,
+  getSingleProduct,
 };
