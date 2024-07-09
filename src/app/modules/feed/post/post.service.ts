@@ -294,60 +294,116 @@ const getPostsForMyFeed = async ({
   user: mongoose.Types.ObjectId;
 }) => {
   const followingUsers = await User.findById(user).select('followings');
-  if (!followingUsers) {
+  if (!followingUsers?.followings?.length) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       `Please follow some users to get posts`,
     );
   }
 
-  const result = await Post.find({
-    user: {
-      $in: followingUsers?.followings,
+  // const result = await Post.find({
+  //   user: {
+  //     $in: followingUsers?.followings,
+  //   },
+  // }).populate({
+  //   path: 'user',
+  //   select:
+  //     'showaUser showaAdmin showaSubAdmin serviceProviderAdmin serviceProviderSubAdmin serviceProviderEngineer serviceProviderBranchManager',
+  //   populate: [
+  //     {
+  //       path: 'showaUser',
+  //       select: 'photoUrl name',
+
+  //       options: { strictPopulate: false },
+  //     },
+  //     {
+  //       path: 'showaAdmin',
+  //       select: 'photoUrl name',
+  //       options: { strictPopulate: false },
+  //     },
+  //     {
+  //       path: 'showaSubAdmin',
+  //       select: 'photoUrl name',
+  //       options: { strictPopulate: false },
+  //     },
+  //     {
+  //       path: 'serviceProviderAdmin',
+  //       select: 'photoUrl name',
+  //       options: { strictPopulate: false },
+  //     },
+  //     {
+  //       path: 'serviceProviderSubAdmin',
+  //       options: { strictPopulate: false },
+  //     },
+  //     {
+  //       path: 'serviceProviderEngineer',
+  //       select: 'photoUrl name',
+  //       options: { strictPopulate: false },
+  //     },
+  //     {
+  //       path: 'serviceProviderBranchManager',
+  //       select: 'photoUrl name',
+  //       options: { strictPopulate: false },
+  //     },
+  //   ],
+  // });
+  // create index for user field in mongodb
+  const result2 = await Post.aggregate([
+    {
+      $match: {
+        user: {
+          $in: followingUsers?.followings,
+        },
+      },
     },
-  }).populate({
-    path: 'user',
-    select:
-      'showaUser showaAdmin showaSubAdmin serviceProviderAdmin serviceProviderSubAdmin serviceProviderEngineer serviceProviderBranchManager',
-    populate: [
-      {
-        path: 'showaUser',
-        select: 'photoUrl name',
 
-        options: { strictPopulate: false },
-      },
-      {
-        path: 'showaAdmin',
-        select: 'photoUrl name',
-        options: { strictPopulate: false },
-      },
-      {
-        path: 'showaSubAdmin',
-        select: 'photoUrl name',
-        options: { strictPopulate: false },
-      },
-      {
-        path: 'serviceProviderAdmin',
-        select: 'photoUrl name',
-        options: { strictPopulate: false },
-      },
-      {
-        path: 'serviceProviderSubAdmin',
-        options: { strictPopulate: false },
-      },
-      {
-        path: 'serviceProviderEngineer',
-        select: 'photoUrl name',
-        options: { strictPopulate: false },
-      },
-      {
-        path: 'serviceProviderBranchManager',
-        select: 'photoUrl name',
-        options: { strictPopulate: false },
-      },
-    ],
-  });
+    // { $sort: { age : -1 } },
 
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        location: 1,
+        viewPrivacy: 1,
+        commentPrivacy: 1,
+        user: 1,
+        sharingStatus: 1,
+        isSponsored: 1,
+        type: 1,
+        userPost: 1,
+        advertisement: 1,
+        // likes: 1,
+        likeObject: {
+          likesCount: { $size: '$likes' },
+          likes: { $slice: ['$likes', -3] },
+        },
+        // comments: 1,
+        commentObject: {
+          commentsCount: { $size: '$comments' },
+          comments: { $slice: ['$comments', -2] },
+        },
+        // shares: 1,
+        shareObject: {
+          sharesCount: { $size: '$shares' },
+          shares: { $slice: ['$shares', -2] },
+        },
+        // seenBy: 1,
+        seenByObject: {
+          seenByCount: { $size: '$seenBy' },
+          seenBy: { $slice: ['$seenBy', -3] },
+        },
+      },
+    },
+  ]);
+
+  console.log(result2);
   await Post.updateMany(
     {
       user: { $in: followingUsers },
@@ -357,27 +413,27 @@ const getPostsForMyFeed = async ({
     },
   );
 
-  const res = result.map((post) => {
-    // post.seenBy.push(user);
-    console.log(post);
-    const postData = post.advertisement || post.userPost;
-    const commentsCount = post.comments.length;
-    const lastTwoComments =
-      post.comments.length > 2 ? post.comments.slice(-2) : post.comments;
-    const likesCount = post.likes.length;
-    const seenByCount = post.seenBy.length;
-    const userData = post.user;
-    return {
-      postData,
-      commentsCount,
-      lastTwoComments,
-      likesCount,
-      seenByCount,
-      userData,
-    };
-  });
+  // const res = result.map((post) => {
+  //   // post.seenBy.push(user);
+  //   // console.log(post);
+  //   const postData = post.advertisement || post.userPost;
+  //   const commentsCount = post.comments.length;
+  //   const lastTwoComments =
+  //     post.comments.length > 2 ? post.comments.slice(-2) : post.comments;
+  //   const likesCount = post.likes.length;
+  //   const seenByCount = post.seenBy.length;
+  //   const userData = post.user;
+  //   return {
+  //     postData,
+  //     commentsCount,
+  //     lastTwoComments,
+  //     likesCount,
+  //     seenByCount,
+  //     userData,
+  //   };
+  // });
 
-  console.log(res);
+  // console.log(res);
 
   /* ------------------- ************ --------------------
   
@@ -396,7 +452,7 @@ const getPostsForMyFeed = async ({
   step 6: additionally we need total shares count only
   ------------------- ************ -------------------- */
   // const result = await Post.find({});
-  return res;
+  return result2;
 };
 export const postServices = {
   createPost,
