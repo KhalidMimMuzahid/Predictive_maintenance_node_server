@@ -27,49 +27,54 @@ const sendIotDataToAIServer = async () => {
       };
     }),
   );
-  // await Promise.all(
-  const data = allMachineIotData?.map((machine) => {
-    const _id = machine?._id;
-    const sensorModulesAttached = machine?.sensorModulesAttached?.map(
-      (sensorModule) => {
-        const sensorModuleData =
-          sensorModule as unknown as TSensorModuleAttached & {
-            _id: mongoose.Types.ObjectId;
+
+
+ await Promise.all(
+    allMachineIotData?.map(async (machine) => {
+      const _id = machine?._id;
+      const sensorModulesAttached = machine?.sensorModulesAttached?.map(
+         (sensorModule) => {
+          const sensorModuleData =
+            sensorModule as unknown as TSensorModuleAttached & {
+              _id: mongoose.Types.ObjectId;
+            };
+          return {
+            _id: sensorModuleData?._id,
+            sectionName: sensorModuleData?.sectionName,
+            moduleType: sensorModuleData?.moduleType,
+            sensorData: sensorModuleData?.sensorData?.map(each=>{
+                const eachPeriodData = {
+                  vibration: each?.vibration,
+                  temperature: each?.temperature
+                }
+              return eachPeriodData
+            })
           };
-
-        return {
-          _id: sensorModuleData?._id,
-          sectionName: sensorModuleData?.sectionName,
-          moduleType: sensorModuleData?.moduleType,
-          sensorData: {
-            vibration:
-              sensorModuleData?.sensorData?.reduce((total, current) => {
-                const temperatureVibration: number =
-                  current?.vibration?.reduce(
-                    (total, current) => total + current,
-                    0,
-                  ) / (current?.vibration?.length || 1);
-                return total + temperatureVibration;
-              }, 0) / (sensorModuleData?.sensorData?.length || 1),
-            temperature:
-              sensorModuleData?.sensorData?.reduce((total, current) => {
-                const temperatureAverage: number =
-                  current?.temperature?.reduce(
-                    (total, current) => total + current,
-                    0,
-                  ) / (current?.temperature?.length || 1);
-                return total + temperatureAverage;
-              }, 0) / (sensorModuleData?.sensorData?.length || 1),
+        },
+      );
+  
+      try {
+         await fetch(`http://13.112.8.235/predict?machine=${_id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        };
-      },
-    );
+          body: JSON.stringify({sensorModulesAttached})
+        })
+    
+        // const data = await res.json()
 
-    return { _id, sensorModulesAttached };
-  });
-  // );
-  // console.log(allMachineIotData); //  now we need to do promise all for this all machines
-  return data;
+
+      //  return data
+      } catch (error) {
+        // console.log({error})
+      }
+
+      // return { _id, sensorModulesAttached };
+    })
+  )
+
+
 };
 
 export const cronFunctions = { sendIotDataToAIServer };
