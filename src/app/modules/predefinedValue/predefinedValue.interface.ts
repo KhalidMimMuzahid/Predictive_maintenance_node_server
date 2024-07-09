@@ -15,10 +15,12 @@ export type TMarketplace = {
   shop?: TShop;
 };
 
+export type TSensorModuleAttached = {
+  sectionNames: string[];
+};
+
 export type TPredefinedValue = {
   type: 'marketplace' | 'sensorModuleAttached';
   marketplace?: TMarketplace;
-  // sensorModuleAttached: {
-  //   sectionName: string;
-  // };
+  sensorModuleAttached?: TSensorModuleAttached;
 };

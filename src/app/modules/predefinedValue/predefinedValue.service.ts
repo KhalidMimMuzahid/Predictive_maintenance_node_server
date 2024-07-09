@@ -137,9 +137,52 @@ const addShopCategories = async (category: string) => {
       return null;
     }
   }
-}; 
+};
+const addIotSectionName = async (sectionName: string) => {
+  const previousSectionNames = await PredefinedValue.findOne(
+    {
+      type: 'sensorModuleAttached',
+    },
+    { 'sensorModuleAttached.sectionNames': 1 },
+  );
+
+  if (previousSectionNames) {
+    previousSectionNames?.sensorModuleAttached?.sectionNames?.push(sectionName);
+
+    const updatedPreviousSectionNames = await previousSectionNames.save();
+
+    if (!updatedPreviousSectionNames) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newSections: TPredefinedValue = {
+      type: 'sensorModuleAttached',
+      sensorModuleAttached: {
+        sectionNames: [sectionName],
+      },
+    };
+
+    const createdNewSections = await PredefinedValue.create(newSections);
+    if (!createdNewSections) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
 export const predefinedValueServices = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
-};
+  addIotSectionName,
+}; 
+
+

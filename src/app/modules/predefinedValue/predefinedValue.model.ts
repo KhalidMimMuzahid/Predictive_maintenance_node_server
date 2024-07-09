@@ -4,6 +4,7 @@ import {
   TMarketplace,
   TPredefinedValue,
   TProduct,
+  TSensorModuleAttached,
   TShop,
 } from './predefinedValue.interface';
 
@@ -30,15 +31,19 @@ const marketplaceSchema = new Schema<TMarketplace>({
   product: productSchema,
   shop: shopSchema,
 });
+const sensorModuleAttachedSchema = new Schema<TSensorModuleAttached>({
+  sectionNames: [String],
+});
 
 const predefinedValueSchema = new Schema<TPredefinedValue>(
   {
     type: {
       type: String,
-      enum: ['marketplace'],
+      enum: ['marketplace', 'sensorModuleAttached'],
       required: true,
     },
     marketplace: marketplaceSchema,
+    sensorModuleAttached: sensorModuleAttachedSchema,
   },
   {
     timestamps: true,

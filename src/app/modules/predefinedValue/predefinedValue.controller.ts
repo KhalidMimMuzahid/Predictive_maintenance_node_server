@@ -80,8 +80,31 @@ const addShopCategories: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const addIotSectionName: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+  const sectionName: string = req?.query?.sectionName as string;
+  if (!sectionName) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'sectionName is required to add IOT sectionName',
+    );
+  }
+  const result = await predefinedValueServices.addIotSectionName(sectionName);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'product category has added successfully',
+    data: result,
+  });
+});
 export const predefinedValueController = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
+  addIotSectionName,
 };

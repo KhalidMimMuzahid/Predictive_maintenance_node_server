@@ -15,4 +15,8 @@ router.post(
   '/add-shop-categories',
   predefinedValueController.addShopCategories,
 );
+router.post(
+  '/add-iot-section-name',
+  predefinedValueController.addIotSectionName,
+);
 export const predefinedValueRoutes = router;
