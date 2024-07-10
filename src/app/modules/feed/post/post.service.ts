@@ -348,7 +348,7 @@ const getPostsForMyFeed = async ({
   //   ],
   // });
   // create index for user field in mongodb
-  const result2 = await Post.aggregate([
+  const result = await Post.aggregate([
     {
       $match: {
         user: {
@@ -361,19 +361,94 @@ const getPostsForMyFeed = async ({
 
     {
       $lookup: {
-        from: 'users',
+        from: 'users', // Name of the user collection
         localField: 'user',
         foreignField: '_id',
         as: 'user',
       },
     },
     {
+      $unwind: '$user',
+    },
+    {
+      $lookup: {
+        from: 'showausers', // Name of the showaUser collection
+        localField: 'user.showaUser',
+        foreignField: '_id',
+        as: 'user.showaUser',
+      },
+    },
+    {
+      $lookup: {
+        from: 'showaadmins', // Name of the showaAdmin collection
+        localField: 'user.showaAdmin',
+        foreignField: '_id',
+        as: 'user.showaAdmin',
+      },
+    },
+    {
+      $lookup: {
+        from: 'showasubadmins', // Name of the showaSubAdmin collection
+        localField: 'user.showaSubAdmin',
+        foreignField: '_id',
+        as: 'user.showaSubAdmin',
+      },
+    },
+    {
+      $lookup: {
+        from: 'serviceprovideradmins', // Name of the serviceProviderAdmin collection
+        localField: 'user.serviceProviderAdmin',
+        foreignField: '_id',
+        as: 'user.serviceProviderAdmin',
+      },
+    },
+    {
+      $lookup: {
+        from: 'serviceprovidersubadmins', // Name of the serviceProviderSubAdmin collection
+        localField: 'user.serviceProviderSubAdmin',
+        foreignField: '_id',
+        as: 'user.serviceProviderSubAdmin',
+      },
+    },
+    {
+      $lookup: {
+        from: 'serviceproviderengineers', // Name of the serviceProviderEngineer collection
+        localField: 'user.serviceProviderEngineer',
+        foreignField: '_id',
+        as: 'user.serviceProviderEngineer',
+      },
+    },
+    {
+      $lookup: {
+        from: 'serviceproviderbranchmanagers', // Name of the serviceProviderBranchManager collection
+        localField: 'user.serviceProviderBranchManager',
+        foreignField: '_id',
+        as: 'user.serviceProviderBranchManager',
+      },
+    },
+    {
       $project: {
         _id: 1,
+        // for user start
+        'user.role': 1,
+        'user.showaUser.photoUrl': 1,
+        'user.showaUser.name': 1,
+        'user.showaAdmin.photoUrl': 1,
+        'user.showaAdmin.name': 1,
+        'user.showaSubAdmin.photoUrl': 1,
+        'user.showaSubAdmin.name': 1,
+        'user.serviceProviderAdmin.photoUrl': 1,
+        'user.serviceProviderAdmin.name': 1,
+        'user.serviceProviderSubAdmin': 1,
+        'user.serviceProviderEngineer.photoUrl': 1,
+        'user.serviceProviderEngineer.name': 1,
+        'user.serviceProviderBranchManager.photoUrl': 1,
+        'user.serviceProviderBranchManager.name': 1,
+        // for user ends 
         location: 1,
         viewPrivacy: 1,
         commentPrivacy: 1,
-        user: 1,
+        // user: 1,
         sharingStatus: 1,
         isSponsored: 1,
         type: 1,
@@ -401,9 +476,59 @@ const getPostsForMyFeed = async ({
         },
       },
     },
+    {
+      $project: {
+        _id: 1,
+        // for user start
+        // user: 1,
+        user:{
+          role: '$user.role',
+
+                serviceProviderAdmin: {
+                  $arrayElemAt: ["$user.serviceProviderAdmin", 0]
+                },
+                showaUser: {
+                    $arrayElemAt: ["$user.showaUser", 0]
+                },
+                showaAdmin: {
+                    $arrayElemAt: ["$user.showaAdmin", 0]
+                },
+                showaSubAdmin: {
+                    $arrayElemAt: ["$user.showaSubAdmin", 0]
+                },
+                serviceProviderSubAdmin: {
+                    $arrayElemAt: ["$user.serviceProviderSubAdmin", 0]
+                },
+                serviceProviderEngineer: {
+                    $arrayElemAt: ["$user.serviceProviderEngineer", 0]
+                },
+                serviceProviderBranchManager: {
+                    $arrayElemAt: ["$user.serviceProviderBranchManager", 0]
+                },
+        },
+        // for user ends 
+        location: 1,
+        viewPrivacy: 1,
+        commentPrivacy: 1,
+        // user: 1,
+        sharingStatus: 1,
+        isSponsored: 1,
+        type: 1,
+        userPost: 1,
+        advertisement: 1,
+        // likes: 1,
+        likeObject: 1,
+        // comments: 1,
+        commentObject: 1,
+        // shares: 1,
+        shareObject: 1,
+        // seenBy: 1,
+        seenByObject: 1,
+      },
+    },
+
   ]);
 
-  console.log(result2);
   await Post.updateMany(
     {
       user: { $in: followingUsers },
@@ -413,28 +538,7 @@ const getPostsForMyFeed = async ({
     },
   );
 
-  // const res = result.map((post) => {
-  //   // post.seenBy.push(user);
-  //   // console.log(post);
-  //   const postData = post.advertisement || post.userPost;
-  //   const commentsCount = post.comments.length;
-  //   const lastTwoComments =
-  //     post.comments.length > 2 ? post.comments.slice(-2) : post.comments;
-  //   const likesCount = post.likes.length;
-  //   const seenByCount = post.seenBy.length;
-  //   const userData = post.user;
-  //   return {
-  //     postData,
-  //     commentsCount,
-  //     lastTwoComments,
-  //     likesCount,
-  //     seenByCount,
-  //     userData,
-  //   };
-  // });
-
-  // console.log(res);
-
+ 
   /* ------------------- ************ --------------------
   
   Here we have a user (_id of my own user)
@@ -452,7 +556,7 @@ const getPostsForMyFeed = async ({
   step 6: additionally we need total shares count only
   ------------------- ************ -------------------- */
   // const result = await Post.find({});
-  return result2;
+  return result;
 };
 export const postServices = {
   createPost,
