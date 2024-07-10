@@ -354,6 +354,10 @@ const getPostsForMyFeed = async ({
         user: {
           $in: followingUsers?.followings,
         },
+        // for testing we no need now this one, cause weed same post in multiple time for testing
+        // seenBy: {
+        //   $nin: [user],
+        // },
       },
     },
 
@@ -444,7 +448,7 @@ const getPostsForMyFeed = async ({
         'user.serviceProviderEngineer.name': 1,
         'user.serviceProviderBranchManager.photoUrl': 1,
         'user.serviceProviderBranchManager.name': 1,
-        // for user ends 
+        // for user ends
         location: 1,
         viewPrivacy: 1,
         commentPrivacy: 1,
@@ -481,32 +485,32 @@ const getPostsForMyFeed = async ({
         _id: 1,
         // for user start
         // user: 1,
-        user:{
+        user: {
           role: '$user.role',
 
-                serviceProviderAdmin: {
-                  $arrayElemAt: ["$user.serviceProviderAdmin", 0]
-                },
-                showaUser: {
-                    $arrayElemAt: ["$user.showaUser", 0]
-                },
-                showaAdmin: {
-                    $arrayElemAt: ["$user.showaAdmin", 0]
-                },
-                showaSubAdmin: {
-                    $arrayElemAt: ["$user.showaSubAdmin", 0]
-                },
-                serviceProviderSubAdmin: {
-                    $arrayElemAt: ["$user.serviceProviderSubAdmin", 0]
-                },
-                serviceProviderEngineer: {
-                    $arrayElemAt: ["$user.serviceProviderEngineer", 0]
-                },
-                serviceProviderBranchManager: {
-                    $arrayElemAt: ["$user.serviceProviderBranchManager", 0]
-                },
+          serviceProviderAdmin: {
+            $arrayElemAt: ['$user.serviceProviderAdmin', 0],
+          },
+          showaUser: {
+            $arrayElemAt: ['$user.showaUser', 0],
+          },
+          showaAdmin: {
+            $arrayElemAt: ['$user.showaAdmin', 0],
+          },
+          showaSubAdmin: {
+            $arrayElemAt: ['$user.showaSubAdmin', 0],
+          },
+          serviceProviderSubAdmin: {
+            $arrayElemAt: ['$user.serviceProviderSubAdmin', 0],
+          },
+          serviceProviderEngineer: {
+            $arrayElemAt: ['$user.serviceProviderEngineer', 0],
+          },
+          serviceProviderBranchManager: {
+            $arrayElemAt: ['$user.serviceProviderBranchManager', 0],
+          },
         },
-        // for user ends 
+        // for user ends
         location: 1,
         viewPrivacy: 1,
         commentPrivacy: 1,
@@ -526,19 +530,16 @@ const getPostsForMyFeed = async ({
         seenByObject: 1,
       },
     },
-
   ]);
-
   await Post.updateMany(
     {
-      user: { $in: followingUsers },
+      _id: { $in: result?.map((each) => each?._id) },
     },
     {
       $addToSet: { seenBy: user },
     },
   );
 
- 
   /* ------------------- ************ --------------------
   
   Here we have a user (_id of my own user)
