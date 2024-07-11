@@ -102,9 +102,78 @@ const addIotSectionName: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+
+const getProductCategories: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: [
+      'showaAdmin',
+      'serviceProviderAdmin',
+      'serviceProviderSubAdmin',
+    ],
+  });
+
+  const result = await predefinedValueServices.getProductCategories();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'product categories have retrieved successfully',
+    data: result,
+  });
+});
+
+const getShopCategories: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: [
+      'showaAdmin',
+      'serviceProviderAdmin',
+      'serviceProviderSubAdmin',
+    ],
+  });
+
+  const result = await predefinedValueServices.getShopCategories();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'shop categories have retrieved successfully',
+    data: result,
+  });
+});
+
+const getIotSectionNames: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
+
+  const result = await predefinedValueServices.getIotSectionNames();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'iot section names have retrieved successfully',
+    data: result,
+  });
+});
+
 export const predefinedValueController = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
   addIotSectionName,
+
+  getProductCategories,
+  getShopCategories,
+  getIotSectionNames,
 };

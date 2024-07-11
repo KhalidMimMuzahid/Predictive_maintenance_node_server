@@ -24,3 +24,14 @@ export type TPredefinedValue = {
   marketplace?: TMarketplace;
   sensorModuleAttached?: TSensorModuleAttached;
 };
+
+
+/*
+Reservation Request:
+  Status
+  Nearest Location
+  Area
+
+Customer:
+
+*/

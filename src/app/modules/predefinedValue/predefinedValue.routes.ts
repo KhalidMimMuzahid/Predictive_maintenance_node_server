@@ -19,4 +19,17 @@ router.post(
   '/add-iot-section-name',
   predefinedValueController.addIotSectionName,
 );
+
+
+
+router.get(
+  '/get-product-categories',
+  predefinedValueController.getProductCategories,
+);
+
+router.get('/get-shop-categories', predefinedValueController.getShopCategories);
+router.get(
+  '/get-iot-section-names',
+  predefinedValueController.getIotSectionNames,
+);
 export const predefinedValueRoutes = router;
