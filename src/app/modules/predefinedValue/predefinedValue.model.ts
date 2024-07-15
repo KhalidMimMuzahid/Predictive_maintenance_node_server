@@ -60,6 +60,7 @@ const predefinedValueSchema = new Schema<TPredefinedValue>(
         'sensorModuleAttached',
         'customer',
         'reservationRequest',
+        'machine',
       ],
       required: true,
     },

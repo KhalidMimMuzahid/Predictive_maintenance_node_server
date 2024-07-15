@@ -38,7 +38,9 @@ export type TPredefinedValue = {
     | 'marketplace'
     | 'sensorModuleAttached'
     | 'customer'
-    | 'reservationRequest';
+    | 'reservationRequest'
+    | 'machine';
+
   marketplace?: TMarketplace;
   sensorModuleAttached?: TSensorModuleAttached;
   customer: TCustomer;

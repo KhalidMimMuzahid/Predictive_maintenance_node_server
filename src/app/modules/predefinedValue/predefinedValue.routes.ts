@@ -11,10 +11,18 @@ router.post(
   '/add-product-sub-categories',
   predefinedValueController.addProductSubCategories,
 );
+
+
+
+
 router.post(
   '/add-shop-categories',
   predefinedValueController.addShopCategories,
 );
+
+
+
+
 router.get('/get-shop-categories', predefinedValueController.getShopCategories);
 
 //  sensorModuleAttached ---------------******---------------
