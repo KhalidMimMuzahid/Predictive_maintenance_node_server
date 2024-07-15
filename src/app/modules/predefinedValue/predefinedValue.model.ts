@@ -1,13 +1,15 @@
 import mongoose, { Schema } from 'mongoose';
 import {
   TCategory,
+  TCustomer,
   TMarketplace,
   TPredefinedValue,
   TProduct,
+  TReservationRequest,
+  TMachine,
   TSensorModuleAttached,
   TShop,
 } from './predefinedValue.interface';
-
 const CategorySchema = new Schema<TCategory>({
   category: String,
   subCategories: [String],
@@ -34,16 +36,39 @@ const marketplaceSchema = new Schema<TMarketplace>({
 const sensorModuleAttachedSchema = new Schema<TSensorModuleAttached>({
   sectionNames: [String],
 });
+const customerSchema = new Schema<TCustomer>({
+  occupation: [String],
+});
 
+const ReservationRequestSchema = new Schema<TReservationRequest>({
+  statuses: [String],
+  nearestLocations: [String],
+  areas: [String],
+  issues: [String],
+});
+const machineSchema = new Schema<TMachine>({
+  types: [String],
+  brands: [String],
+  models: [String],
+});
 const predefinedValueSchema = new Schema<TPredefinedValue>(
   {
     type: {
       type: String,
-      enum: ['marketplace', 'sensorModuleAttached'],
+      enum: [
+        'marketplace',
+        'sensorModuleAttached',
+        'customer',
+        'reservationRequest',
+        'machine',
+      ],
       required: true,
     },
     marketplace: marketplaceSchema,
     sensorModuleAttached: sensorModuleAttachedSchema,
+    reservationRequest: ReservationRequestSchema,
+    customer: customerSchema,
+    machine: machineSchema,
   },
   {
     timestamps: true,

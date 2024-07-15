@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { TCompany, TIsDeleted } from '../common/common.interface';
- export type THealthStatus = 'bad' | 'good' | 'moderate';
+ export type THealthStatus = 'bad' | 'good' | 'moderate' | 'unknown';
 
  export type TMachine = {
    machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"

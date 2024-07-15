@@ -58,7 +58,7 @@ const addNonConnectedMachineInToDB = async ({
   // });
   // console.log(subscriptionPurchased);
 
-  machineData.healthStatus = 'good';
+  machineData.healthStatus = 'unknown';
   const lastAddedMachine = await Machine.findOne(
     { user: machineData?.user },
     { machineNo: 1 },
@@ -212,7 +212,7 @@ const addSensorConnectedMachineInToDB = async ({
     // create machine
 
     machineData.sensorModulesAttached = [createdSensorModuleAttached?._id];
-    machineData.healthStatus = 'good';
+    machineData.healthStatus = 'unknown';
     machineData.subscriptionPurchased = subscriptionPurchasedData?._id;
 
     const lastAddedMachine = await Machine.findOne(

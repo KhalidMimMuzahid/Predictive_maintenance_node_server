@@ -178,11 +178,57 @@ const addIotSectionName = async (sectionName: string) => {
     }
   }
 };
+
+const getIotSectionNames = async () => {
+  const previousSectionNames = await PredefinedValue.findOne(
+    {
+      type: 'sensorModuleAttached',
+    },
+    { 'sensorModuleAttached.sectionNames': 1 },
+  );
+  return previousSectionNames?.sensorModuleAttached?.sectionNames || [];
+
+  // const x = await Machine.updateMany(
+  //   {},
+  //   {
+  //     $unset: { healthStatus: '' },
+  //   },
+  // );
+
+  // return x;
+};
+const getProductCategories = async () => {
+  const productCategories = await PredefinedValue.findOne(
+    {
+      type: 'marketplace',
+      'marketplace.type': 'product',
+    },
+    { 'marketplace.product.categories': 1 },
+  );
+  return productCategories?.marketplace?.product?.categories || [];
+  // return productCategories;
+};
+
+const getShopCategories = async () => {
+  const shopCategories = await PredefinedValue.findOne(
+    {
+      type: 'marketplace',
+      'marketplace.type': 'shop',
+    },
+    { 'marketplace.shop.categories': 1 },
+  );
+  return shopCategories?.marketplace?.shop?.categories || [];
+  // return productCategories;
+};
 export const predefinedValueServices = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
   addIotSectionName,
+
+  getProductCategories,
+  getShopCategories,
+  getIotSectionNames,
 }; 
 
 
