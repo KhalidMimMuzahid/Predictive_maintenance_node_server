@@ -55,13 +55,18 @@ const predefinedValueSchema = new Schema<TPredefinedValue>(
   {
     type: {
       type: String,
-      enum: ['marketplace', 'sensorModuleAttached'],
+      enum: [
+        'marketplace',
+        'sensorModuleAttached',
+        'customer',
+        'reservationRequest',
+      ],
       required: true,
     },
     marketplace: marketplaceSchema,
     sensorModuleAttached: sensorModuleAttachedSchema,
-    customer: customerSchema,
     reservationRequest: ReservationRequestSchema,
+    customer: customerSchema,
     machine: machineSchema,
   },
   {
