@@ -36,26 +36,26 @@ router.get(
 );
 
 //  reservationRequest ---------------******---------------
-// router.post(
-//   '/add-reservation-request-status',
-//   predefinedValueController.addReservationRequestStatus,
-// );
+router.post(
+  '/add-reservation-request-status',
+  predefinedValueController.addReservationRequestStatus,
+);
 
+router.get(
+  '/add-reservation-request-nearest-location',
+  predefinedValueController.addReservationRequestNearestLocation,
+);
+router.get(
+  '/add-reservation-request-area',
+  predefinedValueController.addReservationRequestArea,
+);
+router.get(
+  '/add-reservation-request-issue',
+  predefinedValueController.addReservationRequestIssue,
+);
 
-
-// router.get(
-//   '/add-reservation-request-nearest-location',
-//   predefinedValueController.addReservationRequestNearestLocation,
-// );
-// router.get(
-//   '/add-reservation-request-area',
-//   predefinedValueController.addReservationRequestArea,
-// );
-// router.get(
-//   '/add-reservation-request-issue',
-//   predefinedValueController.addReservationRequestIssue,
-// );
-
+// customer ---------------******---------------
+//  machine ---------------******---------------
 
 
 export const predefinedValueRoutes = router;
