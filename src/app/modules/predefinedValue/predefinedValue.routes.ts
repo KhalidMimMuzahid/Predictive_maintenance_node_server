@@ -22,6 +22,11 @@ router.post(
 
 
 
+router.get(
+  '/get-product-all-categories',
+  predefinedValueController.getProductCategories,
+);
+
 
 router.get('/get-shop-categories', predefinedValueController.getShopCategories);
 

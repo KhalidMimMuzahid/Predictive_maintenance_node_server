@@ -37,6 +37,49 @@ const addProductToCart: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const deleteCart: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const cart = req?.query?.cart as string;
+
+  if (!cart) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'cart is required to delete cart',
+    );
+  }
+  await cartServices.deleteCart(cart);
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'cart has deleted successfully',
+    data: null,
+  });
+});
+
+const getMyAllCarts: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const result = await cartServices.getMyAllCarts(auth?._id);
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'your cart has retrieved successfully',
+    data: result,
+  });
+});
+
 export const cartController = {
   addProductToCart,
+  deleteCart,
+  getMyAllCarts,
 };

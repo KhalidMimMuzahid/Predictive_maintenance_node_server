@@ -211,11 +211,7 @@ const getProductCategories: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({
     auth,
-    accessUsers: [
-      'showaAdmin',
-      'serviceProviderAdmin',
-      'serviceProviderSubAdmin',
-    ],
+    accessUsers: 'all',
   });
 
   const result = await predefinedValueServices.getProductCategories();
