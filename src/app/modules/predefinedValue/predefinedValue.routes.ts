@@ -41,15 +41,15 @@ router.post(
   predefinedValueController.addReservationRequestStatus,
 );
 
-router.get(
+router.post(
   '/add-reservation-request-nearest-location',
   predefinedValueController.addReservationRequestNearestLocation,
 );
-router.get(
+router.post(
   '/add-reservation-request-area',
   predefinedValueController.addReservationRequestArea,
 );
-router.get(
+router.post(
   '/add-reservation-request-issue',
   predefinedValueController.addReservationRequestIssue,
 );

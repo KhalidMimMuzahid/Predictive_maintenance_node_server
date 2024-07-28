@@ -4,8 +4,9 @@ import { TAuth } from '../../../interface/error';
 import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
 import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
-import { TProduct, TProductFilter } from './product.interface';
+import { TProduct, TProductFilter, TReviewObject } from './product.interface';
 import { productServices } from './product.service';
+import AppError from '../../../errors/AppError';
 
 const createProduct: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -59,7 +60,60 @@ const getAllProducts: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const addReview: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+  const product = req?.query?.product as string;
+
+  if (!product) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'product is required to add a review',
+    );
+  }
+  const reviewObject = req?.body as TReviewObject;
+  const result = await productServices.addReview({
+    reviewObject,
+    user: auth?._id,
+    product,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'review has added to product successfully',
+    data: result,
+  });
+});
+
+const getAllProductsCategoryWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: 'all',
+    });
+
+    const result = await productServices.getAllProductsCategoryWise();
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'category wise products has retrieved successfully',
+      data: result,
+    });
+  },
+);
 export const productController = {
   createProduct,
+  addReview,
   getAllProducts,
+  getAllProductsCategoryWise,
 };

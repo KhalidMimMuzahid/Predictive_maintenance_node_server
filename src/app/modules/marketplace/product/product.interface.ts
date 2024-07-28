@@ -3,6 +3,12 @@
 import { Types } from 'mongoose';
 
 
+export type TReviewObject = {
+  rate: number;
+  review: string;
+};
+
+
 
 export type TProductFilter = {
   productName: string;
