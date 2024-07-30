@@ -295,6 +295,112 @@ const getPostsForMyFeed: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+const getAllLikesByPost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+  const post = req?.query?.post as string;
+  if (!post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post is required to get all likes`,
+    );
+  }
+  const results = await postServices.getAllLikesByPost(post);
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post likes has retrieved successfully',
+    data: results,
+  });
+});
+
+const getAllCommentsByPost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+  const post = req?.query?.post as string;
+  if (!post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post is required to get all likes`,
+    );
+  }
+  const results = await postServices.getAllCommentsByPost(post);
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post comments has retrieved successfully',
+    data: results,
+  });
+});
+
+const getAllSharesByPost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+  const post = req?.query?.post as string;
+  if (!post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post is required to get all shares`,
+    );
+  }
+  const results = await postServices.getAllSharesByPost(post);
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'post shares has retrieved successfully',
+    data: results,
+  });
+});
+const getAllReplaysByComment: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+  const post = req?.query?.post as string;
+  const comment = req?.query?.comment as string;
+
+  if (!comment || !post) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `post & comment is required to get replays`,
+    );
+  }
+  const results = await postServices.getAllReplaysByComment({ post, comment });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'comment replays have retrieved successfully',
+    data: results,
+  });
+});
+
 export const postController = {
   createPost,
   sharePost,
@@ -306,4 +412,8 @@ export const postController = {
   addReplayIntoComment,
   removeReplayFromComment,
   getPostsForMyFeed,
+  getAllLikesByPost,
+  getAllCommentsByPost,
+  getAllSharesByPost,
+  getAllReplaysByComment,
 };

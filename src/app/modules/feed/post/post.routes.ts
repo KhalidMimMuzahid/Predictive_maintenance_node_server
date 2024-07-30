@@ -26,6 +26,14 @@ router.patch(
   postController.removeReplayFromComment,
 );
 
+router.get('/get-all-likes-by-post', postController.getAllLikesByPost);
+router.get('/get-all-comments-by-post', postController.getAllCommentsByPost);
+router.get(
+  '/get-all-replays-by-comment',
+  postController.getAllReplaysByComment,
+);
+router.get('/get-all-shares-by-post', postController.getAllSharesByPost);
+
 
 
 

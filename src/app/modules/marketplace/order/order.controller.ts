@@ -53,9 +53,46 @@ const orderProduct: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getMyAllOrder: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: 'all' });
 
+  const result = await orderServices.getMyAllOrder(auth?._id);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'your all orders have retrieved successfully',
+    data: result,
+  });
+});
+
+const getOrderDetailsByOrder: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const order = req?.query?.order as string;
+  if (!order) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'order_id is required to get order details',
+    );
+  }
+  const result = await orderServices.getOrderDetailsByOrder(order);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'order details has retrieved successfully',
+    data: result,
+  });
+});
 
 export const orderController = {
   orderProduct,
+  getMyAllOrder,
+  getOrderDetailsByOrder,
 };
