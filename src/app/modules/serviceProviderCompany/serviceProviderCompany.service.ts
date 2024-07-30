@@ -98,9 +98,16 @@ const getAllMembersForServiceProviderCompany = async (
   };
 };
 
+const getReservationRequestForServiceProviderAdmin = async (
+  resType: string,
+) => {
+  console.log(resType);
+};
+
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
+  getReservationRequestForServiceProviderAdmin,
 };

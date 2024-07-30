@@ -95,9 +95,23 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
   },
 );
 
+const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
+    const resType: string = req?.query?.resType as string;
+    const result =
+      await serviceProviderCompanyServices.getReservationRequestForServiceProviderAdmin(
+        resType
+      );
+  },
+);
+
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
+  getReservationRequestForServiceProviderAdmin,
 };

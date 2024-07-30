@@ -20,6 +20,9 @@ router.get(
   '/get-all-members-for-service-provider-company',
   serviceProviderCompanyControllers.getAllMembersForServiceProviderCompany,
 );
+router.get(
+  '/get-reservation-request-for-service-provider-admin',serviceProviderCompanyControllers.getReservationRequestForServiceProviderAdmin
+)
 
 
 
