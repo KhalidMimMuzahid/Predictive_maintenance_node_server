@@ -20,10 +20,11 @@ router.get(
   '/get-all-members-for-service-provider-company',
   serviceProviderCompanyControllers.getAllMembersForServiceProviderCompany,
 );
+
+// This API is in Development. Not yet implemented
 router.get(
-  '/get-reservation-request-for-service-provider-admin',serviceProviderCompanyControllers.getReservationRequestForServiceProviderAdmin
-)
-
-
+  '/get-reservation-request-for-service-provider-admin',
+  serviceProviderCompanyControllers.getReservationRequestForServiceProviderAdmin,
+);
 
 export const serviceProviderCompanyRoutes = router;

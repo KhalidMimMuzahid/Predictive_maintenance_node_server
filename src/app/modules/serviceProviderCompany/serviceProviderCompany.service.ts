@@ -98,10 +98,18 @@ const getAllMembersForServiceProviderCompany = async (
   };
 };
 
+
+// This API is in Development. Not yet implemented
 const getReservationRequestForServiceProviderAdmin = async (
   resType: string,
+  adminUserid: mongoose.Types.ObjectId,
 ) => {
   console.log(resType);
+  console.log('admin:' + adminUserid);
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserid,
+  });
+  console.log('service provider company:' + serviceProviderCompany._id);
 };
 
 export const serviceProviderCompanyServices = {

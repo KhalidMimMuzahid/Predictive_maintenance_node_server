@@ -29,21 +29,22 @@ const createReservationRequestIntoDB = async ({
   problem: TProblem;
   schedule: TSchedule;
 }) => {
-  let machine: Types.ObjectId;
-  try {
-    machine = new Types.ObjectId(machine_id);
-  } catch (error) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      '_id of machine you provided is invalid',
-    );
-  }
-  const machineData = await Machine.findById(machine).populate({
+  // let machine: Types.ObjectId;
+  // try {
+  //   machine = new Types.ObjectId(machine_id);
+  // } catch (error) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     '_id of machine you provided is invalid',
+  //   );
+  // }
+  // console.log(machine)
+  const machineData = await Machine.findById(machine_id).populate({
     path: 'subscriptionPurchased',
     select: 'isActive',
     options: { strictPopulate: false },
   });
-
+  // console.log(machineData);
   if (!machineData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -58,6 +59,7 @@ const createReservationRequestIntoDB = async ({
   }
   const subscriptionPurchased =
     machineData?.subscriptionPurchased as unknown as TSubscriptionPurchased;
+  // console.log(machineData);
   if (!subscriptionPurchased?.isActive) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -67,7 +69,7 @@ const createReservationRequestIntoDB = async ({
 
   const isAlreadyReservation = await ReservationRequest.findOne({
     user: user,
-    machine: machine,
+    machine: new mongoose.Types.ObjectId(machine_id),
 
     status: { $nin: ['completed', 'canceled'] },
   });
@@ -90,7 +92,7 @@ const createReservationRequestIntoDB = async ({
     6,
   );
 
-  reservationRequest.machine = machine;
+  reservationRequest.machine = new mongoose.Types.ObjectId(machine_id);
   reservationRequest.user = user;
   reservationRequest.problem = problem;
   reservationRequest.schedule = schedule;

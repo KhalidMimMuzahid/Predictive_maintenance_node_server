@@ -15,7 +15,6 @@ import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderB
 import { ReservationRequest } from '../reservation/reservation.model';
 import { TMachineType } from '../reservation/reservation.interface';
 
-
 const createReservationRequestGroup = async ({
   reservationRequests,
   groupName,
@@ -91,7 +90,7 @@ const createReservationRequestGroup = async ({
       if (groupForMachineType !== groupForMachineType2) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          'Reservation Group cannot have different type of reservation ',
+          'Reservation Group cannot have different type of reservation',
         );
       }
     });
@@ -571,7 +570,6 @@ const sendReservationGroupToBranch = async ({
       'This Reservation group bidding has not been ended',
     );
   }
-
   const userData = await userServices.getUserBy_id({
     _id: user?.toString() as string,
   });
@@ -583,11 +581,14 @@ const sendReservationGroupToBranch = async ({
       'something went wrong, please try again',
     );
   }
+  // console.log(serviceProviderCompany._id.toString());
+  // console.log('break');
+  // console.log(resGroup?.postBiddingProcess?.serviceProviderCompany?.toString());
+
   if (
-    serviceProviderCompany.toString() !==
+    serviceProviderCompany?._id.toString() !==
     resGroup?.postBiddingProcess?.serviceProviderCompany?.toString()
   ) {
-    //
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'your company is not bidding winner for this reservation request group',
@@ -609,10 +610,12 @@ const sendReservationGroupToBranch = async ({
       'there have no any service provider branch found for serviceProviderBranch_id',
     );
   }
-
+  // console.log(serviceProviderBranch?.serviceProviderCompany?.toString());
+  // console.log('break');
+  // console.log(serviceProviderCompany.toString());
   if (
     serviceProviderBranch?.serviceProviderCompany?.toString() !==
-    serviceProviderCompany.toString()
+    serviceProviderCompany?._id?.toString()
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
