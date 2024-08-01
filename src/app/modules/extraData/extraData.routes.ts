@@ -7,6 +7,6 @@ router.post('/delete-my-account', extraDataController.deleteMyAccount);
 
 
 // those router is only for testings
-router.get('/send-iot-data-ai-serverxxxxxxx', extraDataController.sendIotDataAiServer);
+router.get('/send-iot-data-ai-server', extraDataController.sendIotDataAiServer);
 
 export const extraDataRoutes = router;

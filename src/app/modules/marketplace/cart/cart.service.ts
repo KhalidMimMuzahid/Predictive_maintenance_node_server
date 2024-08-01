@@ -35,7 +35,22 @@ const addProductToCart = async ({
 
   return result;
 };
+const deleteCart = async (cart: string) => {
+  const result = await Cart.findByIdAndDelete(cart);
 
+  return result;
+};
+
+const getMyAllCarts = async (user: mongoose.Types.ObjectId) => {
+  const result = await Cart.find({ user }).populate({
+    path: 'product',
+    options: { strictPopulate: false },
+  });
+
+  return result;
+};
 export const cartServices = {
   addProductToCart,
+  deleteCart,
+  getMyAllCarts,
 };

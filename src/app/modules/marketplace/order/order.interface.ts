@@ -8,7 +8,7 @@ export type TOrder = {
   orderId: string;
   user: Types.ObjectId; //
   product: Types.ObjectId;
-
+  // shop: Types.ObjectId;
   status: 'pending' | 'in-progress' | 'delivered';
 
   paymentType: TPaymentType;

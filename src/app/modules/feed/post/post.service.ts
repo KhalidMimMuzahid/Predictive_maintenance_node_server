@@ -559,6 +559,36 @@ const getPostsForMyFeed = async ({
   // const result = await Post.find({});
   return result;
 };
+
+const getAllLikesByPost = async (post: string) => {
+  const result = await Post.findById(post).select('likes');
+  return result;
+};
+
+const getAllCommentsByPost = async (post: string) => {
+  const result = await Post.findById(post).select('comments');
+  return result;
+};
+const getAllSharesByPost = async (post: string) => {
+  const result = await Post.findById(post).select('shares');
+  return result;
+};
+const getAllReplaysByComment = async ({
+  post,
+  comment,
+}: {
+  post: string;
+  comment: string;
+}) => {
+  const postData = await Post.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(post) } },
+    { $unwind: '$comments' }, // Deconstruct the comments array
+    { $match: { 'comments._id': new mongoose.Types.ObjectId(comment) } }, // Match the specific comment by its _id
+    { $project: { _id: 0, replies: '$comments.replays' } }, // Project the replies array
+  ]);
+
+  return postData[0]?.replies;
+};
 export const postServices = {
   createPost,
   sharePost,
@@ -569,4 +599,8 @@ export const postServices = {
   addReplayIntoComment,
   removeReplayFromComment,
   getPostsForMyFeed,
+  getAllLikesByPost,
+  getAllCommentsByPost,
+  getAllSharesByPost,
+  getAllReplaysByComment,
 };

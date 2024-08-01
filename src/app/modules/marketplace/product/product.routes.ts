@@ -10,6 +10,16 @@ router.post(
   validateRequest(productValidation.createProductValidationSchema),
   productController.createProduct,
 );
+router.post(
+  '/add-review',
+  validateRequest(productValidation.reviewValidationSchema),
+  productController.addReview,
+);
 router.get('/get-all-products', productController.getAllProducts);
+router.get(
+  '/get-all-products-count-category-wise',
+  productController.getAllProductsCategoryWise,
+);
 
 export const productRoutes = router;
+//

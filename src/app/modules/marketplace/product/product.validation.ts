@@ -34,6 +34,12 @@ const createProductValidationSchema = z.object({
     )
     .optional(),
 });
+
+const reviewValidationSchema = z.object({
+  rate: z.number().min(1).max(5),
+  review: z.string(),
+});
 export const productValidation = {
   createProductValidationSchema,
+  reviewValidationSchema,
 };

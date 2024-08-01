@@ -2,10 +2,11 @@ import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
-import { TProduct, TProductFilter } from './product.interface';
+import { TProduct, TProductFilter, TReviewObject } from './product.interface';
 import Product from './product.model';
 import Shop from '../shop/shop.model';
 import PredefinedValue from '../../predefinedValue/predefinedValue.model';
+import mongoose from 'mongoose';
 
 const createProduct = async ({
   auth,
@@ -72,6 +73,28 @@ const createProduct = async ({
   }
   return result;
 };
+const addReview = async ({
+  reviewObject,
+  user,
+  product,
+}: {
+  reviewObject: TReviewObject;
+  user: mongoose.Types.ObjectId;
+  product: string;
+}) => {
+  const updatedProduct = await Product.findByIdAndUpdate(product, {
+    $push: {
+      'feedback.reviews': {
+        review: reviewObject?.review,
+        rate: reviewObject?.rate,
+        user,
+      },
+    },
+    // 'feedback.reviews': 5,
+  });
+
+  return updatedProduct;
+};
 const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQueries: any[] = [];
@@ -119,10 +142,25 @@ const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
     };
   }
   const products = await Product.find(query);
-  console.log(products?.length);
+  return products;
+};
+
+const getAllProductsCategoryWise = async () => {
+  //
+  const products = await Product.aggregate([
+    {
+      $group: {
+        _id: '$category',
+        totalProducts: { $sum: 1 },
+      },
+    },
+  ]);
+
   return products;
 };
 export const productServices = {
   createProduct,
+  addReview,
   getAllProducts,
+  getAllProductsCategoryWise,
 };

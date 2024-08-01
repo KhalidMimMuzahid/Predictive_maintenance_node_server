@@ -178,11 +178,243 @@ const addIotSectionName = async (sectionName: string) => {
     }
   }
 };
+
+const addReservationRequestStatus = async (status: string) => {
+  const previousStatus = await PredefinedValue.findOne(
+    {
+      type: 'reservationRequest',
+    },
+    { 'reservationRequest.statuses': 1 },
+  );
+
+  if (previousStatus) {
+    previousStatus?.reservationRequest?.statuses?.push(status);
+
+    const updatedPreviousStatus = await previousStatus.save();
+
+    if (!updatedPreviousStatus) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newStatus: TPredefinedValue = {
+      type: 'reservationRequest',
+      reservationRequest: {
+        statuses: [status],
+        areas: [],
+        issues: [],
+        nearestLocations: [],
+      },
+    };
+
+    const createdStatus = await PredefinedValue.create(newStatus);
+    if (!createdStatus) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+
+const addReservationRequestNearestLocation = async (
+  nearestLocation: string,
+) => {
+  const previousNearestLocation = await PredefinedValue.findOne(
+    {
+      type: 'reservationRequest',
+    },
+    { 'reservationRequest.nearestLocations': 1 },
+  );
+
+  if (previousNearestLocation) {
+    previousNearestLocation?.reservationRequest?.nearestLocations?.push(
+      nearestLocation,
+    );
+
+    const updatedNearestLocation = await previousNearestLocation.save();
+
+    if (!updatedNearestLocation) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newNearestLocation: TPredefinedValue = {
+      type: 'reservationRequest',
+      reservationRequest: {
+        nearestLocations: [nearestLocation],
+        areas: [],
+        issues: [],
+        statuses: [],
+      },
+    };
+
+    const createdNearestLocation =
+      await PredefinedValue.create(newNearestLocation);
+    if (!createdNearestLocation) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+
+const addReservationRequestArea = async (area: string) => {
+  const previousArea = await PredefinedValue.findOne(
+    {
+      type: 'reservationRequest',
+    },
+    { 'reservationRequest.areas': 1 },
+  );
+
+  if (previousArea) {
+    previousArea?.reservationRequest?.areas?.push(area);
+
+    const updatedArea = await previousArea.save();
+
+    if (!updatedArea) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newArea: TPredefinedValue = {
+      type: 'reservationRequest',
+      reservationRequest: {
+        nearestLocations: [],
+        areas: [area],
+        issues: [],
+        statuses: [],
+      },
+    };
+
+    const createdArea = await PredefinedValue.create(newArea);
+    if (!createdArea) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+
+const addReservationRequestIssue = async (issue: string) => {
+  const previousIssue = await PredefinedValue.findOne(
+    {
+      type: 'reservationRequest',
+    },
+    { 'reservationRequest.issues': 1 },
+  );
+
+  if (previousIssue) {
+    previousIssue?.reservationRequest?.issues?.push(issue);
+
+    const updatedIssue = await previousIssue.save();
+
+    if (!updatedIssue) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newIssue: TPredefinedValue = {
+      type: 'reservationRequest',
+      reservationRequest: {
+        nearestLocations: [],
+        areas: [],
+        issues: [issue],
+        statuses: [],
+      },
+    };
+
+    const createdIssue = await PredefinedValue.create(newIssue);
+    if (!createdIssue) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+
+const getIotSectionNames = async () => {
+  const previousSectionNames = await PredefinedValue.findOne(
+    {
+      type: 'sensorModuleAttached',
+    },
+    { 'sensorModuleAttached.sectionNames': 1 },
+  );
+  return previousSectionNames?.sensorModuleAttached?.sectionNames || [];
+
+  // const x = await Machine.updateMany(
+  //   {},
+  //   {
+  //     $unset: { healthStatus: '' },
+  //   },
+  // );
+
+  // return x;
+};
+const getProductCategories = async () => {
+  const productCategories = await PredefinedValue.findOne(
+    {
+      type: 'marketplace',
+      'marketplace.type': 'product',
+    },
+    { 'marketplace.product.categories': 1 },
+  );
+  return productCategories?.marketplace?.product?.categories || [];
+  // return productCategories;
+};
+
+const getShopCategories = async () => {
+  const shopCategories = await PredefinedValue.findOne(
+    {
+      type: 'marketplace',
+      'marketplace.type': 'shop',
+    },
+    { 'marketplace.shop.categories': 1 },
+  );
+  return shopCategories?.marketplace?.shop?.categories || [];
+  // return productCategories;
+};
 export const predefinedValueServices = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
   addIotSectionName,
+
+  addReservationRequestStatus,
+  addReservationRequestNearestLocation,
+  addReservationRequestArea,
+  addReservationRequestIssue,
+
+  getProductCategories,
+  getShopCategories,
+  getIotSectionNames,
 }; 
 
 

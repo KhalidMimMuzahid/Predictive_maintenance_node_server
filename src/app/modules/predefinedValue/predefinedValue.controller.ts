@@ -102,9 +102,179 @@ const addIotSectionName: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+const addReservationRequestStatus: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const status: string = req?.query?.status as string;
+    if (!status) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'status is required to add reservation request status',
+      );
+    }
+    const result =
+      await predefinedValueServices.addReservationRequestStatus(status);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request status has added successfully',
+      data: result,
+    });
+  },
+);
+
+const addReservationRequestNearestLocation: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const nearestLocation: string = req?.query?.nearestLocation as string;
+    if (!nearestLocation) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'nearestLocation is required to add reservation request nearestLocation',
+      );
+    }
+    const result =
+      await predefinedValueServices.addReservationRequestNearestLocation(
+        nearestLocation,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request nearestLocation has added successfully',
+      data: result,
+    });
+  },
+);
+
+const addReservationRequestArea: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const area: string = req?.query?.area as string;
+    if (!area) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'area is required to add reservation request area',
+      );
+    }
+    const result =
+      await predefinedValueServices.addReservationRequestArea(area);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request Area has added successfully',
+      data: result,
+    });
+  },
+);
+const addReservationRequestIssue: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const issue: string = req?.query?.issue as string;
+    if (!issue) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'issue is required to add reservation request issue',
+      );
+    }
+    const result =
+      await predefinedValueServices.addReservationRequestIssue(issue);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request Issue has added successfully',
+      data: result,
+    });
+  },
+);
+
+const getProductCategories: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await predefinedValueServices.getProductCategories();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'product categories have retrieved successfully',
+    data: result,
+  });
+});
+
+const getShopCategories: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: [
+      'showaAdmin',
+      'serviceProviderAdmin',
+      'serviceProviderSubAdmin',
+    ],
+  });
+
+  const result = await predefinedValueServices.getShopCategories();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'shop categories have retrieved successfully',
+    data: result,
+  });
+});
+
+const getIotSectionNames: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
+
+  const result = await predefinedValueServices.getIotSectionNames();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'iot section names have retrieved successfully',
+    data: result,
+  });
+});
+
 export const predefinedValueController = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
   addIotSectionName,
+
+  addReservationRequestStatus,
+  addReservationRequestNearestLocation,
+  addReservationRequestArea,
+  addReservationRequestIssue,
+
+  getProductCategories,
+  getShopCategories,
+  getIotSectionNames,
 };

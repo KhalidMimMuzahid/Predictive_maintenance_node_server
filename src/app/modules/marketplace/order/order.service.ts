@@ -94,7 +94,17 @@ const orderProduct = async ({
     throw error;
   }
 };
+const getMyAllOrder = async (user: mongoose.Types.ObjectId) => {
+  const orders = await Order.find({ user });
 
+  return orders;
+};
+const getOrderDetailsByOrder = async (order: string) => {
+  const orderData = await Order.findById(order);
+  return orderData;
+};
 export const orderServices = {
   orderProduct,
+  getMyAllOrder,
+  getOrderDetailsByOrder,
 };

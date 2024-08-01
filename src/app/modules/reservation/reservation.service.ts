@@ -471,6 +471,20 @@ const getAllReservationsCount = async (machineType: TMachineType2) => {
 
   return { all, onDemand, accepted, ongoing, completed, canceled };
 };
+
+
+const deleteReservation = async (reservationRequest: string) => {
+  const invoice = await Invoice.findOne({ reservationRequest });
+  console.log(invoice);
+  if (!invoice) {
+    //
+  } else {
+    //
+    // check  reservationGroup
+  }
+
+  return invoice;
+};
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
@@ -483,4 +497,5 @@ export const reservationServices = {
   getAllScheduledReservationsByServiceProviderCompany,
   getReservationCountByServiceProviderCompany,
   getSignedUrl,
+  deleteReservation,
 };

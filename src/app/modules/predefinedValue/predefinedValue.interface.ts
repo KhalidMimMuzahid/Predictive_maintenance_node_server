@@ -16,11 +16,36 @@ export type TMarketplace = {
 };
 
 export type TSensorModuleAttached = {
-  sectionNames: string[];
+  sectionNames?: string[];
+};
+export type TCustomer = {
+  occupation?: string[];
+};
+export type TReservationRequest = {
+  statuses?: string[];
+  nearestLocations?: string[];
+  areas?: string[];
+  issues?: string[];
 };
 
+export type TMachine = {
+  types?: string[]; // type of washing machine
+  brands?: string[];
+  models?: string[];
+};
 export type TPredefinedValue = {
-  type: 'marketplace' | 'sensorModuleAttached';
+  type:
+    | 'marketplace'
+    | 'sensorModuleAttached'
+    | 'customer'
+    | 'reservationRequest'
+    | 'machine';
+
   marketplace?: TMarketplace;
   sensorModuleAttached?: TSensorModuleAttached;
+  customer?: TCustomer;
+  reservationRequest?: TReservationRequest;
+  machine?: TMachine;
 };
+
+
