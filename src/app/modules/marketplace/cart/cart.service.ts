@@ -42,7 +42,10 @@ const deleteCart = async (cart: string) => {
 };
 
 const getMyAllCarts = async (user: mongoose.Types.ObjectId) => {
-  const result = await Cart.find({ user });
+  const result = await Cart.find({ user }).populate({
+    path: 'product',
+    options: { strictPopulate: false },
+  });
 
   return result;
 };

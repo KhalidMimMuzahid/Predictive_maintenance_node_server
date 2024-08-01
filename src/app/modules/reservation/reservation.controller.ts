@@ -171,6 +171,9 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+
 const getAllReservationsByUser: RequestHandler = catchAsync(
   async (req, res) => {
     // const { uid } = req.params;
@@ -314,6 +317,28 @@ const getReservationCountByServiceProviderCompany: RequestHandler = catchAsync(
   },
 );
 
+const deleteReservation: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+
+  const reservationRequest: string = req?.query?.reservationRequest as string;
+
+  if (!reservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `reservationRequest is required to delete a reservation`,
+    );
+  }
+  const result =
+    await reservationServices.deleteReservation(reservationRequest);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation has deleted successfully',
+    data: result,
+  });
+});
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
@@ -326,4 +351,5 @@ export const reservationController = {
   getAllScheduledReservationsByServiceProviderCompany,
   getReservationCountByServiceProviderCompany,
   uploadRequestImage,
+  deleteReservation,
 };
