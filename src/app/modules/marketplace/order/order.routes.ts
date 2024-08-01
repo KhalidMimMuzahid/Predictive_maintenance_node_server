@@ -1,9 +1,15 @@
 import express, { Router } from 'express';
 import { orderController } from './order.controller';
+import validateRequest from '../../../middlewares/validateRequest';
+import { orderValidation } from './order.validation';
 
 const router: Router = express.Router();
 
-router.post('/order-product', orderController.orderProduct);
+router.post(
+  '/order-product',
+  validateRequest(orderValidation.orderValidationSchema),
+  orderController.orderProduct,
+);
 router.get('/get-my-all-order', orderController.getMyAllOrder);
 router.get(
   '/get-order-details-by-order',
