@@ -26,5 +26,8 @@ export type TOrder = {
   };
 };
 
-
+export type TOrders = {
+  product: string;
+  quantity: number;
+}[];
 // transferId: 

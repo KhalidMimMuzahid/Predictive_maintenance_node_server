@@ -7,21 +7,24 @@ import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
 import { orderServices } from './order.service';
 import { paymentTypesArray } from './order.const';
-import { TPaymentType } from './order.interface';
+import { TOrders, TPaymentType } from './order.interface';
 
 const orderProduct: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
   // we are checking the permission of this api
   checkUserAccessApi({ auth, accessUsers: 'all' });
-  const product = req?.query?.product as string;
-  const quantityString = req?.query?.quantity as string;
-  const quantity = parseInt(quantityString);
+
+  const orderArray = req?.body?.orders as TOrders;
+  // const product = req?.query?.product as string;
+  // const quantityString = req?.query?.quantity as string;
+  // const quantity = parseInt(quantityString);
+
   const paymentType: TPaymentType = req?.query?.paymentType as TPaymentType;
-  if (!product || !quantity || !paymentType) {
+  if (!paymentType) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'product, quantity and paymentType are required to order a product   ',
+      'paymentType are required to order a product',
     );
   }
 
@@ -40,9 +43,8 @@ const orderProduct: RequestHandler = catchAsync(async (req, res) => {
 
   const result = await orderServices.orderProduct({
     auth,
-    quantity,
-    product,
     paymentType,
+    orderArray,
   });
   // send response
   sendResponse(res, {
@@ -52,6 +54,7 @@ const orderProduct: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 
 const getMyAllOrder: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
