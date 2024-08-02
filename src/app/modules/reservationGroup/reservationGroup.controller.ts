@@ -252,6 +252,27 @@ const getReservationGroupById: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getLiveReservationGroups: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+    });
+
+    const results = await reservationGroupServices.getLiveReservationGroups();
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'live reservation groups have retrieved successfully',
+      data: results,
+    });
+  },
+);
+
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
@@ -260,4 +281,5 @@ export const reservationGroupController = {
   selectBiddingWinner,
   sendReservationGroupToBranch,
   getReservationGroupById,
+  getLiveReservationGroups,
 };

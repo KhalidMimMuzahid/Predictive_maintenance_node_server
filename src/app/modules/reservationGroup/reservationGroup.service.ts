@@ -670,6 +670,60 @@ const getReservationGroupById = async (reservationRequestGroup: string) => {
 
   return getReservationGroupData;
 };
+
+
+
+const getLiveReservationGroups = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {
+    $and: [
+      {
+        isOnDemand: false,
+      },
+    ],
+  };
+  filterQuery?.$and.push({
+    $or: [
+      { 'postBiddingProcess.serviceProviderCompany': { $exists: false } },
+      { 'postBiddingProcess.serviceProviderCompany': null },
+    ],
+  });
+  filterQuery?.$and.push({
+    $or: [
+      { 'biddingDate.endDate': { $exists: false } },
+      { 'biddingDate.endDate': { $gt: new Date() } },
+    ],
+  });
+  filterQuery?.$and.push({
+    $or: [
+      { 'biddingDate.startDate': { $exists: true } },
+      { 'biddingDate.startDate': { $lt: new Date() } },
+    ],
+  });
+  // reservationRequests
+  const result = await ReservationRequestGroup.find(filterQuery)
+    .select('groupId groupName taskStatus biddingDate reservationRequests ')
+    .populate([
+      {
+        path: 'reservationRequests',
+        select: 'status machineType invoice schedule problem',
+        populate: {
+          path: 'user',
+          select: 'phone showaUser email',
+          populate: {
+            path: 'showaUser',
+            select: 'name addresses photoUrl',
+            options: { strictPopulate: false },
+          },
+
+          options: { strictPopulate: false },
+        },
+      },
+    ]);
+
+  return result;
+};
+
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
@@ -678,4 +732,5 @@ export const reservationGroupServices = {
   sendReservationGroupToBranch,
   allReservationsGroup,
   getReservationGroupById,
+  getLiveReservationGroups,
 };
