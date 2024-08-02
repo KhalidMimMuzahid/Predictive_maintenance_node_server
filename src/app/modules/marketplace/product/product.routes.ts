@@ -21,5 +21,10 @@ router.get(
   productController.getAllProductsCategoryWise,
 );
 
+router.get(
+  '/get-product-by-product_id',
+  productController.getProductByProduct_id,
+);
+
 export const productRoutes = router;
 //

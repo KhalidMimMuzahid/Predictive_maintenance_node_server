@@ -282,4 +282,5 @@ export const reservationGroupController = {
   sendReservationGroupToBranch,
   getReservationGroupById,
   getLiveReservationGroups,
+
 };
