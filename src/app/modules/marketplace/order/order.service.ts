@@ -3,6 +3,9 @@ import { TOrders, TPaymentType } from './order.interface';
 import Order from './order.model';
 import mongoose from 'mongoose';
 import { orderProducts } from './order.utils';
+import AppError from '../../../errors/AppError';
+import httpStatus from 'http-status';
+import Cart from '../cart/cart.model';
 
 const orderProduct = async ({
   auth,
@@ -18,22 +21,37 @@ const orderProduct = async ({
   const session = await mongoose.startSession();
 
   try {
+    const lastOrder = await Order.findOne({}, { orderId: 1 }).sort({
+      _id: -1,
+    });
     session.startTransaction();
     const ordersDataArray = await Promise.all(
-      orderArray?.map(async (each) => {
-        await orderProducts({
+      orderArray?.map(async (each, index) => {
+        return await orderProducts({
           auth,
           product: each?.product,
           quantity: each?.quantity,
           paymentType,
+          lastOrderId: Number(lastOrder?.orderId || '000000') + index + 1,
           session,
         });
       }),
     );
-    console.log(ordersDataArray);
-    await session.commitTransaction();
-    await session.endSession();
-    return ordersDataArray;
+
+    if (ordersDataArray?.length !== orderArray?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    } else {
+      // order success. now create a transaction later. where it includes all orders array details
+      // now remove all carts
+
+      await Cart.deleteMany({ user: auth?._id });
+      await session.commitTransaction();
+      await session.endSession();
+      return ordersDataArray;
+    }
   } catch (error) {
     await session.abortTransaction();
     await session.endSession();

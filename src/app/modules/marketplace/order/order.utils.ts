@@ -12,12 +12,14 @@ export const orderProducts = async ({
   quantity,
   product,
   paymentType,
+  lastOrderId,
   session,
 }: {
   auth: TAuth;
   quantity: number;
   product: string;
   paymentType: TPaymentType;
+  lastOrderId: number;
   session: mongoose.mongo.ClientSession;
 }) => {
   const productData = await Product.findById(product).select(
@@ -40,14 +42,7 @@ export const orderProducts = async ({
   }
   const order: Partial<TOrder> = {};
 
-  const lastOrder = await Order.findOne({}, { orderId: 1 }).sort({
-    _id: -1,
-  });
-
-  order.orderId = padNumberWithZeros(
-    Number(lastOrder?.orderId || '000000') + 1,
-    6,
-  );
+  order.orderId = padNumberWithZeros(lastOrderId, 6);
   const transferFee: number = 0;
   order.user = auth?._id;
   order.product = productData?._id;

@@ -1,6 +1,5 @@
 import { Types } from 'mongoose';
 
-
 export type TPaymentType = 'cash-on-delivery' | 'showa-balance';
 
 export type TOrder = {
@@ -26,10 +25,8 @@ export type TOrder = {
   };
 };
 
-
 export type TOrders = {
   product: string;
   quantity: number;
 }[];
-
-// transferId: 
+// transferId:
