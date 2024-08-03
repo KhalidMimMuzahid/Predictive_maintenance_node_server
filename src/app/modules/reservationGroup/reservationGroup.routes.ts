@@ -56,6 +56,12 @@ router.get(
   reservationGroupController.getLiveReservationGroups,
 );
 
+
+
+router.get(
+  '/get-bided-reservation-groups-by-company',
+  reservationGroupController.getBidedReservationGroupsByCompany,
+);
  
 
 // router.get('/:uid', reservationController.getMyReservations);

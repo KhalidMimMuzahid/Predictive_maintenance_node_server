@@ -14,6 +14,7 @@ import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import { ReservationRequest } from '../reservation/reservation.model';
 import { TMachineType } from '../reservation/reservation.interface';
+import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
@@ -674,8 +675,6 @@ const getReservationGroupById = async (reservationRequestGroup: string) => {
   return getReservationGroupData;
 };
 
-
-
 const getLiveReservationGroups = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQuery: any = {
@@ -726,7 +725,27 @@ const getLiveReservationGroups = async () => {
 
   return result;
 };
+const getBidedReservationGroupsByCompany = async ({
+  user,
+}: {
+  user: mongoose.Types.ObjectId;
+}) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: user,
+  });
 
+  if (!serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Something went wrong, please try again',
+    );
+  }
+
+  const result = await ReservationRequestGroup.find({
+    'allBids.serviceProviderCompany': serviceProviderCompany?._id,
+  });
+  return result;
+};
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
@@ -736,4 +755,6 @@ export const reservationGroupServices = {
   allReservationsGroup,
   getReservationGroupById,
   getLiveReservationGroups,
+
+  getBidedReservationGroupsByCompany,
 };
