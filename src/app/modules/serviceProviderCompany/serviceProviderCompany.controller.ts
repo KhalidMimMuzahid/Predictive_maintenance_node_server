@@ -110,7 +110,8 @@ const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'will be given later',  // will be given once the API is implemented
+      message:
+        'Get Reservation Reqeust for Service Provider Admin Successfully',
       data: result,
     });
   },

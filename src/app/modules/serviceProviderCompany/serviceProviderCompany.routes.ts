@@ -21,7 +21,6 @@ router.get(
   serviceProviderCompanyControllers.getAllMembersForServiceProviderCompany,
 );
 
-// This API is in Development. Not yet implemented
 router.get(
   '/get-reservation-request-for-service-provider-admin',
   serviceProviderCompanyControllers.getReservationRequestForServiceProviderAdmin,
