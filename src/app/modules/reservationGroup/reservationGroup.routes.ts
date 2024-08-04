@@ -51,7 +51,18 @@ router.get(
   reservationGroupController.getReservationGroupById,
 );
 
+router.get(
+  '/get-live-reservation-groups',
+  reservationGroupController.getLiveReservationGroups,
+);
 
+
+
+router.get(
+  '/get-bided-reservation-groups-by-company',
+  reservationGroupController.getBidedReservationGroupsByCompany,
+);
+ 
 
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);

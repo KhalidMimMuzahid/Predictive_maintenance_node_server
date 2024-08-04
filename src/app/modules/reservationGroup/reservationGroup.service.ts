@@ -14,7 +14,7 @@ import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import { ReservationRequest } from '../reservation/reservation.model';
 import { TMachineType } from '../reservation/reservation.interface';
-
+import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
@@ -91,7 +91,7 @@ const createReservationRequestGroup = async ({
       if (groupForMachineType !== groupForMachineType2) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          'Reservation Group cannot have different type of reservation ',
+          'Reservation Group cannot have different type of reservation',
         );
       }
     });
@@ -571,7 +571,6 @@ const sendReservationGroupToBranch = async ({
       'This Reservation group bidding has not been ended',
     );
   }
-
   const userData = await userServices.getUserBy_id({
     _id: user?.toString() as string,
   });
@@ -583,11 +582,14 @@ const sendReservationGroupToBranch = async ({
       'something went wrong, please try again',
     );
   }
+  // console.log(serviceProviderCompany._id.toString());
+  // console.log('break');
+  // console.log(resGroup?.postBiddingProcess?.serviceProviderCompany?.toString());
+
   if (
-    serviceProviderCompany.toString() !==
+    serviceProviderCompany?._id.toString() !==
     resGroup?.postBiddingProcess?.serviceProviderCompany?.toString()
   ) {
-    //
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'your company is not bidding winner for this reservation request group',
@@ -609,10 +611,12 @@ const sendReservationGroupToBranch = async ({
       'there have no any service provider branch found for serviceProviderBranch_id',
     );
   }
-
+  // console.log(serviceProviderBranch?.serviceProviderCompany?.toString());
+  // console.log('break');
+  // console.log(serviceProviderCompany.toString());
   if (
     serviceProviderBranch?.serviceProviderCompany?.toString() !==
-    serviceProviderCompany.toString()
+    serviceProviderCompany?._id?.toString()
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -670,6 +674,78 @@ const getReservationGroupById = async (reservationRequestGroup: string) => {
 
   return getReservationGroupData;
 };
+
+const getLiveReservationGroups = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {
+    $and: [
+      {
+        isOnDemand: false,
+      },
+    ],
+  };
+  filterQuery?.$and.push({
+    $or: [
+      { 'postBiddingProcess.serviceProviderCompany': { $exists: false } },
+      { 'postBiddingProcess.serviceProviderCompany': null },
+    ],
+  });
+  filterQuery?.$and.push({
+    $or: [
+      { 'biddingDate.endDate': { $exists: false } },
+      { 'biddingDate.endDate': { $gt: new Date() } },
+    ],
+  });
+  filterQuery?.$and.push({
+    $or: [
+      { 'biddingDate.startDate': { $exists: true } },
+      { 'biddingDate.startDate': { $lt: new Date() } },
+    ],
+  });
+  // reservationRequests
+  const result = await ReservationRequestGroup.find(filterQuery)
+    .select('groupId groupName taskStatus biddingDate reservationRequests ')
+    .populate([
+      {
+        path: 'reservationRequests',
+        select: 'status machineType invoice schedule problem',
+        populate: {
+          path: 'user',
+          select: 'phone showaUser email',
+          populate: {
+            path: 'showaUser',
+            select: 'name addresses photoUrl',
+            options: { strictPopulate: false },
+          },
+
+          options: { strictPopulate: false },
+        },
+      },
+    ]);
+
+  return result;
+};
+const getBidedReservationGroupsByCompany = async ({
+  user,
+}: {
+  user: mongoose.Types.ObjectId;
+}) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: user,
+  });
+
+  if (!serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Something went wrong, please try again',
+    );
+  }
+
+  const result = await ReservationRequestGroup.find({
+    'allBids.serviceProviderCompany': serviceProviderCompany?._id,
+  });
+  return result;
+};
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
@@ -678,4 +754,7 @@ export const reservationGroupServices = {
   sendReservationGroupToBranch,
   allReservationsGroup,
   getReservationGroupById,
+  getLiveReservationGroups,
+
+  getBidedReservationGroupsByCompany,
 };

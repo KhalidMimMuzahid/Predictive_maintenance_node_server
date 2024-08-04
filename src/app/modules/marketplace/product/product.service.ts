@@ -158,9 +158,24 @@ const getAllProductsCategoryWise = async () => {
 
   return products;
 };
+
+const getProductByProduct_id = async (productId: string) => {
+  const product = await Product.findOne({ _id: productId });
+
+  if (!product) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Product not found with the given ID',
+    );
+  }
+
+  return product;
+};
+
 export const productServices = {
   createProduct,
   addReview,
   getAllProducts,
   getAllProductsCategoryWise,
+  getProductByProduct_id,
 };

@@ -21,6 +21,9 @@ router.get(
   serviceProviderCompanyControllers.getAllMembersForServiceProviderCompany,
 );
 
-
+router.get(
+  '/get-reservation-request-for-service-provider-admin',
+  serviceProviderCompanyControllers.getReservationRequestForServiceProviderAdmin,
+);
 
 export const serviceProviderCompanyRoutes = router;

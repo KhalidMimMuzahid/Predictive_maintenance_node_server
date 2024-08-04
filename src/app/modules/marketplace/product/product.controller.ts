@@ -111,9 +111,33 @@ const getAllProductsCategoryWise: RequestHandler = catchAsync(
     });
   },
 );
+const getProductByProduct_id: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  const productId = req?.query?.productId as string;
+  if (!productId) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Product id is required');
+  }
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await productServices.getProductByProduct_id(productId);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'products has retrieved successfully',
+    data: result,
+  });
+});
+
 export const productController = {
   createProduct,
   addReview,
   getAllProducts,
   getAllProductsCategoryWise,
+  getProductByProduct_id,
 };
