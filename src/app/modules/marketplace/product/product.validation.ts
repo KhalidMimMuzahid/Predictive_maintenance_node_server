@@ -11,7 +11,7 @@ const createProductValidationSchema = z.object({
   salePrice: z.number(),
   taxStatus: z.enum(['applicable', 'not-applicable']),
   taxRate: z.number(),
-  size: z.array(z.string()),
+  size: z.array(z.string()).optional(),
 
   packageSize: z.object({
     weight: z.number(),
