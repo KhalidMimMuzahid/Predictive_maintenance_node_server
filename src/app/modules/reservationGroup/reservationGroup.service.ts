@@ -746,6 +746,24 @@ const getBidedReservationGroupsByCompany = async ({
   });
   return result;
 };
+
+const getAllUnAssignedResGroupToBranchByCompany = async ({
+  user,
+}: {
+  user: mongoose.Types.ObjectId;
+}) => {
+  //
+  const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
+    user,
+  }).select('serviceProviderCompany');
+  const result = await ReservationRequestGroup.find({
+    'postBiddingProcess.serviceProviderCompany':
+      serviceProviderAdmin.serviceProviderCompany,
+    'postBiddingProcess.serviceProviderBranch': { $exists: false },
+  });
+
+  return result;
+};
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
@@ -757,4 +775,5 @@ export const reservationGroupServices = {
   getLiveReservationGroups,
 
   getBidedReservationGroupsByCompany,
+  getAllUnAssignedResGroupToBranchByCompany,
 };

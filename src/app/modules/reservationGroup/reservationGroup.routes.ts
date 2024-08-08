@@ -62,6 +62,10 @@ router.get(
   '/get-bided-reservation-groups-by-company',
   reservationGroupController.getBidedReservationGroupsByCompany,
 );
+router.get(
+  '/get-all-un-assigned-res-group-to-branch-by-company',
+  reservationGroupController.getAllUnAssignedResGroupToBranchByCompany,
+);
  
 
 // router.get('/:uid', reservationController.getMyReservations);

@@ -297,6 +297,31 @@ const getBidedReservationGroupsByCompany: RequestHandler = catchAsync(
   },
 );
 
+const getAllUnAssignedResGroupToBranchByCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin'],
+    });
+
+    const results =
+      await reservationGroupServices.getAllUnAssignedResGroupToBranchByCompany({
+        user: auth?._id,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'all un-assigned res-group to branch have retrieved successfully',
+      data: results,
+    });
+  },
+);
+
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
@@ -307,4 +332,5 @@ export const reservationGroupController = {
   getReservationGroupById,
   getLiveReservationGroups,
   getBidedReservationGroupsByCompany,
+  getAllUnAssignedResGroupToBranchByCompany,
 };
