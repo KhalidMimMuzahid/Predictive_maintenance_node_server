@@ -297,6 +297,69 @@ const getBidedReservationGroupsByCompany: RequestHandler = catchAsync(
   },
 );
 
+const updateBid: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+  });
+
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+  const updateData = req?.body;
+  if (!reservationRequestGroup) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of reservationRequestGroup is required to update res group ',
+    );
+  }
+  const results = await reservationGroupServices.updateBid({
+    reservationRequestGroup_id: reservationRequestGroup,
+    updateData,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation group has updated successfully',
+    data: results,
+  });
+});
+
+const deleteBid: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+  });
+
+  const reservationRequestGroup: string = req?.query
+    ?.reservationRequestGroup as string;
+  const serviceProviderCompany: string = req?.query
+    ?.serviceProviderCompany as string;
+  if (!reservationRequestGroup || !serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of reservationRequestGroup & serviceProviderCompany is required to delete bid ',
+    );
+  }
+  const results = await reservationGroupServices.deleteBid({
+    reservationRequestGroup: reservationRequestGroup,
+    serviceProviderCompany: serviceProviderCompany,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation group has deleted successfully',
+    data: results,
+  });
+});
+
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
@@ -307,4 +370,6 @@ export const reservationGroupController = {
   getReservationGroupById,
   getLiveReservationGroups,
   getBidedReservationGroupsByCompany,
+  updateBid,
+  deleteBid,
 };

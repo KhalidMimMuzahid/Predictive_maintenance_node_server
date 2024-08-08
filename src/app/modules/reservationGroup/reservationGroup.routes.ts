@@ -56,13 +56,14 @@ router.get(
   reservationGroupController.getLiveReservationGroups,
 );
 
+router.patch('/update-bid', reservationGroupController.updateBid);
 
+router.delete('/delete-bid', reservationGroupController.deleteBid);
 
 router.get(
   '/get-bided-reservation-groups-by-company',
   reservationGroupController.getBidedReservationGroupsByCompany,
 );
- 
 
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);
