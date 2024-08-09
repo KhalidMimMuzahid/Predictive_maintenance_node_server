@@ -235,7 +235,7 @@ const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
 
     {
       $lookup: {
-        from: 'invoices', // Name of the user collection
+        from: 'invoices',
         localField: 'invoices',
         foreignField: '_id',
         as: 'invoices',
@@ -244,6 +244,21 @@ const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
 
     {
       $unwind: '$invoices',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$invoices',
+      },
+    },
+
+    {
+      $lookup: {
+        from: 'reservationrequests',
+        localField: 'reservationRequest',
+        foreignField: '_id',
+        as: 'reservationRequest',
+      },
     },
   ]);
   // console.log(teamOfEngineers);
