@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { User } from '../user/user.model';
 import { ExtraData } from './extraData.model';
+import S3 from 'aws-sdk/clients/s3';
 
 const deleteMyAccount = async (emailOrPhone: string) => {
   const isExistsUser = await User.findOne({
@@ -28,6 +29,41 @@ const deleteMyAccount = async (emailOrPhone: string) => {
   }
 };
 
+const uploadPhoto = async ({
+  fileName,
+  fileType,
+  file,
+  folder,
+}: {
+  fileName: string;
+  fileType: string;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  file: any;
+  folder: string;
+}) => {
+  const s3 = new S3({
+    region: 'ap-northeast-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+    // s3ForcePathStyle: true,
+    signatureVersion: 'v4',
+  });
+
+  const fileParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: `${'assets/' + folder + '/' + fileName}`,
+    Expires: 600,
+    ContentType: fileType,
+    Body: file,
+    ACL: 'bucket-owner-full-control',
+  };
+
+  const url = await s3.getSignedUrlPromise('putObject', fileParams);
+
+  return { url };
+};
 export const extraDataServices = {
   deleteMyAccount,
+  uploadPhoto,
 };

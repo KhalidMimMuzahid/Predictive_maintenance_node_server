@@ -36,7 +36,26 @@ const sendIotDataAiServer: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
+  // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  const { fileName, fileType, file, folder } = req.body;
+  const result = await extraDataServices.uploadPhoto({
+    fileName,
+    fileType,
+    file,
+    folder,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Reservation image uploaded successfully',
+    data: result,
+  });
+});
 export const extraDataController = {
   deleteMyAccount,
   sendIotDataAiServer,
+  uploadPhoto,
 };
