@@ -377,7 +377,7 @@ const acceptOnDemandResGroupByCompany: RequestHandler = catchAsync(
       auth,
       accessUsers: ['serviceProviderAdmin'],
     });
-    const reservationGroup = req?.query?.reservationGroup as string;
+    const reservationGroup = req?.query?.reservationRequestGroup as string;
     if (!reservationGroup) {
       throw new AppError(
         httpStatus.BAD_REQUEST,

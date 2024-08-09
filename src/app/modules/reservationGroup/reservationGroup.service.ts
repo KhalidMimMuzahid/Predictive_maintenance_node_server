@@ -825,11 +825,28 @@ const acceptOnDemandResGroupByCompany = async ({
   const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
     user,
   }).select('serviceProviderCompany');
-  reservationGroupData.postBiddingProcess.serviceProviderCompany =
-    serviceProviderAdmin?.serviceProviderCompany;
 
-  const updatedReservationGroupData = await reservationGroupData.save();
-  return updatedReservationGroupData;
+  const postBiddingProcess: Partial<TPostBiddingProcess> = {};
+
+  postBiddingProcess.serviceProviderCompany =
+    serviceProviderAdmin?.serviceProviderCompany;
+  postBiddingProcess.biddingUser = user;
+
+  const updatedReservationRequestGroup =
+    await ReservationRequestGroup.findByIdAndUpdate(
+      reservationGroup,
+      { postBiddingProcess },
+      { new: true },
+    );
+
+  if (!updatedReservationRequestGroup) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'could not updated reservation request group',
+    );
+  }
+
+  return updatedReservationRequestGroup;
 };
 const updateBid = async ({
   reservationRequestGroup_id,
