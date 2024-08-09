@@ -9,7 +9,6 @@ import {
   TBiddingDate,
   TPostBiddingProcess,
   TReservationGroupType,
-  TReservationRequestGroup,
 } from './reservationGroup.interface';
 import { userServices } from '../user/user.service';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
@@ -849,30 +848,35 @@ const acceptOnDemandResGroupByCompany = async ({
   return updatedReservationRequestGroup;
 };
 const updateBid = async ({
+  user,
   reservationRequestGroup_id,
-  updateData,
+  biddingAmount,
 }: {
+  user: mongoose.Types.ObjectId;
   reservationRequestGroup_id: string;
-  updateData: Partial<TReservationRequestGroup['allBids']>;
+  biddingAmount: number;
 }) => {
-  const updatedReservationGroup = await ReservationRequestGroup.updateOne(
-    {
-      _id: new mongoose.Types.ObjectId(reservationRequestGroup_id),
-      'allBids.serviceProviderCompany': new mongoose.Types.ObjectId(
-        updateData['serviceProviderCompany'],
-      ),
-    },
-    {
-      $set: {
-        'allBids.$.biddingAmount': updateData['biddingAmount'],
-      },
-    },
-    {
-      new: true,
-    },
-  );
+  const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
+    user,
+  }).select('serviceProviderCompany');
 
-  if (!updatedReservationGroup.modifiedCount) {
+  const updatedReservationGroup =
+    await ReservationRequestGroup.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(reservationRequestGroup_id),
+        'allBids.serviceProviderCompany':
+          serviceProviderAdmin?.serviceProviderCompany,
+      },
+      {
+        $set: {
+          'allBids.$.biddingAmount': biddingAmount,
+        },
+      },
+      {
+        new: true,
+      },
+    );
+  if (!updatedReservationGroup) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'Something went wrong, please try again',
@@ -882,22 +886,25 @@ const updateBid = async ({
 };
 
 const deleteBid = async ({
+  user,
   reservationRequestGroup,
-  serviceProviderCompany,
 }: {
+  user: mongoose.Types.ObjectId;
   reservationRequestGroup: string;
-  serviceProviderCompany: string;
 }) => {
-  const objectId = new mongoose.Types.ObjectId(serviceProviderCompany);
+  const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
+    user,
+  }).select('serviceProviderCompany');
 
-  const reservationGroup = await ReservationRequestGroup.findOne({
-    _id: new mongoose.Types.ObjectId(reservationRequestGroup),
-    'allBids.serviceProviderCompany': objectId,
-  });
+  // const reservationGroup = await ReservationRequestGroup.findOne({
+  //   _id: new mongoose.Types.ObjectId(reservationRequestGroup),
+  //   'allBids.serviceProviderCompany':
+  //     serviceProviderAdmin?.serviceProviderCompany,
+  // });
 
-  if (!reservationGroup) {
-    throw new AppError(httpStatus.NOT_FOUND, 'No matching bid found');
-  }
+  // if (!reservationGroup) {
+  //   throw new AppError(httpStatus.NOT_FOUND, 'No matching bid found');
+  // }
 
   const updatedReservationGroup =
     await ReservationRequestGroup.findOneAndUpdate(
@@ -907,7 +914,8 @@ const deleteBid = async ({
       {
         $pull: {
           allBids: {
-            serviceProviderCompany: objectId,
+            serviceProviderCompany:
+              serviceProviderAdmin?.serviceProviderCompany,
           },
         },
       },

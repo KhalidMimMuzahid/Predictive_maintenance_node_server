@@ -404,21 +404,30 @@ const updateBid: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({
     auth,
-    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+    accessUsers: ['serviceProviderAdmin'],
   });
 
   const reservationRequestGroup: string = req?.query
     ?.reservationRequestGroup as string;
-  const updateData = req?.body;
+
   if (!reservationRequestGroup) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      '_id of reservationRequestGroup is required to update res group ',
+      '_id of reservationRequestGroup is required to update res bid',
+    );
+  }
+
+  const biddingAmountString = req?.query?.biddingAmount as string;
+  if (!biddingAmountString) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'biddingAmount is required to to update res bid',
     );
   }
   const results = await reservationGroupServices.updateBid({
+    user: auth?._id,
     reservationRequestGroup_id: reservationRequestGroup,
-    updateData,
+    biddingAmount: parseInt(biddingAmountString),
   });
   // send response
   sendResponse(res, {
@@ -435,22 +444,21 @@ const deleteBid: RequestHandler = catchAsync(async (req, res) => {
   // we are checking the permission of this api
   checkUserAccessApi({
     auth,
-    accessUsers: ['showaAdmin', 'showaSubAdmin'],
+    accessUsers: ['serviceProviderAdmin'],
   });
 
   const reservationRequestGroup: string = req?.query
     ?.reservationRequestGroup as string;
-  const serviceProviderCompany: string = req?.query
-    ?.serviceProviderCompany as string;
-  if (!reservationRequestGroup || !serviceProviderCompany) {
+
+  if (!reservationRequestGroup) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      '_id of reservationRequestGroup & serviceProviderCompany is required to delete bid ',
+      '_id of reservationRequestGroup  is required to delete bid ',
     );
   }
   const results = await reservationGroupServices.deleteBid({
+    user: auth?._id,
     reservationRequestGroup: reservationRequestGroup,
-    serviceProviderCompany: serviceProviderCompany,
   });
   // send response
   sendResponse(res, {
