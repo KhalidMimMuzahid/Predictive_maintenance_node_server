@@ -322,6 +322,59 @@ const getAllUnAssignedResGroupToBranchByCompany: RequestHandler = catchAsync(
   },
 );
 
+const getAllOnDemandResGroupByCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin'],
+    });
+
+    const results =
+      await reservationGroupServices.getAllOnDemandResGroupByCompany({
+        user: auth?._id,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all on-demand res-groups have retrieved successfully',
+      data: results,
+    });
+  },
+);
+const acceptOnDemandResGroupByCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin'],
+    });
+    const reservationGroup = req?.query?.reservationGroup as string;
+    if (!reservationGroup) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'reservation Group is required accept on-demand request',
+      );
+    }
+    const results =
+      await reservationGroupServices.acceptOnDemandResGroupByCompany({
+        user: auth?._id,
+        reservationGroup,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'accepted on-demand res-group by company successfully',
+      data: results,
+    });
+  },
+);
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
@@ -333,4 +386,6 @@ export const reservationGroupController = {
   getLiveReservationGroups,
   getBidedReservationGroupsByCompany,
   getAllUnAssignedResGroupToBranchByCompany,
+  getAllOnDemandResGroupByCompany,
+  acceptOnDemandResGroupByCompany,
 };
