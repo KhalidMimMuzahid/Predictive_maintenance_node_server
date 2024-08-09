@@ -12,6 +12,10 @@ router.patch(
 );
 router.get('/get-all-invoices', invoiceController.getAllInvoices);
 router.get('/get-all-invoices-by-user', invoiceController.getAllInvoicesByUser);
+router.get(
+  '/get-all-assigned-tasks-by-engineer',
+  invoiceController.getAllAssignedTasksByEngineer,
+);
 router.patch(
   '/change-status-to-completed',
   invoiceController.changeStatusToCompleted,

@@ -9,6 +9,8 @@ import {
 } from './invoice.utils';
 import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
+import { TeamOfEngineers } from '../teamOfEngineers/teamOfEngineers.model';
+import { User } from '../user/user.model';
 
 const addAdditionalProduct = async ({
   user,
@@ -214,9 +216,44 @@ const getAllInvoicesByUser = async (user: string) => {
 
   return invoices;
 };
+
+const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
+  const userData = await User.findOne({ _id: user }).select(
+    'serviceProviderEngineer',
+  );
+
+  const teamOfEngineers = await TeamOfEngineers.find({
+    'members.member': userData?.serviceProviderEngineer,
+  });
+  const teamOfEngineersList = teamOfEngineers?.map((each) => each?._id);
+  const allTask = await InvoiceGroup.aggregate([
+    {
+      $match: {
+        'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+      },
+    },
+
+    {
+      $lookup: {
+        from: 'invoices', // Name of the user collection
+        localField: 'invoices',
+        foreignField: '_id',
+        as: 'invoices',
+      },
+    },
+
+    {
+      $unwind: '$invoices',
+    },
+  ]);
+  // console.log(teamOfEngineers);
+
+  return allTask;
+};
 export const invoiceServices = {
   addAdditionalProduct,
   changeStatusToCompleted,
   getAllInvoices,
   getAllInvoicesByUser,
+  getAllAssignedTasksByEngineer,
 };
