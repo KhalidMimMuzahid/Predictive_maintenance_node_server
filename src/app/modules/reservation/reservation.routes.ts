@@ -34,4 +34,10 @@ router.get('/status', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
 router.post('/upload-image', reservationController.uploadRequestImage);
 router.delete('/delete', reservationController.deleteReservation);
+
+router.get(
+  '/get-reservation-request-for-service-provider-admin',
+  reservationController.getReservationRequestForServiceProviderAdmin,
+);
+
 export const reservationRoutes = router;

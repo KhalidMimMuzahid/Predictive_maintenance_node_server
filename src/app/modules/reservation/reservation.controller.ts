@@ -339,6 +339,29 @@ const deleteReservation: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
+    const adminUserid = auth?._id;
+    const resType: string = req?.query?.resType as string;
+    const result =
+      await reservationServices.getReservationRequestForServiceProviderAdmin(
+        resType,
+        adminUserid,
+      );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'Get Reservation Reqeust for Service Provider Admin Successfully',
+      data: result,
+    });
+  },
+);
+
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
@@ -352,4 +375,5 @@ export const reservationController = {
   getReservationCountByServiceProviderCompany,
   uploadRequestImage,
   deleteReservation,
+  getReservationRequestForServiceProviderAdmin,
 };

@@ -18,6 +18,7 @@ import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending
 import { addDays } from '../../utils/addDays';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
+import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -474,6 +475,80 @@ const getAllReservationsCount = async (machineType: TMachineType2) => {
   return { all, onDemand, accepted, ongoing, completed, canceled };
 };
 
+const getReservationRequestForServiceProviderAdmin = async (
+  resType: string,
+  adminUserid: mongoose.Types.ObjectId,
+) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserid,
+  });
+
+  const matchQuery = {
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+  };
+  if (resType !== 're-schedule') {
+    matchQuery['postBiddingProcess.taskStatus'] = resType;
+  }
+  let aggArray;
+  if (resType === 're-schedule') {
+    aggArray = [
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+      {
+        $addFields: {
+          schedulesCount: { $size: '$schedule.schedules' },
+        },
+      },
+      {
+        $match: {
+          schedulesCount: { $gt: 1 },
+        },
+      },
+    ];
+  } else {
+    aggArray = [
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ];
+  }
+  const result = await Invoice.aggregate(aggArray);
+
+  return result;
+};
 
 const deleteReservation = async (reservationRequest: string) => {
   const invoice = await Invoice.findOne({ reservationRequest });
@@ -500,4 +575,5 @@ export const reservationServices = {
   getReservationCountByServiceProviderCompany,
   getSignedUrl,
   deleteReservation,
+  getReservationRequestForServiceProviderAdmin,
 };
