@@ -44,8 +44,10 @@ router.get(
 router.get('/getAllMachineBy_id', machineController.getAllMachineBy_id);
 router.get('/getMachineBy_id', machineController.getMachineBy_id);
 router.delete('/', machineController.deleteMachine);
+
+// this endpoint is not used in this server
 router.patch(
-  '/machine-health-status',
+  '/machine-health-status-relocated-to-another-server',
   validateRequest(machineValidation.machineHealthStatusSchema),
   machineController.machineHealthStatus,
 );

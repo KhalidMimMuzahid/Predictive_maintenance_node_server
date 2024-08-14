@@ -182,7 +182,7 @@ const addSensorDataInToDB = async ({
 
   req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
 
-  return sensorData;
+  return null;
 };
 
 const getAttachedSensorModulesByuser = async (
