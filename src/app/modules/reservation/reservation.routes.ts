@@ -38,14 +38,13 @@ router.get('/status/:status', reservationController.getReservationsByStatus);
 router.post('/upload-image', reservationController.uploadRequestImage);
 router.delete('/delete', reservationController.deleteReservation);
 
+
+// type wise :    'ongoing','completed','canceled','rescheduled'  
 router.get(
   '/get-reservation-request-for-service-provider-company',
   reservationController.getReservationRequestForServiceProviderCompany,
 );
 
-router.get(
-  '/get-ongoing-reservation-request-for-service-provider-company',
-  reservationController.getOngoingReservationRequestForServiceProviderCompany,
-);
+
 
 export const reservationRoutes = router;
