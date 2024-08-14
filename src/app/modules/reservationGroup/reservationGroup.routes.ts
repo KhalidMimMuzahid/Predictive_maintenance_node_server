@@ -42,6 +42,11 @@ router.patch(
   '/send-reservation-group-to-branch',
   reservationGroupController.sendReservationGroupToBranch,
 );
+router.patch(
+  '/accept-on-demand-res-group-by-company',
+  reservationGroupController.acceptOnDemandResGroupByCompany,
+);
+
 router.post(
   '/assign-reservation-group-to-team',
   reservationGroupController.sendReservationGroupToBranch,
@@ -56,13 +61,26 @@ router.get(
   reservationGroupController.getLiveReservationGroups,
 );
 
+router.patch('/update-bid', reservationGroupController.updateBid);
 
+router.delete('/delete-bid', reservationGroupController.deleteBid);
 
 router.get(
   '/get-bided-reservation-groups-by-company',
   reservationGroupController.getBidedReservationGroupsByCompany,
 );
- 
+router.get(
+  '/get-all-un-assigned-res-group-to-branch-by-company',
+  reservationGroupController.getAllUnAssignedResGroupToBranchByCompany,
+);
+router.get(
+  '/get-all-on-demand-res-group-by-company',
+  reservationGroupController.getAllOnDemandResGroupByCompany,
+);
+router.get(
+  '/get-all-on-demand-unassigned-to-company-res-groups',
+  reservationGroupController.getAllOnDemandUnassignedToCompanyResGroups,
+);
 
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);

@@ -128,9 +128,33 @@ const getAllInvoicesByUser: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllAssignedTasksByEngineer: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderEngineer'],
+    });
+
+    const result = await invoiceServices.getAllAssignedTasksByEngineer(
+      auth?._id,
+    );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all task are retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const invoiceController = {
   addAdditionalProducts,
   changeStatusToCompleted,
   getAllInvoices,
   getAllInvoicesByUser,
+  getAllAssignedTasksByEngineer,
 };

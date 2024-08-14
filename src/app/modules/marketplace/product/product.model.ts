@@ -30,7 +30,7 @@ const productSchema = new Schema<TProduct>(
     },
     taxRate: { type: Number, required: true },
 
-    size: { type: [String], required: true },
+    size: { type: [String] },
 
     packageSize: {
       weight: { type: Number },

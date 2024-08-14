@@ -10,8 +10,8 @@ import { manageAuth } from './app/middlewares/manageAuth';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
-import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
-import { CronJob } from 'cron';
+// import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
+// import { CronJob } from 'cron';
 
 const app: Application = express();
 const server = createServer(app);
@@ -40,7 +40,7 @@ async function main() {
     app.use('/api/v2', manageAuth, router);
 
     const showWelcome = (req: Request, res: Response) => {
-      res.status(200).json({ message: 'Welcome to Showa home' });
+      res.status(200).json({ message: 'Welcome to Showa home version 2.0' });
     };
     app.use('/', showWelcome);
     app.use(globalErrorHandler);
@@ -52,12 +52,12 @@ async function main() {
     });
 
     // -------- ************* ---------------  // all cron functions starts here
-    CronJob.from({
-      cronTime: '0 */1 * * * *',
-      onTick: cronFunctions.sendIotDataToAIServer,
-      start: true,
-      timeZone: 'America/Los_Angeles',
-    });
+    // CronJob.from({
+    //   cronTime: '0 */1 * * * *',
+    //   onTick: cronFunctions.sendIotDataToAIServer,
+    //   start: true,
+    //   timeZone: 'America/Los_Angeles',
+    // });
 
     // -------- ************* ---------------  // all cron functions ends here
   } catch (error) {

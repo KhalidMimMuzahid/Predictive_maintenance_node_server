@@ -12,7 +12,10 @@ router.post(
   ),
   sensorModuleAttachedControllers.addSensorAttachedModule,
 );
-router.patch('/add-sensor-data', sensorModuleAttachedControllers.addSensorData);
+
+
+// this endpoint is not used in this server
+router.patch('/add-sensor-data-relocated-to-another-server', sensorModuleAttachedControllers.addSensorData);
 
 router.get(
   '/get-sensors-by-user',
