@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { reservationController } from './reservation.controller';
 import validateRequest from '../../middlewares/validateRequest';
+import { reservationController } from './reservation.controller';
 import { reservationValidation } from './reservation.validation';
 
 const router: Router = express.Router();
@@ -12,7 +12,10 @@ router.post(
 );
 router.get('/', reservationController.getMyReservations);
 router.get('/all-reservation', reservationController.getAllReservations);
-router.get('/all-reservation-count', reservationController.getAllReservationsCount);
+router.get(
+  '/all-reservation-count',
+  reservationController.getAllReservationsCount,
+);
 router.get(
   '/all-reservation-by-user',
   reservationController.getAllReservationsByUser,
@@ -38,6 +41,11 @@ router.delete('/delete', reservationController.deleteReservation);
 router.get(
   '/get-reservation-request-for-service-provider-admin',
   reservationController.getReservationRequestForServiceProviderAdmin,
+);
+
+router.get(
+  '/get-ongoing-reservation-request-for-service-provider-admin',
+  reservationController.getOngoingReservationRequestForServiceProviderAdmin,
 );
 
 export const reservationRoutes = router;

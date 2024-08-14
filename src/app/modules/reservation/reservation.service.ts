@@ -1,4 +1,15 @@
+import S3 from 'aws-sdk/clients/s3';
+import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
+import AppError from '../../errors/AppError';
+import { addDays } from '../../utils/addDays';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
+import { Invoice } from '../invoice/invoice.model';
+import { Machine } from '../machine/machine.model';
+import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
+import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
+import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
 import {
   TMachineType,
   TMachineType2,
@@ -8,17 +19,6 @@ import {
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
-import AppError from '../../errors/AppError';
-import httpStatus from 'http-status';
-import { Machine } from '../machine/machine.model';
-import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
-import S3 from 'aws-sdk/clients/s3';
-import { Invoice } from '../invoice/invoice.model';
-import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
-import { addDays } from '../../utils/addDays';
-import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
-import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
-import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -562,6 +562,52 @@ const deleteReservation = async (reservationRequest: string) => {
 
   return invoice;
 };
+
+const getOngoingReservationRequestForServiceProviderAdmin = async (
+  adminUserid: mongoose.Types.ObjectId,
+) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserid,
+  });
+
+  if (!serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Service provider company not found for the admin user.',
+    );
+  }
+
+  const matchQuery = {
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    'postBiddingProcess.taskStatus': 'ongoing',
+  };
+
+  const aggArray = [
+    {
+      $match: matchQuery,
+    },
+    {
+      $lookup: {
+        from: 'reservationrequests',
+        localField: 'reservationRequest',
+        foreignField: '_id',
+        as: 'reservationRequest',
+      },
+    },
+    {
+      $unwind: '$reservationRequest',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+  ];
+
+  const result = await Invoice.aggregate(aggArray);
+
+  return result;
+};
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
@@ -576,4 +622,5 @@ export const reservationServices = {
   getSignedUrl,
   deleteReservation,
   getReservationRequestForServiceProviderAdmin,
+  getOngoingReservationRequestForServiceProviderAdmin,
 };

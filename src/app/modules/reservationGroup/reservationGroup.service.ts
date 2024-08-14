@@ -1,20 +1,20 @@
-import mongoose from 'mongoose';
-import { ReservationRequestGroup } from './reservationGroup.model';
-import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
+import AppError from '../../errors/AppError';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+import { TMachineType } from '../reservation/reservation.interface';
+import { ReservationRequest } from '../reservation/reservation.model';
+import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
+import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 import { TRole } from '../user/user.interface';
+import { userServices } from '../user/user.service';
 import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
 import {
   TBiddingDate,
   TPostBiddingProcess,
   TReservationGroupType,
 } from './reservationGroup.interface';
-import { userServices } from '../user/user.service';
-import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
-import { ReservationRequest } from '../reservation/reservation.model';
-import { TMachineType } from '../reservation/reservation.interface';
-import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
+import { ReservationRequestGroup } from './reservationGroup.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
