@@ -4,16 +4,18 @@ import { Message } from './message.model';
 import { Chat } from '../chat/chat.model';
 import AppError from '../../../errors/AppError';
 import httpStatus from 'http-status';
-
+import { Request } from 'express';
 const sendMessage = async ({
   messageData,
   chat,
   sender,
+  req,
 }: {
   messageData: Partial<TMessage>;
 
   chat: string;
   sender: mongoose.Types.ObjectId;
+  req: Request;
 }) => {
   const chatData = await Chat.findById(chat);
   if (!chatData) {
@@ -42,6 +44,7 @@ const sendMessage = async ({
     { new: true, runValidators: true },
   );
 
+  req.io.emit(chat, { data: message, type: 'message-sending' });
 
   return message;
 };

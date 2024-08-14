@@ -20,6 +20,7 @@ const createPersonalChat: RequestHandler = catchAsync(async (req, res) => {
   const result = await chatServices.createPersonalChat({
     user1: auth?._id?.toString(),
     user2: user,
+    req,
   });
   // send response
   sendResponse(res, {
@@ -45,6 +46,7 @@ const createPersonalChatByPhoneOrEmail: RequestHandler = catchAsync(
     const result = await chatServices.createPersonalChatByPhoneOrEmail({
       user1: auth?._id?.toString(),
       phoneOrEmail,
+      req,
     });
     // send response
     sendResponse(res, {
@@ -64,7 +66,7 @@ const createGroupChat: RequestHandler = catchAsync(async (req, res) => {
   // console.log(groupChatData);
   // console.log(auth);
   group.groupAdmin = auth._id;
-  const result = await chatServices.createGroupChat({ users, group });
+  const result = await chatServices.createGroupChat({ users, group, req });
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
