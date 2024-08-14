@@ -43,6 +43,7 @@ const uploadPhoto = async ({
   folder: string;
 }) => {
   const s3 = new S3({
+    params: { Bucket: process.env.S3_BUCKET_NAME },
     region: 'ap-northeast-1',
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY,
@@ -51,7 +52,6 @@ const uploadPhoto = async ({
   });
 
   const fileParams = {
-    Bucket: process.env.S3_BUCKET_NAME,
     Key: `${'assets/' + folder + '/' + fileName}`,
     Expires: 600,
     ContentType: fileType,
