@@ -1,4 +1,15 @@
+import S3 from 'aws-sdk/clients/s3';
+import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
+import AppError from '../../errors/AppError';
+import { addDays } from '../../utils/addDays';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
+import { Invoice } from '../invoice/invoice.model';
+import { Machine } from '../machine/machine.model';
+import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
+import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
+import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
 import {
   TMachineType,
   TMachineType2,
@@ -8,16 +19,6 @@ import {
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
-import AppError from '../../errors/AppError';
-import httpStatus from 'http-status';
-import { Machine } from '../machine/machine.model';
-import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
-import S3 from 'aws-sdk/clients/s3';
-import { Invoice } from '../invoice/invoice.model';
-import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
-import { addDays } from '../../utils/addDays';
-import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
-import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -474,10 +475,85 @@ const getAllReservationsCount = async (machineType: TMachineType2) => {
   return { all, onDemand, accepted, ongoing, completed, canceled };
 };
 
+const getReservationRequestForServiceProviderCompany = async (
+  resType: string,
+  adminUserid: mongoose.Types.ObjectId,
+) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserid,
+  });
+
+  const matchQuery = {
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+  };
+  if (resType !== 'rescheduled') {
+    matchQuery['taskStatus'] = resType;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let aggArray: any;
+  if (resType === 'rescheduled') {
+    aggArray = [
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+      {
+        $addFields: {
+          schedulesCount: { $size: '$schedule.schedules' },
+        },
+      },
+      {
+        $match: {
+          schedulesCount: { $gt: 1 },
+        },
+      },
+    ];
+  } else {
+    aggArray = [
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ];
+  }
+  const result = await Invoice.aggregate(aggArray);
+
+  return result;
+};
 
 const deleteReservation = async (reservationRequest: string) => {
   const invoice = await Invoice.findOne({ reservationRequest });
-  console.log(invoice);
+
   if (!invoice) {
     //
   } else {
@@ -487,6 +563,7 @@ const deleteReservation = async (reservationRequest: string) => {
 
   return invoice;
 };
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
@@ -500,4 +577,5 @@ export const reservationServices = {
   getReservationCountByServiceProviderCompany,
   getSignedUrl,
   deleteReservation,
+  getReservationRequestForServiceProviderCompany,
 };

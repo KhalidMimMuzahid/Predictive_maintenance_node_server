@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { orderController } from './order.controller';
 import validateRequest from '../../../middlewares/validateRequest';
+import { orderController } from './order.controller';
 import { orderValidation } from './order.validation';
 
 const router: Router = express.Router();
@@ -15,6 +15,5 @@ router.get(
   '/get-order-details-by-order',
   orderController.getOrderDetailsByOrder,
 );
-
 
 export const orderRoutes = router;

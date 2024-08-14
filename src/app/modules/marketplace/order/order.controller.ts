@@ -1,13 +1,13 @@
 import { RequestHandler } from 'express';
-import catchAsync from '../../../utils/catchAsync';
-import { TAuth } from '../../../interface/error';
-import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
-import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
-import { orderServices } from './order.service';
+import { TAuth } from '../../../interface/error';
+import catchAsync from '../../../utils/catchAsync';
+import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
+import sendResponse from '../../../utils/sendResponse';
 import { paymentTypesArray } from './order.const';
 import { TOrders, TPaymentType } from './order.interface';
+import { orderServices } from './order.service';
 
 const orderProduct: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -54,7 +54,6 @@ const orderProduct: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
 
 const getMyAllOrder: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;

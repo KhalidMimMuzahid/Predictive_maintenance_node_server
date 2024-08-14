@@ -8,13 +8,16 @@ import { Message } from '../message/message.model';
 import { hadDuplicateValue } from '../../../utils/hadDuplicateValue';
 import { TAddingMember, TCreatingGroup } from '../message/message.interface';
 import { createPersonalChatFunc } from './chat.utils';
+import { Request } from 'express';
 
 const createPersonalChat = async ({
   user1,
   user2,
+  req,
 }: {
   user1: string;
   user2: string;
+  req: Request;
 }) => {
   if (user1 === user2) {
     throw new AppError(httpStatus.BAD_REQUEST, `You can not add yourself`);
@@ -50,23 +53,28 @@ const createPersonalChat = async ({
   }
   //implement session here cause we need to create event message ("You are connected at Date") here
 
-  const result = createPersonalChatFunc({
+  const chat = await createPersonalChatFunc({
     user1,
     user2,
     users,
   });
 
-  return result;
+  chat.users.forEach((user) => {
+    req.io.emit(user?.toString(), { data: chat, type: 'chat-creation' });
+  });
+
+  return chat;
 };
 
 const createPersonalChatByPhoneOrEmail = async ({
   user1,
   phoneOrEmail,
+  req,
 }: {
   user1: string;
   phoneOrEmail: string;
+  req: Request;
 }) => {
-
   const user2Data = await User.findOne({
     $or: [{ email: phoneOrEmail }, { phone: `+${phoneOrEmail.substring(1)}` }],
   }).select('_id email phone');
@@ -107,16 +115,22 @@ const createPersonalChatByPhoneOrEmail = async ({
   }
   //implement session here cause we need to create event message ("You are connected at Date") here
 
-  const result = createPersonalChatFunc({
+  const chat = await createPersonalChatFunc({
     user1,
     user2,
     users,
   });
 
-  return result;
+  chat.users.forEach((user) => {
+    req.io.emit(user?.toString(), { data: chat, type: 'chat-creation' });
+  });
+
+  return chat;
 };
-const createGroupChat = async (groupChatData: Partial<TChat>) => {
-  const { group } = groupChatData;
+const createGroupChat = async (
+  groupChatData: Partial<TChat> & { req: Request },
+) => {
+  const { group, req } = groupChatData;
 
   const users: string[] = groupChatData?.users as unknown as string[];
   if (hadDuplicateValue(users)) {
@@ -235,6 +249,10 @@ const createGroupChat = async (groupChatData: Partial<TChat>) => {
 
     await session.commitTransaction();
     await session.endSession();
+
+    groupChat.users.forEach((user) => {
+      req.io.emit(user?.toString(), { data: groupChat, type: 'chat-creation' });
+    });
 
     return groupChat;
   } catch (error) {

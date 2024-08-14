@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { reservationGroupController } from './reservationGroup.controller';
 import validateRequest from '../../middlewares/validateRequest';
+import { reservationGroupController } from './reservationGroup.controller';
 import { reservationGroupValidation } from './reservationGroup.validation';
 
 const router: Router = express.Router();
@@ -81,6 +81,8 @@ router.get(
   '/get-all-on-demand-unassigned-to-company-res-groups',
   reservationGroupController.getAllOnDemandUnassignedToCompanyResGroups,
 );
+
+//router.get('/get-recent-bid', reservationGroupController.getRecentBid);
 
 // router.get('/:uid', reservationController.getMyReservations);
 // router.get('/status/:uid/:status', reservationController.getMyReservationsByStatus);

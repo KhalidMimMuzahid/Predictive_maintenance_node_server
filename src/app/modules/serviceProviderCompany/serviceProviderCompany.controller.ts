@@ -95,32 +95,9 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
   },
 );
 
-const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
-  async (req, res) => {
-    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
-
-    const adminUserid = auth?._id;
-    const resType: string = req?.query?.resType as string;
-    const result =
-      await serviceProviderCompanyServices.getReservationRequestForServiceProviderAdmin(
-        resType,
-        adminUserid,
-      );
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message:
-        'Get Reservation Reqeust for Service Provider Admin Successfully',
-      data: result,
-    });
-  },
-);
-
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
-  getReservationRequestForServiceProviderAdmin,
 };

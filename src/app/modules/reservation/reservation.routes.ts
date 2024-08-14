@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { reservationController } from './reservation.controller';
 import validateRequest from '../../middlewares/validateRequest';
+import { reservationController } from './reservation.controller';
 import { reservationValidation } from './reservation.validation';
 
 const router: Router = express.Router();
@@ -12,7 +12,10 @@ router.post(
 );
 router.get('/', reservationController.getMyReservations);
 router.get('/all-reservation', reservationController.getAllReservations);
-router.get('/all-reservation-count', reservationController.getAllReservationsCount);
+router.get(
+  '/all-reservation-count',
+  reservationController.getAllReservationsCount,
+);
 router.get(
   '/all-reservation-by-user',
   reservationController.getAllReservationsByUser,
@@ -34,4 +37,14 @@ router.get('/status', reservationController.getMyReservationsByStatus);
 router.get('/status/:status', reservationController.getReservationsByStatus);
 router.post('/upload-image', reservationController.uploadRequestImage);
 router.delete('/delete', reservationController.deleteReservation);
+
+
+// type wise :    'ongoing','completed','canceled','rescheduled'  
+router.get(
+  '/get-reservation-request-for-service-provider-company',
+  reservationController.getReservationRequestForServiceProviderCompany,
+);
+
+
+
 export const reservationRoutes = router;

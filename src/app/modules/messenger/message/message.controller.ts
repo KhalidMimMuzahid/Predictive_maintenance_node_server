@@ -30,6 +30,7 @@ const sendMessage: RequestHandler = catchAsync(async (req, res) => {
     messageData,
     chat,
     sender: auth._id,
+    req,
   });
   // send response
   sendResponse(res, {

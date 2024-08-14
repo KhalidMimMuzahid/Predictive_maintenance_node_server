@@ -1,18 +1,18 @@
-import httpStatus from 'http-status';
-import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
-import catchAsync from '../../utils/catchAsync';
-import { reservationGroupServices } from './reservationGroup.service';
-import { TAuth } from '../../interface/error';
-import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
+import catchAsync from '../../utils/catchAsync';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import sendResponse from '../../utils/sendResponse';
+import { machineTypeArray } from '../reservation/reservation.const';
+import { TMachineType } from '../reservation/reservation.interface';
+import { reservationGroupTypeArray } from './reservationGroup.const';
 import {
   TBiddingDate,
   TReservationGroupType,
 } from './reservationGroup.interface';
-import { TMachineType } from '../reservation/reservation.interface';
-import { machineTypeArray } from '../reservation/reservation.const';
-import { reservationGroupTypeArray } from './reservationGroup.const';
+import { reservationGroupServices } from './reservationGroup.service';
 
 const createReservationGroup: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -259,7 +259,7 @@ const getLiveReservationGroups: RequestHandler = catchAsync(
     // we are checking the permission of this api
     checkUserAccessApi({
       auth,
-      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+      accessUsers: ['serviceProviderAdmin'],
     });
 
     const results = await reservationGroupServices.getLiveReservationGroups();

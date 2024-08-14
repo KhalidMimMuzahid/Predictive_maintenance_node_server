@@ -1,11 +1,16 @@
-import httpStatus from 'http-status';
-import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
-import catchAsync from '../../utils/catchAsync';
-import { reservationServices } from './reservation.service';
-import { TAuth } from '../../interface/error';
+import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
+import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import sendResponse from '../../utils/sendResponse';
+import {
+  machineTypeArray,
+  machineTypeArray2,
+  resTypeArrayForServiceProvider,
+  reservationTypeArray,
+} from './reservation.const';
 import {
   TMachineType,
   TMachineType2,
@@ -13,11 +18,7 @@ import {
   TReservationType,
   TSchedule,
 } from './reservation.interface';
-import {
-  machineTypeArray,
-  reservationTypeArray,
-  machineTypeArray2,
-} from './reservation.const';
+import { reservationServices } from './reservation.service';
 
 const createReservationRequest: RequestHandler = catchAsync(
   async (req, res) => {
@@ -171,8 +172,6 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
-
 
 const getAllReservationsByUser: RequestHandler = catchAsync(
   async (req, res) => {
@@ -339,6 +338,43 @@ const deleteReservation: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getReservationRequestForServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
+    const adminUserid = auth?._id;
+    const resType: string = req?.query?.resType as string;
+    //
+
+    if (!resTypeArrayForServiceProvider.some((each) => each === resType)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `res type must be any of ${resTypeArrayForServiceProvider.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+
+    const result =
+      await reservationServices.getReservationRequestForServiceProviderCompany(
+        resType,
+        adminUserid,
+      );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'Get Reservation Reqeust for Service Provider Admin Successfully',
+      data: result,
+    });
+  });
+
 export const reservationController = {
   createReservationRequest,
   getMyReservations,
@@ -352,4 +388,5 @@ export const reservationController = {
   getReservationCountByServiceProviderCompany,
   uploadRequestImage,
   deleteReservation,
+  getReservationRequestForServiceProviderCompany,
 };

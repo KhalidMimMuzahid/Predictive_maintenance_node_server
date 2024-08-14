@@ -1,11 +1,11 @@
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
-import { TOrder, TPaymentType } from './order.interface';
-import mongoose from 'mongoose';
-import Order from './order.model';
 import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
 import Product from '../product/product.model';
+import { TOrder, TPaymentType } from './order.interface';
+import Order from './order.model';
 
 export const orderProducts = async ({
   auth,

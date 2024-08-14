@@ -1,11 +1,11 @@
+import httpStatus from 'http-status';
+import mongoose from 'mongoose';
+import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
+import Cart from '../cart/cart.model';
 import { TOrders, TPaymentType } from './order.interface';
 import Order from './order.model';
-import mongoose from 'mongoose';
 import { orderProducts } from './order.utils';
-import AppError from '../../../errors/AppError';
-import httpStatus from 'http-status';
-import Cart from '../cart/cart.model';
 
 const orderProduct = async ({
   auth,
@@ -67,6 +67,7 @@ const getOrderDetailsByOrder = async (order: string) => {
   const orderData = await Order.findById(order);
   return orderData;
 };
+
 export const orderServices = {
   orderProduct,
   getMyAllOrder,

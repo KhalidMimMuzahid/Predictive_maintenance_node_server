@@ -17,6 +17,12 @@ export const reservationTypeArray: TReservationType[] = [
   'ongoing',
   'completed',
 ];
+export const resTypeArrayForServiceProvider = [
+  'ongoing',
+  'completed',
+  'canceled',
+  'rescheduled',
+];
 export const machineTypeArray2: TMachineType2[] = [
   'washing-machine',
   'general-machine',
