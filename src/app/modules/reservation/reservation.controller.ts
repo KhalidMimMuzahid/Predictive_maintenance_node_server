@@ -380,7 +380,6 @@ const getOngoingReservationRequestForServiceProviderAdmin: RequestHandler =
       message: 'Ongoing reservation requests retrieved successfully',
       data: result,
     });
-    console.log(result);
   });
 
 export const reservationController = {

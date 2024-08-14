@@ -573,7 +573,7 @@ const getOngoingReservationRequestForServiceProviderAdmin = async (
   if (!serviceProviderCompany) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      'Service provider company not found for the admin user.',
+      'Service provider company not found for this user.',
     );
   }
 
