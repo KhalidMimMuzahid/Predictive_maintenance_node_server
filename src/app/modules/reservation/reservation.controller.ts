@@ -360,18 +360,18 @@ const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
   },
 );
 
-const getOngoingReservationRequestForServiceProviderAdmin: RequestHandler =
+const getOngoingReservationRequestForServiceProviderCompany: RequestHandler =
   catchAsync(async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     checkUserAccessApi({
       auth,
-      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+      accessUsers: ['serviceProviderAdmin'],
     });
 
     const adminUserId = auth?._id;
 
     const result =
-      await reservationServices.getOngoingReservationRequestForServiceProviderAdmin(
+      await reservationServices.getOngoingReservationRequestForServiceProviderCompany(
         adminUserId,
       );
     sendResponse(res, {
@@ -396,5 +396,5 @@ export const reservationController = {
   uploadRequestImage,
   deleteReservation,
   getReservationRequestForServiceProviderAdmin,
-  getOngoingReservationRequestForServiceProviderAdmin,
+  getOngoingReservationRequestForServiceProviderCompany,
 };

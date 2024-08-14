@@ -563,7 +563,7 @@ const deleteReservation = async (reservationRequest: string) => {
   return invoice;
 };
 
-const getOngoingReservationRequestForServiceProviderAdmin = async (
+const getOngoingReservationRequestForServiceProviderCompany = async (
   adminUserid: mongoose.Types.ObjectId,
 ) => {
   const serviceProviderCompany = await ServiceProviderCompany.findOne({
@@ -579,7 +579,7 @@ const getOngoingReservationRequestForServiceProviderAdmin = async (
 
   const matchQuery = {
     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
-    'postBiddingProcess.taskStatus': 'ongoing',
+    taskStatus: 'ongoing',
   };
 
   const aggArray = [
@@ -622,5 +622,5 @@ export const reservationServices = {
   getSignedUrl,
   deleteReservation,
   getReservationRequestForServiceProviderAdmin,
-  getOngoingReservationRequestForServiceProviderAdmin,
+  getOngoingReservationRequestForServiceProviderCompany,
 };

@@ -44,8 +44,8 @@ router.get(
 );
 
 router.get(
-  '/get-ongoing-reservation-request-for-service-provider-admin',
-  reservationController.getOngoingReservationRequestForServiceProviderAdmin,
+  '/get-ongoing-reservation-request-for-service-provider-company',
+  reservationController.getOngoingReservationRequestForServiceProviderCompany,
 );
 
 export const reservationRoutes = router;
