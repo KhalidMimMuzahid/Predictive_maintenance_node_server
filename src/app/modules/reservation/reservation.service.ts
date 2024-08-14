@@ -475,7 +475,7 @@ const getAllReservationsCount = async (machineType: TMachineType2) => {
   return { all, onDemand, accepted, ongoing, completed, canceled };
 };
 
-const getReservationRequestForServiceProviderAdmin = async (
+const getReservationRequestForServiceProviderCompany = async (
   resType: string,
   adminUserid: mongoose.Types.ObjectId,
 ) => {
@@ -621,6 +621,6 @@ export const reservationServices = {
   getReservationCountByServiceProviderCompany,
   getSignedUrl,
   deleteReservation,
-  getReservationRequestForServiceProviderAdmin,
+  getReservationRequestForServiceProviderCompany,
   getOngoingReservationRequestForServiceProviderCompany,
 };
