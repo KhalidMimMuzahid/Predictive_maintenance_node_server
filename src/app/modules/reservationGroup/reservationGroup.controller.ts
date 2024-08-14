@@ -469,17 +469,6 @@ const deleteBid: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-const getRecentBid: RequestHandler = catchAsync(async (req, res) => {
-  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  const results = await reservationGroupServices.getRecentBid(auth._id);
-  // send response
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'recent bid retrived',
-    data: results,
-  });
-});
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
@@ -496,5 +485,4 @@ export const reservationGroupController = {
   acceptOnDemandResGroupByCompany,
   updateBid,
   deleteBid,
-  getRecentBid,
 };
