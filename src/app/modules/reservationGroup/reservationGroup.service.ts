@@ -786,7 +786,16 @@ const getAllOnDemandUnassignedToCompanyResGroups = async () => {
   const result = await ReservationRequestGroup.find({
     isOnDemand: true,
     'postBiddingProcess.serviceProviderCompany': { $exists: false },
-  });
+  }).populate([
+    {
+      path: 'reservationRequests',
+      options: { strictPopulate: false },
+    },
+    // {
+    //   path: 'user',
+    //   populate: { path: 'showaUser', options: { strictPopulate: false } },
+    // },
+  ]);
 
   return result;
 };
