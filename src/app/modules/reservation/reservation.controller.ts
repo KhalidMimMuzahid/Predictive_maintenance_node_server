@@ -338,15 +338,15 @@ const deleteReservation: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
-  async (req, res) => {
+const getReservationRequestForServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
 
     const adminUserid = auth?._id;
     const resType: string = req?.query?.resType as string;
     const result =
-      await reservationServices.getReservationRequestForServiceProviderAdmin(
+      await reservationServices.getReservationRequestForServiceProviderCompany(
         resType,
         adminUserid,
       );
@@ -357,8 +357,7 @@ const getReservationRequestForServiceProviderAdmin: RequestHandler = catchAsync(
         'Get Reservation Reqeust for Service Provider Admin Successfully',
       data: result,
     });
-  },
-);
+  });
 
 const getOngoingReservationRequestForServiceProviderCompany: RequestHandler =
   catchAsync(async (req, res) => {
@@ -395,6 +394,6 @@ export const reservationController = {
   getReservationCountByServiceProviderCompany,
   uploadRequestImage,
   deleteReservation,
-  getReservationRequestForServiceProviderAdmin,
+  getReservationRequestForServiceProviderCompany,
   getOngoingReservationRequestForServiceProviderCompany,
 };

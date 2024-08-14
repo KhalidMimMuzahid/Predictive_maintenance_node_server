@@ -39,8 +39,8 @@ router.post('/upload-image', reservationController.uploadRequestImage);
 router.delete('/delete', reservationController.deleteReservation);
 
 router.get(
-  '/get-reservation-request-for-service-provider-admin',
-  reservationController.getReservationRequestForServiceProviderAdmin,
+  '/get-reservation-request-for-service-provider-company',
+  reservationController.getReservationRequestForServiceProviderCompany,
 );
 
 router.get(
