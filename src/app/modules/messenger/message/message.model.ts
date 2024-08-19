@@ -9,9 +9,9 @@ import {
 } from './message.interface';
 
 const FileSchema: Schema = new Schema<TFile>({
-  fileUrl: { type: 'string', required: true },
+  url: { type: 'string', required: true },
   fileName: { type: 'string', required: true },
-  extension: { type: 'string', required: true },
+  fileType: { type: 'string', required: true },
 });
 const TCreatingGroupSchema = new Schema<TCreatingGroup>({
   createdByUser: {

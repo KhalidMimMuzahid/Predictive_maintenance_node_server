@@ -42,7 +42,7 @@ const uploadPhoto = async ({
   const key = `${'assets/' + folder + '/' + Date.now().toString() + fileName}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const uploadedFile = (await uploadFileToAWS({ key, file })) as unknown as any;
-  return { url: uploadedFile?.Location, fileType };
+  return { url: uploadedFile?.Location, fileType, fileName };
 };
 export const extraDataServices = {
   deleteMyAccount,
