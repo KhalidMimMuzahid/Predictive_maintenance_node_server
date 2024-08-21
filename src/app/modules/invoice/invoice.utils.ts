@@ -3,6 +3,7 @@ import AppError from '../../errors/AppError';
 import { TeamOfEngineers } from '../teamOfEngineers/teamOfEngineers.model';
 import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
 import mongoose from 'mongoose';
+import { Invoice } from './invoice.model';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const getTeamOfEngineers = async (teamOfEngineers_id: any) => {
@@ -16,7 +17,51 @@ export const getAllInvoicesOfReservationGroup = (
   return invoice.invoiceGroup?.invoices as mongoose.Types.ObjectId[];
 };
 
-export const isEngineerBelongsToThisTeam = async (
+export const isEngineerBelongsToThisTeamByReservation = async ({
+  user,
+  reservationRequest,
+}: {
+  user: mongoose.Types.ObjectId;
+  reservationRequest: string;
+}) => {
+  const invoiceData = (await Invoice.findOne({
+    reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+  })
+    .select('invoiceGroup')
+    .populate([
+      {
+        path: 'invoiceGroup',
+        select: 'taskAssignee.teamOfEngineers',
+        populate: {
+          path: 'taskAssignee.teamOfEngineers',
+          // select: 'taskAssignee.teamOfEngineers',
+          select: 'members.member',
+          populate: {
+            path: 'members.member',
+            select: 'user',
+            options: { strictPopulate: false },
+          },
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ])) as unknown as any;
+
+  if (!invoiceData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no invoice found for this reservation',
+    );
+  }
+  const teamOfEngineersArray =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    invoiceData?.invoiceGroup?.taskAssignee?.teamOfEngineers?.members as any[];
+  const engineerExistsInThisTeam = teamOfEngineersArray.findIndex(
+    (each) => each?.member?.user?.toString() === user?.toString(),
+  );
+
+  return engineerExistsInThisTeam === (-1 || null || undefined) ? false : true;
+};
+export const isEngineerBelongsToThisTeamByInvoiceGroup = async (
   invoiceGroup: any,
   user: mongoose.Types.ObjectId,
 ) => {

@@ -1,16 +1,18 @@
 import mongoose from 'mongoose';
-import { TAdditionalProduct } from './invoice.interface';
+import { TAdditionalProduct, TInspecting } from './invoice.interface';
 import { Invoice } from './invoice.model';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import {
   getAllInvoicesOfReservationGroup,
-  isEngineerBelongsToThisTeam,
+  isEngineerBelongsToThisTeamByInvoiceGroup,
+  isEngineerBelongsToThisTeamByReservation,
 } from './invoice.utils';
 import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 import { TeamOfEngineers } from '../teamOfEngineers/teamOfEngineers.model';
 import { User } from '../user/user.model';
+import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
 
 const addAdditionalProduct = async ({
   user,
@@ -42,10 +44,11 @@ const addAdditionalProduct = async ({
     serviceProviderEngineer: any;
   };
   if (role === 'serviceProviderEngineer') {
-    isEngineerBelongsToThisTeamData = await isEngineerBelongsToThisTeam(
-      existingInvoice?.invoiceGroup,
-      user,
-    );
+    isEngineerBelongsToThisTeamData =
+      await isEngineerBelongsToThisTeamByInvoiceGroup(
+        existingInvoice?.invoiceGroup,
+        user,
+      );
     if (
       !isEngineerBelongsToThisTeamData?.isUserBelongsToThisTeam ||
       !isEngineerBelongsToThisTeamData?.serviceProviderEngineer
@@ -88,7 +91,125 @@ const addAdditionalProduct = async ({
   await existingInvoice.save();
   return existingInvoice;
 };
+const inspection = async ({
+  user,
+  reservationRequest,
+  inspectingData,
+}: {
+  user: mongoose.Types.ObjectId;
+  reservationRequest: string;
+  inspectingData: TInspecting;
+}) => {
+  const engineerExistsInThisTeam =
+    await isEngineerBelongsToThisTeamByReservation({
+      reservationRequest,
+      user: user,
+    });
 
+  if (engineerExistsInThisTeam) {
+    const serviceProviderEngineer = await ServiceProviderEngineer.findOne({
+      user,
+    });
+    if (!serviceProviderEngineer?._id) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const products = inspectingData?.additionalProducts?.products?.map(
+      (product) => {
+        return {
+          addedBy: serviceProviderEngineer?._id,
+          addedByUserType: 'serviceProviderEngineer',
+          productName: product?.productName,
+
+          cost: {
+            price: product?.cost?.price,
+            quantity: product?.cost?.quantity,
+            // tax: { type: Number, default: 0 },
+            totalAmount: product?.cost?.price * product?.cost?.quantity,
+          },
+        };
+      },
+    );
+    const totalAmount =
+      products?.reduce(
+        (accumulator, product) => accumulator + product?.cost?.totalAmount,
+        0,
+      ) || 0;
+
+    const documents = inspectingData?.additionalProducts?.documents;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateObject: any = {
+      $inc: {
+        'additionalProducts.totalAmount': totalAmount,
+      },
+    };
+
+    if (products?.length > 0 || documents?.length > 0) {
+      const $push = {};
+      if (products?.length > 0) {
+        $push['additionalProducts.products'] = {
+          $each: products,
+        };
+      }
+      if (documents?.length > 0) {
+        $push['additionalProducts.documents'] = {
+          $each: documents,
+        };
+      }
+      updateObject['$push'] = $push;
+    }
+    if (inspectingData?.inspection) {
+      updateObject['inspection'] = inspectingData?.inspection;
+    }
+
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+      {
+        reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+        taskStatus: 'ongoing',
+      },
+      updateObject,
+      // {
+      //   inspection: inspectingData?.inspection,
+
+      //   $inc: {
+      //     'additionalProducts.totalAmount': totalAmount,
+      //   },
+      //   $push: {
+      //     'additionalProducts.products': {
+      //       $each: products,
+      //     },
+      //     'additionalProducts.documents': {
+      //       $each: documents,
+      //     },
+      //   },
+      // },
+    );
+
+    if (!updatedInvoice) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+    // const updatedReservationRequest =
+    //   await ReservationRequest.findByIdAndUpdate(reservationRequest, {
+    //     reasonOfReSchedule: rescheduleData?.reasonOfReSchedule,
+    //     $push: { 'schedule.schedules': new Date(rescheduleData.schedule) },
+    //   });
+    // return updatedReservationRequest;
+  } else {
+    // return error
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you are not in the team that has assigned in this reservation',
+    );
+  }
+};
 const changeStatusToCompleted = async ({
   user,
   reservationRequest_id,
@@ -111,7 +232,10 @@ const changeStatusToCompleted = async ({
 
   //   const isUserBelongsToThisTeam =
   const { isUserBelongsToThisTeam, serviceProviderEngineer } =
-    await isEngineerBelongsToThisTeam(existingInvoice?.invoiceGroup, user);
+    await isEngineerBelongsToThisTeamByInvoiceGroup(
+      existingInvoice?.invoiceGroup,
+      user,
+    );
   if (!isUserBelongsToThisTeam || !serviceProviderEngineer) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -267,6 +391,7 @@ const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
 };
 export const invoiceServices = {
   addAdditionalProduct,
+  inspection,
   changeStatusToCompleted,
   getAllInvoices,
   getAllInvoicesByUser,

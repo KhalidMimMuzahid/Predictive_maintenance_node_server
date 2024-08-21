@@ -19,6 +19,9 @@ import {
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
+import { TAuth } from '../../interface/error';
+import { isEngineerBelongsToThisTeamByReservation } from '../invoice/invoice.utils';
+
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
@@ -215,7 +218,67 @@ const createReservationRequestIntoDB = async ({
   const result = await ReservationRequest.create(reservationRequest);
   return result;
 };
+const reschedule = async ({
+  reservationRequest,
+  rescheduleData,
+  auth,
+}: {
+  reservationRequest: string;
+  rescheduleData: {
+    schedule: string;
+    reasonOfReSchedule?: string;
+  };
+  auth: TAuth;
+}) => {
+  // const invoiceData = (await Invoice.findOne({
+  //   reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+  // })
+  //   .select('invoiceGroup')
+  //   .populate([
+  //     {
+  //       path: 'invoiceGroup',
+  //       select: 'taskAssignee.teamOfEngineers',
+  //       populate: {
+  //         path: 'taskAssignee.teamOfEngineers',
+  //         // select: 'taskAssignee.teamOfEngineers',
+  //         select: 'members.member',
+  //         populate: {
+  //           path: 'members.member',
+  //           select: 'user',
+  //           options: { strictPopulate: false },
+  //         },
+  //       },
+  //     },
+  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   ])) as unknown as any;
 
+  // const teamOfEngineersArray =
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   invoiceData?.invoiceGroup?.taskAssignee?.teamOfEngineers?.members as any[];
+  // const engineerExistsInThisTeam = teamOfEngineersArray.findIndex(
+  //   (each) => each?.user?.toString() === auth?._id,
+  // );
+
+  const engineerExistsInThisTeam = isEngineerBelongsToThisTeamByReservation({
+    reservationRequest,
+    user: auth?._id,
+  });
+  if (engineerExistsInThisTeam) {
+    const updatedReservationRequest =
+      await ReservationRequest.findByIdAndUpdate(reservationRequest, {
+        reasonOfReSchedule: rescheduleData?.reasonOfReSchedule,
+        $push: { 'schedule.schedules': new Date(rescheduleData.schedule) },
+      });
+
+    return updatedReservationRequest;
+  } else {
+    // return error
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you are not in the team that has assigned in this reservation',
+    );
+  }
+};
 const getMyReservationsService = async (uid: string | Types.ObjectId) => {
   const results = await ReservationRequest.find({ user: uid })
     .populate({
@@ -566,6 +629,7 @@ const deleteReservation = async (reservationRequest: string) => {
 
 export const reservationServices = {
   createReservationRequestIntoDB,
+  reschedule,
   getMyReservationsService,
   getMyReservationsByStatusService,
   getReservationsByStatusService,

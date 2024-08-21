@@ -27,6 +27,41 @@ const createReservationValidationSchema = z.object({
   problem: createProblemValidationSchema,
   schedule: createScheduleValidationSchema,
 });
+
+
+
+export const rescheduleSchema = z.object({
+  rescheduleData: z
+    .object({
+      schedule: z.string(),
+      reasonOfReSchedule: z.string().optional(),
+    })
+    .refine(
+      (date) => {
+        if (date) {
+          try {
+            const { schedule } = date;
+            const scheduleDate = new Date(schedule);
+            if (scheduleDate > new Date()) {
+              return true;
+            } else {
+              return false;
+            }
+          } catch (error) {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      },
+
+      {
+        message: 'Please follow the rules of rescheduling date',
+        path: ['date'],
+      },
+    ),
+});
 export const reservationValidation = {
   createReservationValidationSchema,
+  rescheduleSchema,
 };

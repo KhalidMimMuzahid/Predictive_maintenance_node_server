@@ -67,6 +67,34 @@ const createReservationRequest: RequestHandler = catchAsync(
   },
 );
 
+const reschedule: RequestHandler = catchAsync(async (req, res) => {
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: ['serviceProviderEngineer'] });
+  const reservationRequest = req?.query?.reservationRequest as string;
+  if (!reservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequest Id is request to reschedule',
+    );
+  }
+
+  const rescheduleData = req?.body?.rescheduleData;
+  const results = await reservationServices.reschedule({
+    reservationRequest,
+    rescheduleData,
+    auth,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation reschedule successfully',
+    data: results,
+  });
+});
+
 const getMyReservations: RequestHandler = catchAsync(async (req, res) => {
   // const { uid } = req.params;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -377,6 +405,7 @@ const getReservationRequestForServiceProviderCompany: RequestHandler =
 
 export const reservationController = {
   createReservationRequest,
+  reschedule,
   getMyReservations,
   getMyReservationsByStatus,
   getReservationsByStatus,
