@@ -20,6 +20,7 @@ import { subscriptionPurchasedRoutes } from '../modules/subscriptionPurchased/su
 import { feedRoutes } from '../modules/feed/feed.routes';
 import { marketplaceRoutes } from '../modules/marketplace/marketplace.routes';
 import { predefinedValueRoutes } from '../modules/predefinedValue/predefinedValue.routes';
+import { aiRoutes } from '../modules/ai/ai.routes';
 
 const router = express.Router();
 
@@ -43,6 +44,7 @@ const moduleRoutes: any[] = [
   { path: '/feed', route: feedRoutes },
   { path: '/marketplace', route: marketplaceRoutes },
   { path: '/predefined-value', route: predefinedValueRoutes },
+  { path: '/ai', route: aiRoutes },
   { path: '/extra-data', route: extraDataRoutes },
 ];
 
