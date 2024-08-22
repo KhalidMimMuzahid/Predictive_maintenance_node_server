@@ -259,7 +259,7 @@ const getLiveReservationGroups: RequestHandler = catchAsync(
     // we are checking the permission of this api
     checkUserAccessApi({
       auth,
-      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+      accessUsers: ['serviceProviderAdmin'],
     });
 
     const results = await reservationGroupServices.getLiveReservationGroups();

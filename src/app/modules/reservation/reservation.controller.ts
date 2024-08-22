@@ -8,6 +8,7 @@ import sendResponse from '../../utils/sendResponse';
 import {
   machineTypeArray,
   machineTypeArray2,
+  resTypeArrayForServiceProvider,
   reservationTypeArray,
 } from './reservation.const';
 import {
@@ -345,6 +346,21 @@ const getReservationRequestForServiceProviderCompany: RequestHandler =
 
     const adminUserid = auth?._id;
     const resType: string = req?.query?.resType as string;
+    //
+
+    if (!resTypeArrayForServiceProvider.some((each) => each === resType)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `res type must be any of ${resTypeArrayForServiceProvider.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+
     const result =
       await reservationServices.getReservationRequestForServiceProviderCompany(
         resType,
@@ -358,28 +374,6 @@ const getReservationRequestForServiceProviderCompany: RequestHandler =
       data: result,
     });
   });
-
-// const getOngoingReservationRequestForServiceProviderCompany: RequestHandler =
-//   catchAsync(async (req, res) => {
-//     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-//     checkUserAccessApi({
-//       auth,
-//       accessUsers: ['serviceProviderAdmin'],
-//     });
-
-//     const adminUserId = auth?._id;
-
-//     const result =
-//       await reservationServices.getOngoingReservationRequestForServiceProviderCompany(
-//         adminUserId,
-//       );
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: 'Ongoing reservation requests retrieved successfully',
-//       data: result,
-//     });
-//   });
 
 const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
   catchAsync(async (req, res) => {
@@ -427,6 +421,5 @@ export const reservationController = {
   uploadRequestImage,
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
-  //getOngoingReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
 };

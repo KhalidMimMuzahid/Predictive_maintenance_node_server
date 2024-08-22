@@ -83,7 +83,6 @@ export const orderProducts = async ({
 
   // await session.commitTransaction();
   // await session.endSession();
-
   return createdOrder;
   //   } catch (error) {
   //     await session.abortTransaction();

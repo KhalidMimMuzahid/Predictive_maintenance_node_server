@@ -486,11 +486,12 @@ const getReservationRequestForServiceProviderCompany = async (
   const matchQuery = {
     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
   };
-  if (resType !== 're-schedule') {
-    matchQuery['postBiddingProcess.taskStatus'] = resType;
+  if (resType !== 'rescheduled') {
+    matchQuery['taskStatus'] = resType;
   }
-  let aggArray;
-  if (resType === 're-schedule') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let aggArray: any;
+  if (resType === 'rescheduled') {
     aggArray = [
       {
         $match: matchQuery,
@@ -552,7 +553,7 @@ const getReservationRequestForServiceProviderCompany = async (
 
 const deleteReservation = async (reservationRequest: string) => {
   const invoice = await Invoice.findOne({ reservationRequest });
-  console.log(invoice);
+
   if (!invoice) {
     //
   } else {
@@ -562,52 +563,6 @@ const deleteReservation = async (reservationRequest: string) => {
 
   return invoice;
 };
-
-// const getOngoingReservationRequestForServiceProviderCompany = async (
-//   adminUserid: mongoose.Types.ObjectId,
-// ) => {
-//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
-//     serviceProviderAdmin: adminUserid,
-//   });
-
-//   if (!serviceProviderCompany) {
-//     throw new AppError(
-//       httpStatus.NOT_FOUND,
-//       'Service provider company not found for this user.',
-//     );
-//   }
-
-//   const matchQuery = {
-//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
-//     taskStatus: 'ongoing',
-//   };
-
-//   const aggArray = [
-//     {
-//       $match: matchQuery,
-//     },
-//     {
-//       $lookup: {
-//         from: 'reservationrequests',
-//         localField: 'reservationRequest',
-//         foreignField: '_id',
-//         as: 'reservationRequest',
-//       },
-//     },
-//     {
-//       $unwind: '$reservationRequest',
-//     },
-//     {
-//       $replaceRoot: {
-//         newRoot: '$reservationRequest',
-//       },
-//     },
-//   ];
-
-//   const result = await Invoice.aggregate(aggArray);
-
-//   return result;
-// };
 
 const getDashboardScreenAnalyzingForServiceProviderCompany = async (
   serviceProviderCompanyId: string,
@@ -708,6 +663,5 @@ export const reservationServices = {
   getSignedUrl,
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
-  //getOngoingReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
 };
