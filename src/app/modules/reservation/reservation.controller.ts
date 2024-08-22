@@ -359,24 +359,56 @@ const getReservationRequestForServiceProviderCompany: RequestHandler =
     });
   });
 
-const getOngoingReservationRequestForServiceProviderCompany: RequestHandler =
+// const getOngoingReservationRequestForServiceProviderCompany: RequestHandler =
+//   catchAsync(async (req, res) => {
+//     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//     checkUserAccessApi({
+//       auth,
+//       accessUsers: ['serviceProviderAdmin'],
+//     });
+
+//     const adminUserId = auth?._id;
+
+//     const result =
+//       await reservationServices.getOngoingReservationRequestForServiceProviderCompany(
+//         adminUserId,
+//       );
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Ongoing reservation requests retrieved successfully',
+//       data: result,
+//     });
+//   });
+
+const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
   catchAsync(async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderAdmin'],
+      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
     });
 
-    const adminUserId = auth?._id;
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Service Provider Company ID is required to get the dashboard summary',
+      );
+    }
 
     const result =
-      await reservationServices.getOngoingReservationRequestForServiceProviderCompany(
-        adminUserId,
+      await reservationServices.getDashboardScreenAnalyzingForServiceProviderCompany(
+        serviceProviderCompany,
       );
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'Ongoing reservation requests retrieved successfully',
+      message: 'Dashboard summary retrieved successfully',
       data: result,
     });
   });
@@ -395,5 +427,6 @@ export const reservationController = {
   uploadRequestImage,
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
-  getOngoingReservationRequestForServiceProviderCompany,
+  //getOngoingReservationRequestForServiceProviderCompany,
+  getDashboardScreenAnalyzingForServiceProviderCompany,
 };

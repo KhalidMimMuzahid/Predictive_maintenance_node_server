@@ -563,51 +563,137 @@ const deleteReservation = async (reservationRequest: string) => {
   return invoice;
 };
 
-const getOngoingReservationRequestForServiceProviderCompany = async (
-  adminUserid: mongoose.Types.ObjectId,
+// const getOngoingReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'ongoing',
+//   };
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+
+//   return result;
+// };
+
+const getDashboardScreenAnalyzingForServiceProviderCompany = async (
+  serviceProviderCompanyId: string,
 ) => {
-  const serviceProviderCompany = await ServiceProviderCompany.findOne({
-    serviceProviderAdmin: adminUserid,
-  });
+  const serviceProviderCompany = await ServiceProviderCompany.findById(
+    serviceProviderCompanyId,
+  );
 
   if (!serviceProviderCompany) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      'Service provider company not found for this user.',
+      'Service provider company not found',
     );
   }
 
-  const matchQuery = {
+  const objectId = new mongoose.Types.ObjectId(serviceProviderCompanyId);
+
+  const totalRequestsCountAggregation = await ReservationRequestGroup.aggregate(
+    [
+      { $unwind: '$allBids' },
+      { $match: { 'allBids.serviceProviderCompany': objectId } },
+      { $count: 'totalRequests' },
+    ],
+  );
+
+  const totalRequestsCount =
+    totalRequestsCountAggregation[0]?.totalRequests || 0;
+
+  const liveRequestsCount = await ReservationRequestGroup.countDocuments({
+    'allBids.serviceProviderCompany': serviceProviderCompany._id,
+  });
+
+  const bidedRequestsCountAggregation = await ReservationRequestGroup.aggregate(
+    [
+      { $unwind: '$allBids' },
+      { $match: { 'allBids.serviceProviderCompany': objectId } },
+      { $count: 'bidedRequests' },
+    ],
+  );
+
+  const bidedRequestsCount =
+    bidedRequestsCountAggregation[0]?.bidedRequests || 0;
+
+  const ongoingRequestsCount = await ReservationRequestGroup.countDocuments({
     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
     taskStatus: 'ongoing',
+  });
+
+  const completedRequestsCount = await ReservationRequestGroup.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    taskStatus: 'completed',
+  });
+
+  const canceledRequestsCount = await ReservationRequestGroup.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    taskStatus: 'canceled',
+  });
+
+  return {
+    totalRequests: {
+      count: totalRequestsCount,
+      progress: null,
+    },
+    live: {
+      count: liveRequestsCount,
+      progress: null,
+    },
+    bided: {
+      count: bidedRequestsCount,
+      progress: null,
+    },
+    ongoing: {
+      count: ongoingRequestsCount,
+      progress: null,
+    },
+    completed: {
+      count: completedRequestsCount,
+      progress: null,
+    },
+    canceled: {
+      count: canceledRequestsCount,
+      progress: null,
+    },
   };
-
-  const aggArray = [
-    {
-      $match: matchQuery,
-    },
-    {
-      $lookup: {
-        from: 'reservationrequests',
-        localField: 'reservationRequest',
-        foreignField: '_id',
-        as: 'reservationRequest',
-      },
-    },
-    {
-      $unwind: '$reservationRequest',
-    },
-    {
-      $replaceRoot: {
-        newRoot: '$reservationRequest',
-      },
-    },
-  ];
-
-  const result = await Invoice.aggregate(aggArray);
-
-  return result;
 };
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   getMyReservationsService,
@@ -622,5 +708,6 @@ export const reservationServices = {
   getSignedUrl,
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
-  getOngoingReservationRequestForServiceProviderCompany,
+  //getOngoingReservationRequestForServiceProviderCompany,
+  getDashboardScreenAnalyzingForServiceProviderCompany,
 };
