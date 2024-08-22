@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import {
   TModule,
+  TSectionName,
   TSensorModuleAttached,
 } from './sensorModuleAttached.interface';
 
@@ -23,7 +24,7 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
     macAddress: { type: String, unique: true, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     purpose: { type: String },
-    sectionName: { type: String, required: true },
+
     isSwitchedOn: { type: Boolean, required: true },
 
     moduleType: {
@@ -41,6 +42,20 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
         ),
       },
     ],
+    sectionName: {
+      type: new mongoose.Schema<TSectionName>(
+        {
+          vibration: [String],
+          temperature: [String],
+        },
+        {
+          timestamps: false,
+        },
+      ),
+
+      required: true,
+    },
+
     subscriptionPurchased: {
       type: Schema.Types.ObjectId,
       ref: 'SubscriptionPurchased',
