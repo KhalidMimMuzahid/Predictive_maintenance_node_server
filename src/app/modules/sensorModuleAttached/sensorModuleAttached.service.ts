@@ -333,7 +333,7 @@ const getSensorModuleAttachedByMacAddress = async (macAddress: string) => {
   return sensorModuleAttached;
 };
 export const sensorAttachedModuleServices = {
-  addSensorAttachedModuleIntoDB,
+  addSensorAttachedModuleIntoDB, //  to do
   addSensorDataInToDB,
   getAttachedSensorModulesByuser,
   getAttachedSensorModulesByMachine,

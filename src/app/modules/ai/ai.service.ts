@@ -60,6 +60,22 @@ const addThreshold = async ({
     }
   }
 };
+
+
+const getThresholds = async () => {
+  const thresholdData = await AI.find({
+    type: 'threshold',
+  });
+  const processedData = thresholdData?.map((each) => {
+    return {
+      sectionName: each?.threshold?.sectionName,
+      temperature: each?.threshold?.temperature,
+      vibrations: each?.threshold?.vibrations,
+    };
+  });
+  return processedData;
+};
 export const aiServices = {
   addThreshold,
+  getThresholds,
 };

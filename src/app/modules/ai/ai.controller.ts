@@ -24,6 +24,18 @@ const addThreshold: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getThresholds: RequestHandler = catchAsync(async (req, res) => {
+  const result = await aiServices.getThresholds();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'threshold data has retrieved successfully',
+    data: result,
+  });
+});
+
 export const aiController = {
   addThreshold,
+  getThresholds,
 };

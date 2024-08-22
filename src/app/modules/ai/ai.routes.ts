@@ -11,4 +11,8 @@ router.post(
   aiController.addThreshold,
 );
 
+
+
+router.get('/get-thresholds', aiController.getThresholds);
+
 export const aiRoutes = router;
