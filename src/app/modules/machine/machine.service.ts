@@ -10,6 +10,8 @@ import httpStatus from 'http-status';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { SensorModule } from '../sensorModule/sensorModule.model';
 import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
+import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
+import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
@@ -127,7 +129,7 @@ const addSensorConnectedMachineInToDB = async ({
   if (!subscriptionPurchasedData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'subscriptionPurchased you provided is found as you purchased it yet',
+      'subscriptionPurchased you provided is found as you had not purchased it yet',
     );
   }
 
@@ -169,6 +171,47 @@ const addSensorConnectedMachineInToDB = async ({
       'this sensor module has already been sold out with this macAddress',
     );
   }
+
+  // ------------------------
+  const isValid = await validateSectionNamesData({
+    moduleType: sensorModule?.moduleType,
+    sectionNamesData: sensorModuleAttached?.sectionName,
+  });
+
+  if (!isValid) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'section names data are not valid according to its module type',
+    );
+  }
+
+  const sectionNames = await predefinedValueServices.getIotSectionNames();
+
+  sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {
+    const isSectionNameValid = sectionNames.some(
+      (each) => each === sectionName,
+    );
+    if (!isSectionNameValid) {
+      // throw error
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'section names must be pre defined',
+      );
+    }
+  });
+  sensorModuleAttached?.sectionName?.temperature?.forEach((sectionName) => {
+    const isSectionNameValid = sectionNames.some(
+      (each) => each === sectionName,
+    );
+    if (!isSectionNameValid) {
+      // throw error
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'section names must be pre defined',
+      );
+    }
+  });
+  // ------------------------
 
   sensorModuleAttached.sensorModule = sensorModule._id;
   sensorModuleAttached.macAddress = sensorModuleMacAddress;
@@ -597,8 +640,10 @@ const machineHealthStatus = async ({
   await Promise.all(
     machineHealthData?.sensorModulesAttached?.map(async (each) => {
       await SensorModuleAttached.findByIdAndUpdate(each?._id?.toString(), {
-        healthStatus: each?.healthStatus,
+        healthStatuses: each?.healthStatuses,
       });
+
+      // And now save all the sensor data and its health status
     }),
   );
 

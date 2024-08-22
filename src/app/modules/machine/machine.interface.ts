@@ -1,5 +1,11 @@
 import { Types } from 'mongoose';
 import { TCompany, TIsDeleted } from '../common/common.interface';
+import {
+  THealthStatuses,
+  TModule,
+  TModuleType,
+  TSectionName,
+} from '../sensorModuleAttached/sensorModuleAttached.interface';
  export type THealthStatus = 'bad' | 'good' | 'moderate' | 'unknown';
 
  export type TMachine = {
@@ -33,10 +39,24 @@ import { TCompany, TIsDeleted } from '../common/common.interface';
    // objectId of TAttachedSensor model
  };
 
+
+
+
+
+
+
+                   
+
+
+
+
  export type TMachineHealthStatus = {
    healthStatus: THealthStatus;
    sensorModulesAttached: {
      _id: Types.ObjectId;
-     healthStatus: THealthStatus;
+     moduleType: TModuleType;
+     sectionName: TSectionName;
+     healthStatuses: THealthStatuses;
+     sensorData: TModule[];
    }[];
  };

@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import {
+  THealthStatuses,
   TModule,
   TSectionName,
   TSensorModuleAttached,
@@ -14,12 +15,12 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
     },
     isAttached: { type: Boolean, required: true, default: false },
     machine: { type: Schema.Types.ObjectId, ref: 'Machine' },
-
-    healthStatus: {
-      type: String,
-      enum: ['bad', 'good', 'moderate'],
-      required: true,
-      default: 'good',
+    healthStatuses: {
+      type: new Schema<THealthStatuses>({
+        temperature: [String],
+        vibration: [String],
+      }),
+      required: false,
     },
     macAddress: { type: String, unique: true, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
