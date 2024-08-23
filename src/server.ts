@@ -2,7 +2,6 @@
 import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import config from './app/config';
 import cors from 'cors';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFoundErrorHandler from './app/middlewares/notFOund';
@@ -48,9 +47,9 @@ async function main() {
     app.use(globalErrorHandler);
     app.use('*', notFoundErrorHandler);
 
-    await mongoose.connect(config.database_url as string);
-    server.listen(config.port, () => {
-      console.log(`Showa app listening on port ${config.port}`);
+    await mongoose.connect(process.env.SHOWA_DB_URL as string);
+    server.listen(process.env.PORT, () => {
+      console.log(`Showa app listening on port ${process.env.PORT}`);
     });
 
     // -------- ************* ---------------  // all cron functions starts here

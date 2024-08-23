@@ -1,12 +1,12 @@
 import { RequestHandler } from 'express';
-import catchAsync from '../../../utils/catchAsync';
+import httpStatus from 'http-status';
+import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
+import catchAsync from '../../../utils/catchAsync';
 import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
 import sendResponse from '../../../utils/sendResponse';
-import httpStatus from 'http-status';
 import { TPost, TReplay } from './post.interface';
 import { postServices } from './post.service';
-import AppError from '../../../errors/AppError';
 
 const createPost: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;

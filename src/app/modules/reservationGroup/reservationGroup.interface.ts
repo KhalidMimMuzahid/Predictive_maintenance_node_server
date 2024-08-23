@@ -18,14 +18,6 @@ export type TPostBiddingProcess = {
   // biddingAmount: number; //May be we need this;
 };
 
-
-
-
-
-
-
-
-
 export type TBiddingDate = {
   startDate?: Date;
   endDate?: Date;
@@ -50,6 +42,3 @@ export type TReservationRequestGroup = {
 
   postBiddingProcess?: TPostBiddingProcess;
 };
-
-
-

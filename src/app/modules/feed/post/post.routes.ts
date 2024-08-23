@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { postController } from './post.controller';
 import validateRequest from '../../../middlewares/validateRequest';
+import { postController } from './post.controller';
 import { postValidation } from './post.validation';
 
 const router: Router = express.Router();
@@ -34,11 +34,7 @@ router.get(
 );
 router.get('/get-all-shares-by-post', postController.getAllSharesByPost);
 
-
-
-
-
-
 router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
+//router.get('/get-post-by-postId', postController.getPostByPostId);
 
 export const postRoutes = router;

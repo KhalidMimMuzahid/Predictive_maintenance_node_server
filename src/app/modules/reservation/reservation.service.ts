@@ -627,6 +627,129 @@ const deleteReservation = async (reservationRequest: string) => {
   return invoice;
 };
 
+const getDashboardScreenAnalyzingForServiceProviderCompany = async (
+  serviceProviderCompanyId: string,
+) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findById(
+    serviceProviderCompanyId,
+  );
+
+  if (!serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Service provider company not found',
+    );
+  }
+
+  const serviceProviderCompanyObjectId = new mongoose.Types.ObjectId(
+    serviceProviderCompanyId,
+  );
+
+  const totalRequestsCountAggregation = await ReservationRequestGroup.aggregate(
+    [
+      { $unwind: '$allBids' },
+      {
+        $match: {
+          'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+        },
+      },
+      { $count: 'totalRequests' },
+    ],
+  );
+
+  const totalRequestsCount =
+    totalRequestsCountAggregation[0]?.totalRequests || 0;
+
+  // const liveRequestsCount = await ReservationRequestGroup.countDocuments({
+  //   'allBids.serviceProviderCompany': serviceProviderCompany._id,
+  // });
+
+  const liveRequestsCount = await ReservationRequestGroup.aggregate([
+    {
+      $match: {
+        'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+
+        'biddingDate.startDate': { $exists: true, $lt: new Date() },
+        $or: [
+          { 'biddingDate.endDate': { $exists: false } },
+          {
+            $expr: {
+              $and: [
+                { $gt: ['$biddingDate.endDate', new Date()] },
+                { $gt: ['$biddingDate.endDate', '$biddingDate.startDate'] },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      $count: 'count',
+    },
+  ]);
+
+  const liveCount =
+    liveRequestsCount.length > 0 ? liveRequestsCount[0].count : 0;
+
+  const bidedRequestsCountAggregation = await ReservationRequestGroup.aggregate(
+    [
+      { $unwind: '$allBids' },
+      {
+        $match: {
+          'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+        },
+      },
+      { $count: 'bidedRequests' },
+    ],
+  );
+
+  const bidedRequestsCount =
+    bidedRequestsCountAggregation[0]?.bidedRequests || 0;
+
+  const ongoingRequestsCount = await ReservationRequestGroup.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompanyObjectId,
+    taskStatus: 'ongoing',
+  });
+
+  const completedRequestsCount = await ReservationRequestGroup.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompanyObjectId,
+    taskStatus: 'completed',
+  });
+
+  const canceledRequestsCount = await ReservationRequestGroup.countDocuments({
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompanyObjectId,
+    //serviceProviderCompany._id
+    taskStatus: 'canceled',
+  });
+
+  return {
+    totalRequests: {
+      count: totalRequestsCount,
+      progress: null,
+    },
+    live: {
+      count: liveCount,
+      progress: null,
+    },
+    bided: {
+      count: bidedRequestsCount,
+      progress: null,
+    },
+    ongoing: {
+      count: ongoingRequestsCount,
+      progress: null,
+    },
+    completed: {
+      count: completedRequestsCount,
+      progress: null,
+    },
+    canceled: {
+      count: canceledRequestsCount,
+      progress: null,
+    },
+  };
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   reschedule,
@@ -642,4 +765,5 @@ export const reservationServices = {
   getSignedUrl,
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
+  getDashboardScreenAnalyzingForServiceProviderCompany,
 };

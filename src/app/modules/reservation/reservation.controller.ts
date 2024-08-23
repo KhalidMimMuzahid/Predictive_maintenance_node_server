@@ -403,6 +403,38 @@ const getReservationRequestForServiceProviderCompany: RequestHandler =
     });
   });
 
+const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+    });
+
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Service Provider Company ID is required to get the dashboard summary',
+      );
+    }
+
+    const result =
+      await reservationServices.getDashboardScreenAnalyzingForServiceProviderCompany(
+        serviceProviderCompany,
+      );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Dashboard screen analyzing retrieved successfully',
+      data: result,
+    });
+  });
+
 export const reservationController = {
   createReservationRequest,
   reschedule,
@@ -418,4 +450,5 @@ export const reservationController = {
   uploadRequestImage,
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
+  getDashboardScreenAnalyzingForServiceProviderCompany,
 };
