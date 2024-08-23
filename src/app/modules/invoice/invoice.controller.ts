@@ -6,7 +6,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { invoiceServices } from './invoice.services';
 import sendResponse from '../../utils/sendResponse';
-import { TAdditionalProduct } from './invoice.interface';
+import { TAdditionalProduct, TInspecting } from './invoice.interface';
 
 const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -41,18 +41,37 @@ const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const inspection: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  // // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
 
+  const reservationRequest: string = req?.query?.reservationRequest as string;
 
-
-
-
-
-
-
-
-
-
+  const inspectingData: TInspecting = req?.body as TInspecting;
+  if (!reservationRequest || !inspectingData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequest and inspectingData are required to inspect reservation',
+    );
+  }
+  const result = await invoiceServices.inspection({
+    user: auth?._id,
+    reservationRequest,
+    inspectingData,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'additional products has been added',
+    data: result,
+  });
+});
 
 const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -153,6 +172,7 @@ const getAllAssignedTasksByEngineer: RequestHandler = catchAsync(
 
 export const invoiceController = {
   addAdditionalProducts,
+  inspection,
   changeStatusToCompleted,
   getAllInvoices,
   getAllInvoicesByUser,

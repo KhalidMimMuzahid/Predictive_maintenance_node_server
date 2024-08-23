@@ -6,9 +6,9 @@ export const messageValidationSchema = z.object({
 
   file: z
     .object({
-      fileUrl: z.string(),
+      url: z.string(),
       fileName: z.string(),
-      extension: z.string(),
+      fileType: z.string(),
     })
     .optional(),
 });

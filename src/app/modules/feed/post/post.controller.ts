@@ -269,7 +269,7 @@ const removeReplayFromComment: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'post has been commented successfully',
+    message: 'replay has been remove from comment successfully',
     data: result,
   });
 });

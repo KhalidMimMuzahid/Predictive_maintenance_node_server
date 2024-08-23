@@ -45,7 +45,12 @@ export type TReservationRequest = {
   problem: TProblem;
 
   schedule: TSchedule;
+  reasonOfReSchedule: string; // service provider engineer will set this value
   invoice: Types.ObjectId; // objectId of invoice Model for this reservation
 
   reservationRequestGroup?: Types.ObjectId; // objectId of reservationGroup
 };
+
+
+
+

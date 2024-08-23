@@ -23,7 +23,9 @@ const sendMessage: RequestHandler = catchAsync(async (req, res) => {
   if (!messageData[`${messageData?.type}`]) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `${messageData[`${messageData?.type}`]} is required to send message`,
+      `${
+        messageData[`${messageData?.type}`]
+      } is required to send ${messageData?.type}`,
     );
   }
   const result = await messageServices.sendMessage({

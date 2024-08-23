@@ -1,5 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
-import { CompanySchema, IsDeletedSchema } from '../common/common.model';
+import {
+  AddressSchema,
+  CompanySchema,
+  IsDeletedSchema,
+} from '../common/common.model';
 import { TMachine } from './machine.interface';
 
 export const MachineSchema: Schema = new Schema<TMachine>(
@@ -22,6 +26,7 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       required: true,
     },
     name: { type: String, required: true },
+    address: { type: AddressSchema, required: false },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     usedFor: { type: CompanySchema, required: true },
     generalMachine: {

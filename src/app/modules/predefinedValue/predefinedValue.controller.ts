@@ -93,7 +93,9 @@ const addIotSectionName: RequestHandler = catchAsync(async (req, res) => {
       'sectionName is required to add IOT sectionName',
     );
   }
-  const result = await predefinedValueServices.addIotSectionName(sectionName);
+  const result = await predefinedValueServices.addIotSectionName(
+    sectionName?.toLowerCase(),
+  );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,

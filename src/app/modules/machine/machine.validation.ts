@@ -13,6 +13,7 @@ export const createCompanyValidationSchema = z.object({
 export const createMachineValidationSchema = z.object({
   category: z.enum(['washing-machine', 'general-machine']),
   name: z.string().min(1),
+  address: createAddressValidationSchema.optional(),
   usedFor: createCompanyValidationSchema,
   generalMachine: z
     .object({
@@ -37,7 +38,21 @@ const createConnectedMachineValidationSchema = z.object({
 });
 const sensorModuleSchema = z.object({
   _id: z.string(),
-  healthStatus: z.enum(['bad', 'good', 'moderate']),
+  sensorData: z.array(
+    z.object({
+      vibration: z.array(z.number()),
+      temperature: z.array(z.number()),
+    }),
+  ),
+  moduleType: z.string(),
+  sectionName: z.object({
+    vibration: z.array(z.string()),
+    temperature: z.array(z.string()),
+  }),
+  healthStatuses: z.object({
+    vibration: z.array(z.enum(['bad', 'good', 'moderate'])),
+    temperature: z.array(z.enum(['bad', 'good', 'moderate'])),
+  }),
 });
 const machineHealthStatusSchema = z.object({
   healthStatus: z.enum(['bad', 'good', 'moderate']),

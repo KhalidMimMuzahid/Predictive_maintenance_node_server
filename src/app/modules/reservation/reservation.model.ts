@@ -38,6 +38,10 @@ const ReservationRequestSchema: Schema = new Schema<TReservationRequest>(
       // date: { type: Date, required: true },
       schedules: [{ type: Date }],
     },
+    reasonOfReSchedule: {
+      type: String,
+      required: false,
+    },
     invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },
     reservationRequestGroup: {
       type: Schema.Types.ObjectId,

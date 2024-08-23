@@ -2,13 +2,14 @@ import { z } from 'zod';
 
 // Define validation schema for TAddress
 export const createAddressValidationSchema = z.object({
-  street: z.string(),
-  city: z.string(),
-  prefecture: z.string(),
-  postalCode: z.string(),
+  googleString: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  prefecture: z.string().optional(),
+  postalCode: z.string().optional(),
   country: z.string(),
-  buildingName: z.string(),
-  roomNumber: z.string(),
+  buildingName: z.string().optional(),
+  roomNumber: z.string().optional(),
   state: z.string().optional(),
   details: z.string().optional(),
 });

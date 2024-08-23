@@ -40,7 +40,7 @@ export type TProduct = {
   taxStatus: 'applicable' | 'not-applicable';
   taxRate: number; // taxStatusClass
 
-  size: string[];
+  size?: string[];
 
   packageSize: {
     weight: number; // in kgs

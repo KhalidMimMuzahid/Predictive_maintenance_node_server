@@ -10,6 +10,12 @@ router.post(
   validateRequest(reservationValidation.createReservationValidationSchema),
   reservationController.createReservationRequest,
 );
+router.patch(
+  '/reschedule',
+  validateRequest(reservationValidation.rescheduleSchema),
+  reservationController.reschedule,
+);
+
 router.get('/', reservationController.getMyReservations);
 router.get('/all-reservation', reservationController.getAllReservations);
 router.get(

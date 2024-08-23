@@ -9,7 +9,7 @@ import router from './app/routes/index';
 import { manageAuth } from './app/middlewares/manageAuth';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-
+import fileUpload from 'express-fileupload';
 // import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
 // import { CronJob } from 'cron';
 
@@ -23,7 +23,8 @@ async function main() {
     //parsers
     app.use(express.json());
     app.use(cors());
-
+    // app.use(express.urlencoded({extended: true}))
+    app.use(fileUpload());
     io.on('connection', (socket) => {
       console.log(`${socket.id} socket just connected!`);
       socket.on('disconnect', () => {

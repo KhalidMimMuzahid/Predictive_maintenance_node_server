@@ -1,9 +1,12 @@
 import mongoose, { Types } from 'mongoose';
 
+
+
+
 export type TFile = {
-  fileUrl: string;
+  url: string;
   fileName: string;
-  extension: string;
+  fileType: string;
 };
 
 export type TAddingMember = {
