@@ -637,6 +637,7 @@ const machineHealthStatus = async ({
   //   machineHealthData,
   // });
   machineData.healthStatus = machineHealthData?.healthStatus;
+  machineData.issues = machineHealthData?.issues;
   await machineData.save();
   await Promise.all(
     machineHealthData?.sensorModulesAttached?.map(async (each) => {

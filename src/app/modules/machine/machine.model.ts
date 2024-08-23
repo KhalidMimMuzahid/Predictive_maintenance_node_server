@@ -26,6 +26,10 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       required: true,
     },
     name: { type: String, required: true },
+    issues: {
+      type: [String],
+      required: false,
+    },
     // address: { type: AddressSchema, required: false },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     usedFor: { type: CompanySchema, required: true },

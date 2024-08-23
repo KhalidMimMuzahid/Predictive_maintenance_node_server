@@ -14,6 +14,7 @@ export type TMachine = {
   packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;
+  issues?: string[];
   // address?: TAddress;
   // userType: 'showa-user'; // default value 'showa-user'; for future we may need, if showa-user and other user type like organization or anything
   user: Types.ObjectId; // objectId of User model
@@ -39,24 +40,14 @@ export type TMachine = {
   // objectId of TAttachedSensor model
 };
 
-
-
-
-
-
-
-                   
-
-
-
-
- export type TMachineHealthStatus = {
-   healthStatus: THealthStatus;
-   sensorModulesAttached: {
-     _id: Types.ObjectId;
-     moduleType: TModuleType;
-     sectionName: TSectionName;
-     healthStatuses: THealthStatuses;
-     sensorData: TModule[];
-   }[];
- };
+export type TMachineHealthStatus = {
+  healthStatus: THealthStatus;
+  issues: string[];
+  sensorModulesAttached: {
+    _id: Types.ObjectId;
+    moduleType: TModuleType;
+    sectionName: TSectionName;
+    healthStatuses: THealthStatuses;
+    sensorData: TModule[];
+  }[];
+};

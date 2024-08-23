@@ -56,6 +56,7 @@ const sensorModuleSchema = z.object({
 });
 const machineHealthStatusSchema = z.object({
   healthStatus: z.enum(['bad', 'good', 'moderate']),
+  issues: z.array(z.string()),
   sensorModulesAttached: z.array(sensorModuleSchema),
 });
 export const machineValidation = {
