@@ -42,7 +42,7 @@ async function main() {
     app.use('/api/v2', manageAuth, router);
 
     const showWelcome = (req: Request, res: Response) => {
-      res.status(200).json({ message: 'Welcome to Showa home version 2.0' });
+      res.status(200).json({ message: 'Welcome to Showa home version 2.0.1' });
     };
     app.use('/', showWelcome);
     app.use(globalErrorHandler);

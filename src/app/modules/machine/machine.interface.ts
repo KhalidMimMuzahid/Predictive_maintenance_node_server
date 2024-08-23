@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TAddress, TCompany, TIsDeleted } from '../common/common.interface';
+import { TCompany, TIsDeleted } from '../common/common.interface';
 import {
   THealthStatuses,
   TModule,
@@ -14,7 +14,7 @@ export type TMachine = {
   packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;
-  address?: TAddress;
+  // address?: TAddress;
   // userType: 'showa-user'; // default value 'showa-user'; for future we may need, if showa-user and other user type like organization or anything
   user: Types.ObjectId; // objectId of User model
   usedFor?: TCompany; // shop or company info ;
