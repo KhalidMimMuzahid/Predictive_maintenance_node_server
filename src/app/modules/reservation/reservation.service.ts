@@ -578,12 +578,18 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
     );
   }
 
-  const objectId = new mongoose.Types.ObjectId(serviceProviderCompanyId);
+  const serviceProviderCompanyObjectId = new mongoose.Types.ObjectId(
+    serviceProviderCompanyId,
+  );
 
   const totalRequestsCountAggregation = await ReservationRequestGroup.aggregate(
     [
       { $unwind: '$allBids' },
-      { $match: { 'allBids.serviceProviderCompany': objectId } },
+      {
+        $match: {
+          'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+        },
+      },
       { $count: 'totalRequests' },
     ],
   );
@@ -591,14 +597,45 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
   const totalRequestsCount =
     totalRequestsCountAggregation[0]?.totalRequests || 0;
 
-  const liveRequestsCount = await ReservationRequestGroup.countDocuments({
-    'allBids.serviceProviderCompany': serviceProviderCompany._id,
-  });
+  // const liveRequestsCount = await ReservationRequestGroup.countDocuments({
+  //   'allBids.serviceProviderCompany': serviceProviderCompany._id,
+  // });
+
+  const liveRequestsCount = await ReservationRequestGroup.aggregate([
+    {
+      $match: {
+        'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+
+        'biddingDate.startDate': { $exists: true, $lt: new Date() },
+        $or: [
+          { 'biddingDate.endDate': { $exists: false } },
+          {
+            $expr: {
+              $and: [
+                { $gt: ['$biddingDate.endDate', new Date()] },
+                { $gt: ['$biddingDate.endDate', '$biddingDate.startDate'] },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      $count: 'count',
+    },
+  ]);
+
+  const liveCount =
+    liveRequestsCount.length > 0 ? liveRequestsCount[0].count : 0;
 
   const bidedRequestsCountAggregation = await ReservationRequestGroup.aggregate(
     [
       { $unwind: '$allBids' },
-      { $match: { 'allBids.serviceProviderCompany': objectId } },
+      {
+        $match: {
+          'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+        },
+      },
       { $count: 'bidedRequests' },
     ],
   );
@@ -607,17 +644,18 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
     bidedRequestsCountAggregation[0]?.bidedRequests || 0;
 
   const ongoingRequestsCount = await ReservationRequestGroup.countDocuments({
-    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompanyObjectId,
     taskStatus: 'ongoing',
   });
 
   const completedRequestsCount = await ReservationRequestGroup.countDocuments({
-    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompanyObjectId,
     taskStatus: 'completed',
   });
 
   const canceledRequestsCount = await ReservationRequestGroup.countDocuments({
-    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompanyObjectId,
+    //serviceProviderCompany._id
     taskStatus: 'canceled',
   });
 
@@ -627,7 +665,7 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
       progress: null,
     },
     live: {
-      count: liveRequestsCount,
+      count: liveCount,
       progress: null,
     },
     bided: {

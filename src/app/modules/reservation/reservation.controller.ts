@@ -402,7 +402,7 @@ const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'Dashboard summary retrieved successfully',
+      message: 'Dashboard screen analyzing retrieved successfully',
       data: result,
     });
   });
