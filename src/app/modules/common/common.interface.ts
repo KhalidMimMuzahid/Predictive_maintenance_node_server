@@ -1,13 +1,14 @@
 import { Types } from 'mongoose';
 
 export type TAddress = {
-  street: string;
-  city: string;
-  prefecture: string;
-  postalCode: string;
-  country: string;
-  buildingName: string;
-  roomNumber: string;
+  googleString?: string;
+  street?: string;
+  city?: string;
+  prefecture?: string;
+  postalCode?: string;
+  country: string; // its a required field
+  buildingName?: string;
+  roomNumber?: string;
   state?: string;
   details?: string;
 };

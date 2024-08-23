@@ -12,6 +12,7 @@ import { SensorModule } from '../sensorModule/sensorModule.model';
 import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
+import { AI } from '../ai/ai.model';
 
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
@@ -644,6 +645,17 @@ const machineHealthStatus = async ({
       });
 
       // And now save all the sensor data and its health status
+
+      await AI.create({
+        type: 'aiData',
+        aiData: {
+          sensorModuleAttached: each?._id,
+          moduleType: each?.moduleType,
+          sectionName: each?.sectionName,
+          healthStatuses: each?.healthStatuses,
+          sensorData: each?.sensorData,
+        },
+      });
     }),
   );
 

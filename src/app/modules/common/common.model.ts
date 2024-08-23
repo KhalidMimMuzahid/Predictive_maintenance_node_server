@@ -8,13 +8,14 @@ import {
 } from './common.interface';
 
 export const AddressSchema: Schema = new Schema<TAddress>({
-  street: { type: String, required: true },
-  city: { type: String, required: true },
-  prefecture: { type: String, required: true },
-  postalCode: { type: String, required: true },
+  googleString: { type: String, required: false },
+  street: { type: String, required: false },
+  city: { type: String, required: false },
+  prefecture: { type: String, required: false },
+  postalCode: { type: String, required: false },
   country: { type: String, required: true },
-  buildingName: { type: String, required: true },
-  roomNumber: { type: String, required: true },
+  buildingName: { type: String, required: false },
+  roomNumber: { type: String, required: false },
   state: { type: String, required: false },
   details: { type: String, required: false },
 });
