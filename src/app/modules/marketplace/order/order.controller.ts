@@ -93,8 +93,24 @@ const getOrderDetailsByOrder: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllOrders: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const result = await orderServices.getAllOrders();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'All orders have been retrieved successfully',
+    data: result,
+  });
+});
+
 export const orderController = {
   orderProduct,
   getMyAllOrder,
   getOrderDetailsByOrder,
+  getAllOrders,
 };

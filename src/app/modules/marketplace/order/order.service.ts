@@ -68,8 +68,25 @@ const getOrderDetailsByOrder = async (order: string) => {
   return orderData;
 };
 
+const getAllOrders = async () => {
+  const orders = await Order.find()
+    .sort({ _id: -1 })
+    .populate([
+      {
+        path: 'product',
+        options: { strictPopulate: false },
+      },
+      // {
+      //   path: 'user',
+      //   populate: { path: 'showaUser', options: { strictPopulate: false } },
+      // },
+    ]);
+  return orders;
+};
+
 export const orderServices = {
   orderProduct,
   getMyAllOrder,
   getOrderDetailsByOrder,
+  getAllOrders,
 };

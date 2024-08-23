@@ -15,5 +15,6 @@ router.get(
   '/get-order-details-by-order',
   orderController.getOrderDetailsByOrder,
 );
+router.get('/get-all-orders', orderController.getAllOrders);
 
 export const orderRoutes = router;
