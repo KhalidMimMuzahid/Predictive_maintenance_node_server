@@ -13,6 +13,7 @@ import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurc
 import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 import { AI } from '../ai/ai.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
@@ -664,9 +665,53 @@ const machineHealthStatus = async ({
 };
 
 const machinePerformanceBrandWise = async () => {
-  const brands = await predefinedValueServices.getMachineBrands();
+  const brandsData = await predefinedValueServices.getMachineBrands();
+  const brandsList = brandsData?.map((each) => each?.brand);
+  // return brandsList;
 
-  return brands;
+  const machineBrandNamePerformanceArray = await Promise.all(
+    brandsList.map(async (brandName) => {
+      const machineCount = await Machine.countDocuments({
+        brand: brandName,
+      });
+      const allReservationBrandWise = await ReservationRequest.aggregate([
+        {
+          $lookup: {
+            from: 'machines', // Name of the showaUser collection
+            localField: 'machine',
+            foreignField: '_id',
+            as: 'machine',
+          },
+        },
+        {
+          $unwind: '$machine',
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$machine',
+          },
+        },
+        { $match: { brand: brandName } },
+        { $count: 'totalReservations' },
+      ]);
+      const reservationCountBrandWise =
+        allReservationBrandWise[0]?.totalReservations || 0;
+      // console.log('------', reservationCount);
+      let performance: number;
+
+      if (machineCount === 0) {
+        performance = null;
+      } else if (reservationCountBrandWise === 0) {
+        performance = 100;
+      } else {
+        performance = machineCount / reservationCountBrandWise;
+      }
+
+      return { [brandName]: performance };
+    }),
+  );
+
+  return machineBrandNamePerformanceArray;
 };
 
 export const machineServices = {
