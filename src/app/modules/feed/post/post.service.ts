@@ -591,7 +591,7 @@ const getAllReplaysByComment = async ({
 };
 
 const getPostByPostId = async (postId: string) => {
-  const postData = await Post.findById(postId).populate('user').exec();
+  const postData = await Post.findById(postId).populate('user');
   return postData;
 };
 export const postServices = {

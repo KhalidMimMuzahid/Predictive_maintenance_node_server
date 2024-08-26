@@ -418,7 +418,7 @@ const getPostByPostId: RequestHandler = catchAsync(async (req, res) => {
     );
   }
 
-  const result = await postServices.getPostByPost(postId);
+  const result = await postServices.getPostByPostId(postId);
 
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
