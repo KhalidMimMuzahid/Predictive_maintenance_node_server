@@ -401,6 +401,38 @@ const getAllReplaysByComment: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getPostByPostId: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const postId = req?.query?.postId as string;
+
+  if (!postId) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'post id is required to get the post',
+    );
+  }
+
+  const result = await postServices.getPostByPost(postId);
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Post retrieved successfully',
+    data: result,
+  });
+});
+
 export const postController = {
   createPost,
   sharePost,
@@ -408,7 +440,6 @@ export const postController = {
   unlikePost,
   commentPost,
   removeComment,
-
   addReplayIntoComment,
   removeReplayFromComment,
   getPostsForMyFeed,
@@ -416,4 +447,5 @@ export const postController = {
   getAllCommentsByPost,
   getAllSharesByPost,
   getAllReplaysByComment,
+  getPostByPostId,
 };

@@ -36,8 +36,9 @@ export type TPost = {
   location: string;
   viewPrivacy: 'public' | 'friends' | 'only-me' | 'specific-friends';
   commentPrivacy: 'public' | 'friends' | 'only-me' | 'specific-friends';
-  user: mongoose.Types.ObjectId;
+
   isSponsored: boolean;
+  user: mongoose.Types.ObjectId;
 
   sharingStatus: TSharingStatus;
   // following: mongoose.Types.ObjectId;

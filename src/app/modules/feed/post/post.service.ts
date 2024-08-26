@@ -1,10 +1,10 @@
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
+import { User } from '../../user/user.model';
 import { TPost, TReplay, TSharingStatus } from './post.interface';
 import Post from './post.model';
-import mongoose from 'mongoose';
-import { User } from '../../user/user.model';
 
 const createPost = async ({
   postData,
@@ -589,6 +589,11 @@ const getAllReplaysByComment = async ({
 
   return postData[0]?.replies;
 };
+
+const getPostByPostId = async (postId: string) => {
+  const postData = await Post.findById(postId).populate('user').exec();
+  return postData;
+};
 export const postServices = {
   createPost,
   sharePost,
@@ -603,4 +608,5 @@ export const postServices = {
   getAllCommentsByPost,
   getAllSharesByPost,
   getAllReplaysByComment,
+  getPostByPostId,
 };
