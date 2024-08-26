@@ -61,6 +61,21 @@ router.post(
 
 // customer ---------------******---------------
 //  machine ---------------******---------------
+router.post(
+  '/add-machine-brand-name',
+  predefinedValueController.addMachineBrandName,
+);
+router.post(
+  '/add-machine-model-name',
+  predefinedValueController.addMachineModelName,
+);
+
+router.get(
+  '/get-all-machine-brands',
+  predefinedValueController.getMachineBrands,
+);
+
+
 
 
 export const predefinedValueRoutes = router;

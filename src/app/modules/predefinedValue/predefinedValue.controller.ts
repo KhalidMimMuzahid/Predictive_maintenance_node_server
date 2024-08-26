@@ -19,7 +19,9 @@ const addProductCategories: RequestHandler = catchAsync(async (req, res) => {
       'category is required to add product category',
     );
   }
-  const result = await predefinedValueServices.addProductCategories(category);
+  const result = await predefinedValueServices.addProductCategories(
+    category.toLowerCase(),
+  );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -39,16 +41,16 @@ const addProductSubCategories: RequestHandler = catchAsync(async (req, res) => {
   const category: string = req?.query?.category as string; // _id of existing category
   const subCategory: string = req?.query?.subCategory as string; // sub category value
 
-  if (!category) {
+  if (!category || !subCategory) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'category is required to add product category',
+      'category and subCategory are required to add product category',
     );
   }
   const result = await predefinedValueServices.addProductSubCategories({
     predefinedValue,
     category,
-    subCategory,
+    subCategory: subCategory.toLowerCase(),
   });
   // send response
   sendResponse(res, {
@@ -71,7 +73,9 @@ const addShopCategories: RequestHandler = catchAsync(async (req, res) => {
       'category is required to add shop category',
     );
   }
-  const result = await predefinedValueServices.addShopCategories(category);
+  const result = await predefinedValueServices.addShopCategories(
+    category.toLowerCase(),
+  );
   // send response
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -105,6 +109,59 @@ const addIotSectionName: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const addMachineBrandName: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+  const brandName: string = req?.query?.brandName as string;
+  if (!brandName) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'brandName is required to add model brandName',
+    );
+  }
+  const result = await predefinedValueServices.addMachineBrandName(
+    brandName.toLowerCase(),
+  );
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'product category has added successfully',
+    data: result,
+  });
+});
+
+const addMachineModelName: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const predefinedValue: string = req?.query?.predefinedValue as string; // _id of existing redefinedValue
+  const brand: string = req?.query?.brand as string; // _id of existing brand
+  const modelName: string = req?.query?.modelName as string; // sub category value
+
+  if (!brand) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'brand and modelName are required to add machine model',
+    );
+  }
+  const result = await predefinedValueServices.addMachineModelName({
+    predefinedValue,
+    brand,
+    modelName: modelName.toLowerCase(),
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'product sub-category has added successfully',
+    data: result,
+  });
+});
 
 const addReservationRequestStatus: RequestHandler = catchAsync(
   async (req, res) => {
@@ -264,12 +321,32 @@ const getIotSectionNames: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getMachineBrands: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await predefinedValueServices.getMachineBrands();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'machine brands have retrieved successfully',
+    data: result,
+  });
+});
 
 export const predefinedValueController = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
   addIotSectionName,
+  addMachineBrandName,
+  addMachineModelName,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
@@ -279,4 +356,5 @@ export const predefinedValueController = {
   getProductCategories,
   getShopCategories,
   getIotSectionNames,
+  getMachineBrands,
 };

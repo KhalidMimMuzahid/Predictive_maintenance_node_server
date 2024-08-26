@@ -9,6 +9,7 @@ import {
   TMachine,
   TSensorModuleAttached,
   TShop,
+  TBrands,
 } from './predefinedValue.interface';
 const CategorySchema = new Schema<TCategory>({
   category: String,
@@ -48,8 +49,12 @@ const ReservationRequestSchema = new Schema<TReservationRequest>({
 });
 const machineSchema = new Schema<TMachine>({
   types: [String],
-  brands: [String],
-  models: [String],
+  brands: [
+    new Schema<TBrands>({
+      brand: String,
+      models: [String],
+    }),
+  ],
 });
 const predefinedValueSchema = new Schema<TPredefinedValue>(
   {

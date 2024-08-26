@@ -27,11 +27,13 @@ export type TReservationRequest = {
   areas?: string[];
   issues?: string[];
 };
-
+export type TBrands = {
+  brand: string;
+  models?: string[];
+};
 export type TMachine = {
   types?: string[]; // type of washing machine
-  brands?: string[];
-  models?: string[];
+  brands?: TBrands[];
 };
 export type TPredefinedValue = {
   type:
