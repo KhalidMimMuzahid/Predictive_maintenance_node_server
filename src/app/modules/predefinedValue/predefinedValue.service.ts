@@ -180,6 +180,27 @@ const addIotSectionName = async (sectionName: string) => {
 };
 
 const addMachineBrandName = async (brandName: string) => {
+
+
+  const machineBrands = await PredefinedValue.findOne(
+    {
+      type: 'machine',
+    },
+    { 'machine.brands': 1 },
+  );
+  const brandsList =
+    machineBrands?.machine?.brands?.map((each) => each?.brand) || [];
+
+  if (brandsList?.findIndex((each) => each === brandName) !== -1) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `brand Name cannot be duplicated`,
+    );
+  }
+
+
+
+
   const previousMachineBrandsNames = await PredefinedValue.findOne(
     {
       type: 'machine',

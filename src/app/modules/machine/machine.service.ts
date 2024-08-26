@@ -47,7 +47,7 @@ const addNonConnectedMachineInToDB = async ({
     );
   }
 
-  checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
+  await checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
 
   // check purchased subscription here
 
@@ -153,7 +153,7 @@ const addSensorConnectedMachineInToDB = async ({
     );
   }
 
-  checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
+  await checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
 
   // create sensor module attached
 
@@ -663,6 +663,12 @@ const machineHealthStatus = async ({
   return null;
 };
 
+const machinePerformanceBrandWise = async () => {
+  const brands = await predefinedValueServices.getMachineBrands();
+
+  return brands;
+};
+
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
@@ -678,6 +684,7 @@ export const machineServices = {
   deleteMachineService,
   addModuleToMachineInToDB,
   machineHealthStatus,
+  machinePerformanceBrandWise,
   // changeStatusService,
   // addSensorService,
 };

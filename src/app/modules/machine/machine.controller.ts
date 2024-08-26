@@ -8,6 +8,7 @@ import { TAuth } from '../../interface/error';
 import AppError from '../../errors/AppError';
 import mongoose, { Types } from 'mongoose';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
@@ -323,6 +324,22 @@ const machineHealthStatus: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const machinePerformanceBrandWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+    const result = await machineServices.machinePerformanceBrandWise();
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Machine brand-wise performance has updated successfully',
+      data: result,
+    });
+  },
+);
 export const machineController = {
   addSensorNonConnectedMachine,
   addSensorConnectedMachine,
@@ -337,6 +354,7 @@ export const machineController = {
   getMachineBy_id,
   deleteMachine,
   machineHealthStatus,
+  machinePerformanceBrandWise,
   // changeStatus,
   // addSensor,
 };

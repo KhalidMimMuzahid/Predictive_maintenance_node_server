@@ -51,6 +51,10 @@ router.patch(
   validateRequest(machineValidation.machineHealthStatusSchema),
   machineController.machineHealthStatus,
 );
+router.get(
+  '/machine-performance-brand-wise',
+  machineController.machinePerformanceBrandWise,
+);
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);
 export const machineRoutes = router;
