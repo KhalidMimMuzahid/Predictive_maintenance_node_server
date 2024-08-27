@@ -666,7 +666,7 @@ const machineHealthStatus = async ({
 
 const machinePerformanceBrandWise = async () => {
   const brandsData = await predefinedValueServices.getMachineBrands();
-  const brandsList = brandsData?.map((each) => each?.brand);
+  const brandsList = brandsData?.brands?.map((each) => each?.brand);
   // return brandsList;
 
   const machineBrandNamePerformanceArray = await Promise.all(
@@ -724,7 +724,7 @@ const machinePerformanceModelWise = async () => {
   // console.log(brandsData);
   const modelsList: string[] = [];
 
-  brandsData?.forEach((each) => {
+  brandsData?.brands?.forEach((each) => {
     if (each?.models?.length > 0) {
       // eslint-disable-next-line no-unsafe-optional-chaining
       modelsList.push(...each?.models);

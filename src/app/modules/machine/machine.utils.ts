@@ -28,7 +28,7 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
   }
 
   const brandsData = await predefinedValueServices.getMachineBrands();
-  const brandsList = brandsData?.map((each) => each?.brand);
+  const brandsList = brandsData?.brands?.map((each) => each?.brand);
 
   if (!brandsList.some((each) => each === payload?.brand)) {
     throw new AppError(
@@ -40,8 +40,9 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
     );
   }
 
-  const models = brandsData?.find((each) => each?.brand === payload?.brand)
-    ?.models;
+  const models = brandsData?.brands?.find(
+    (each) => each?.brand === payload?.brand,
+  )?.models;
 
   if (!models.some((each) => each === payload?.model)) {
     throw new AppError(

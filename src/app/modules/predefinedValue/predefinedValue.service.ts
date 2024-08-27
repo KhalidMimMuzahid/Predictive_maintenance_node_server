@@ -510,7 +510,10 @@ const getMachineBrands = async () => {
     },
     { 'machine.brands': 1 },
   );
-  return machineBrands?.machine?.brands || [];
+  return machineBrands?.machine?.brands
+    ? { brands: machineBrands?.machine?.brands, _id: machineBrands?._id }
+    : null;
+  
   // return productCategories;
 };
 export const predefinedValueServices = {
