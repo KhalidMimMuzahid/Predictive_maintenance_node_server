@@ -55,6 +55,14 @@ router.get(
   '/machine-performance-brand-wise',
   machineController.machinePerformanceBrandWise,
 );
+router.get(
+  '/machine-performance-brand-wise',
+  machineController.machinePerformanceBrandWise,
+);
+router.get(
+  '/machine-performance-model-wise',
+  machineController.machinePerformanceModelWise,
+);
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);
 export const machineRoutes = router;

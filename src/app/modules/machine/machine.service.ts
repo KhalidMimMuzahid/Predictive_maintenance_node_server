@@ -676,6 +676,11 @@ const machinePerformanceBrandWise = async () => {
       });
       const allReservationBrandWise = await ReservationRequest.aggregate([
         {
+          $match: {
+            status: { $nin: ['completed', 'canceled'] },
+          },
+        },
+        {
           $lookup: {
             from: 'machines', // Name of the showaUser collection
             localField: 'machine',
@@ -701,10 +706,9 @@ const machinePerformanceBrandWise = async () => {
 
       if (machineCount === 0) {
         performance = null;
-      } else if (reservationCountBrandWise === 0) {
-        performance = 100;
       } else {
-        performance = machineCount / reservationCountBrandWise;
+        performance =
+          ((machineCount - reservationCountBrandWise) / machineCount) * 100;
       }
 
       return { [brandName]: performance };
@@ -712,6 +716,68 @@ const machinePerformanceBrandWise = async () => {
   );
 
   return machineBrandNamePerformanceArray;
+};
+
+const machinePerformanceModelWise = async () => {
+  const brandsData = await predefinedValueServices.getMachineBrands();
+
+  // console.log(brandsData);
+  const modelsList: string[] = [];
+
+  brandsData?.forEach((each) => {
+    if (each?.models?.length > 0) {
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      modelsList.push(...each?.models);
+    }
+  });
+
+  const machineModelNamePerformanceArray = await Promise.all(
+    modelsList.map(async (modelName) => {
+      const machineCount = await Machine.countDocuments({
+        model: modelName,
+      });
+      const allReservationModelWise = await ReservationRequest.aggregate([
+        {
+          $match: {
+            status: { $nin: ['completed', 'canceled'] },
+          },
+        },
+        {
+          $lookup: {
+            from: 'machines', // Name of the showaUser collection
+            localField: 'machine',
+            foreignField: '_id',
+            as: 'machine',
+          },
+        },
+        {
+          $unwind: '$machine',
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$machine',
+          },
+        },
+        { $match: { model: modelName } },
+        { $count: 'totalReservations' },
+      ]);
+      const reservationCountModelWise =
+        allReservationModelWise[0]?.totalReservations || 0;
+      // console.log('------', reservationCount);
+      let performance: number;
+
+      if (machineCount === 0) {
+        performance = null;
+      } else {
+        performance =
+          ((machineCount - reservationCountModelWise) / machineCount) * 100;
+      }
+
+      return { [modelName]: performance };
+    }),
+  );
+
+  return machineModelNamePerformanceArray;
 };
 
 export const machineServices = {
@@ -730,6 +796,7 @@ export const machineServices = {
   addModuleToMachineInToDB,
   machineHealthStatus,
   machinePerformanceBrandWise,
+  machinePerformanceModelWise,
   // changeStatusService,
   // addSensorService,
 };

@@ -340,6 +340,22 @@ const machinePerformanceBrandWise: RequestHandler = catchAsync(
     });
   },
 );
+
+const machinePerformanceModelWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+    const result = await machineServices.machinePerformanceModelWise();
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Machine model-wise performance has updated successfully',
+      data: result,
+    });
+  },
+);
 export const machineController = {
   addSensorNonConnectedMachine,
   addSensorConnectedMachine,
@@ -355,6 +371,7 @@ export const machineController = {
   deleteMachine,
   machineHealthStatus,
   machinePerformanceBrandWise,
+  machinePerformanceModelWise,
   // changeStatus,
   // addSensor,
 };
