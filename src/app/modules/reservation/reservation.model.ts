@@ -3,6 +3,11 @@ import { TReservationRequest } from './reservation.interface';
 
 const ReservationRequestSchema: Schema = new Schema<TReservationRequest>(
   {
+    isValid: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     requestId: { type: String, required: true },
     machine: { type: Schema.Types.ObjectId, ref: 'Machine', required: true },

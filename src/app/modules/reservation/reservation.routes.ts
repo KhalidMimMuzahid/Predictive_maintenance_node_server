@@ -10,6 +10,11 @@ router.post(
   validateRequest(reservationValidation.createReservationValidationSchema),
   reservationController.createReservationRequest,
 );
+
+router.patch(
+  '/set-reservation-as-invalid',
+  reservationController.setReservationAsInvalid,
+);
 router.patch(
   '/reschedule',
   validateRequest(reservationValidation.rescheduleSchema),

@@ -218,6 +218,23 @@ const createReservationRequestIntoDB = async ({
   const result = await ReservationRequest.create(reservationRequest);
   return result;
 };
+
+const setReservationAsInvalid = async (reservationRequest: string) => {
+  const updatedReservationRequest = await ReservationRequest.findByIdAndUpdate(
+    reservationRequest,
+    {
+      isValid: false,
+    },
+  );
+
+  if (!updatedReservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'something went wrong, please try again',
+    );
+  }
+  return null;
+};
 const reschedule = async ({
   reservationRequest,
   rescheduleData,
@@ -230,35 +247,6 @@ const reschedule = async ({
   };
   auth: TAuth;
 }) => {
-  // const invoiceData = (await Invoice.findOne({
-  //   reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
-  // })
-  //   .select('invoiceGroup')
-  //   .populate([
-  //     {
-  //       path: 'invoiceGroup',
-  //       select: 'taskAssignee.teamOfEngineers',
-  //       populate: {
-  //         path: 'taskAssignee.teamOfEngineers',
-  //         // select: 'taskAssignee.teamOfEngineers',
-  //         select: 'members.member',
-  //         populate: {
-  //           path: 'members.member',
-  //           select: 'user',
-  //           options: { strictPopulate: false },
-  //         },
-  //       },
-  //     },
-  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //   ])) as unknown as any;
-
-  // const teamOfEngineersArray =
-  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //   invoiceData?.invoiceGroup?.taskAssignee?.teamOfEngineers?.members as any[];
-  // const engineerExistsInThisTeam = teamOfEngineersArray.findIndex(
-  //   (each) => each?.user?.toString() === auth?._id,
-  // );
-
   const engineerExistsInThisTeam = isEngineerBelongsToThisTeamByReservation({
     reservationRequest,
     user: auth?._id,
@@ -752,6 +740,7 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
 
 export const reservationServices = {
   createReservationRequestIntoDB,
+  setReservationAsInvalid,
   reschedule,
   getMyReservationsService,
   getMyReservationsByStatusService,
