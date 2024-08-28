@@ -310,7 +310,7 @@ const getIotSectionNames: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
   // we are checking the permission of this api
-  checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
+  checkUserAccessApi({ auth, accessUsers: ['showaUser', 'showaAdmin'] });
 
   const result = await predefinedValueServices.getIotSectionNames();
   // send response

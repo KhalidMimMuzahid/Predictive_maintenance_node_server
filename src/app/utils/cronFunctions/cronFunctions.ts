@@ -28,53 +28,52 @@ const sendIotDataToAIServer = async () => {
     }),
   );
 
-
- await Promise.all(
+  //  const data =
+  await Promise.all(
     allMachineIotData?.map(async (machine) => {
       const _id = machine?._id;
       const sensorModulesAttached = machine?.sensorModulesAttached?.map(
-         (sensorModule) => {
+        (sensorModule) => {
           const sensorModuleData =
             sensorModule as unknown as TSensorModuleAttached & {
               _id: mongoose.Types.ObjectId;
             };
           return {
             _id: sensorModuleData?._id,
-            sectionName: sensorModuleData?.sectionName,
+            sectionName: sensorModuleData?.sectionName, // || null,
             moduleType: sensorModuleData?.moduleType,
-            sensorData: sensorModuleData?.sensorData?.map(each=>{
-                const eachPeriodData = {
-                  vibration: each?.vibration,
-                  temperature: each?.temperature
-                }
-              return eachPeriodData
-            })
+            sensorData: sensorModuleData?.sensorData?.map((each) => {
+              const eachPeriodData = {
+                vibration: each?.vibration,
+                temperature: each?.temperature,
+              };
+              return eachPeriodData;
+            }),
           };
         },
       );
-  
+
       try {
-         await fetch(`http://13.112.8.235/predict?machine=${_id}`, {
+        await fetch(`http://13.112.8.235/predict?machine=${_id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({sensorModulesAttached})
-        })
-    
+          body: JSON.stringify({ sensorModulesAttached }),
+        });
+
         // const data = await res.json()
 
-
-      //  return data
+        //  return data
       } catch (error) {
         // console.log({error})
       }
 
-      // return { _id, sensorModulesAttached };
-    })
-  )
+      //  return { _id, sensorModulesAttached };
+    }),
+  );
 
-
+  //  return data;
 };
 
 export const cronFunctions = { sendIotDataToAIServer };
