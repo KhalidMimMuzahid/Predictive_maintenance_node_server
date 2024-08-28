@@ -10,6 +10,7 @@ router.post(
   validateRequest(aiValidation.thresholdSchema),
   aiController.addThreshold,
 );
+router.get('/ai-performance', aiController.aiPerformance);
 
 
 

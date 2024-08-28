@@ -3,6 +3,7 @@ import AppError from '../../errors/AppError';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 import { TThreshold } from './ai.interface';
 import { AI } from './ai.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 
 const addThreshold = async ({
   thresholdData,
@@ -61,7 +62,6 @@ const addThreshold = async ({
   }
 };
 
-
 const getThresholds = async () => {
   const thresholdData = await AI.find({
     type: 'threshold',
@@ -75,7 +75,20 @@ const getThresholds = async () => {
   });
   return processedData;
 };
+
+const aiPerformance = async () => {
+  const totalReservationCount = await ReservationRequest.countDocuments({});
+  const totalInValidReservationCount = await ReservationRequest.countDocuments({
+    isValid: false,
+  });
+  const performance =
+    ((totalReservationCount - totalInValidReservationCount) /
+      totalReservationCount) *
+    100;
+  return performance;
+};
 export const aiServices = {
   addThreshold,
   getThresholds,
+  aiPerformance,
 };

@@ -24,6 +24,17 @@ const addThreshold: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const aiPerformance: RequestHandler = catchAsync(async (req, res) => {
+  const result = await aiServices.aiPerformance();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'aai performance data has retrieved successfully',
+    data: result,
+  });
+});
+
 const getThresholds: RequestHandler = catchAsync(async (req, res) => {
   const result = await aiServices.getThresholds();
 
@@ -37,5 +48,6 @@ const getThresholds: RequestHandler = catchAsync(async (req, res) => {
 
 export const aiController = {
   addThreshold,
+  aiPerformance,
   getThresholds,
 };
