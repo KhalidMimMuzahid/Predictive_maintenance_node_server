@@ -42,7 +42,7 @@ const healthStatusesSchema = z.object({
     vibration: z.number(),
     temperature: z.number(),
   }),
-  healthStatuses: z.enum(['bad', 'good', 'moderate']),
+  healthStatus: z.enum(['bad', 'good', 'moderate']),
 });
 const machineHealthStatusSchema = z.object({
   healthStatus: z.enum(['bad', 'good', 'moderate']),

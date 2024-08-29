@@ -14,6 +14,7 @@ import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAt
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 
 import { ReservationRequest } from '../reservation/reservation.model';
+import { AI } from '../ai/ai.model';
 
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
@@ -627,7 +628,6 @@ const machineHealthStatus = async ({
     issues: 1,
     // sensorModulesAttached: 1,
   });
-
   if (!machineData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -643,38 +643,37 @@ const machineHealthStatus = async ({
   // machineData.issues = machineHealthData?.issues;
   const newIssues: TIssue[] = [];
   machineHealthData?.issues?.forEach((newIssue) => {
-    const isIssueJustNowOccurred = machineData?.issues?.some(
-      (existingIssue) => existingIssue?.issue !== newIssue,
+    const isIssueAAlreadyOccurred = machineData?.issues?.some(
+      (existingIssue) => existingIssue?.issue === newIssue,
     );
-    if (isIssueJustNowOccurred) {
-      newIssues.push({
-        issue: newIssue,
-      });
-    } else {
+    if (isIssueAAlreadyOccurred) {
       newIssues.push(
         machineData?.issues?.find((each) => each?.issue === newIssue),
       );
+    } else {
+      newIssues.push({
+        issue: newIssue,
+      });
     }
   });
+
   machineData.issues = newIssues;
   await machineData.save();
-  // await Promise.all(
-  //   machineHealthData?.healthStatuses?.map(async (each) => {
+  await Promise.all(
+    machineHealthData?.healthStatuses?.map((each) => {
+      // And now save all the sensor data and its health status
 
-  //     // And now save all the sensor data and its health status
-
-  //     await AI.create({
-  //       type: 'aiData',
-  //       aiData: {
-  //         sensorModuleAttached: each?._id,
-  //         moduleType: each?.moduleType,
-  //         sectionName: each?.sectionName,
-  //         healthStatuses: each?.healthStatuses,
-  //         sensorData: each?.sensorData,
-  //       },
-  //     });
-  //   }),
-  // );
+      AI.create({
+        type: 'aiData',
+        aiData: {
+          machine: machineData?._id,
+          sectionName: each?.sectionName,
+          healthStatus: each?.healthStatus,
+          sensorData: each?.sensorData,
+        },
+      });
+    }),
+  );
 
   return null;
 };
