@@ -1,4 +1,4 @@
-import { TMachine, TMachineHealthStatus } from './machine.interface';
+import { TIssue, TMachine, TMachineHealthStatus } from './machine.interface';
 import { Machine } from './machine.model';
 
 import { checkMachineData } from './machine.utils';
@@ -12,7 +12,7 @@ import { SensorModule } from '../sensorModule/sensorModule.model';
 import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
-import { AI } from '../ai/ai.model';
+
 import { ReservationRequest } from '../reservation/reservation.model';
 
 // implement usages of purchased subscription  ; only for machine
@@ -624,7 +624,8 @@ const machineHealthStatus = async ({
 }) => {
   const machineData = await Machine.findById(machine, {
     healthStatus: 1,
-    sensorModulesAttached: 1,
+    issues: 1,
+    // sensorModulesAttached: 1,
   });
 
   if (!machineData) {
@@ -638,28 +639,42 @@ const machineHealthStatus = async ({
   //   machineHealthData,
   // });
   machineData.healthStatus = machineHealthData?.healthStatus;
-  machineData.issues = machineHealthData?.issues;
+
+  // machineData.issues = machineHealthData?.issues;
+  const newIssues: TIssue[] = [];
+  machineHealthData?.issues?.forEach((newIssue) => {
+    const isIssueJustNowOccurred = machineData?.issues?.some(
+      (existingIssue) => existingIssue?.issue !== newIssue,
+    );
+    if (isIssueJustNowOccurred) {
+      newIssues.push({
+        issue: newIssue,
+      });
+    } else {
+      newIssues.push(
+        machineData?.issues?.find((each) => each?.issue === newIssue),
+      );
+    }
+  });
+  machineData.issues = newIssues;
   await machineData.save();
-  await Promise.all(
-    machineHealthData?.sensorModulesAttached?.map(async (each) => {
-      await SensorModuleAttached.findByIdAndUpdate(each?._id?.toString(), {
-        healthStatuses: each?.healthStatuses,
-      });
+  // await Promise.all(
+  //   machineHealthData?.healthStatuses?.map(async (each) => {
 
-      // And now save all the sensor data and its health status
+  //     // And now save all the sensor data and its health status
 
-      await AI.create({
-        type: 'aiData',
-        aiData: {
-          sensorModuleAttached: each?._id,
-          moduleType: each?.moduleType,
-          sectionName: each?.sectionName,
-          healthStatuses: each?.healthStatuses,
-          sensorData: each?.sensorData,
-        },
-      });
-    }),
-  );
+  //     await AI.create({
+  //       type: 'aiData',
+  //       aiData: {
+  //         sensorModuleAttached: each?._id,
+  //         moduleType: each?.moduleType,
+  //         sectionName: each?.sectionName,
+  //         healthStatuses: each?.healthStatuses,
+  //         sensorData: each?.sensorData,
+  //       },
+  //     });
+  //   }),
+  // );
 
   return null;
 };

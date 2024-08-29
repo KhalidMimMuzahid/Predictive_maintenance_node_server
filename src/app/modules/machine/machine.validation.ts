@@ -36,28 +36,18 @@ const createConnectedMachineValidationSchema = z.object({
   machine: createMachineValidationSchema,
   sensorModuleAttached: createSensorModuleAttachedSchema,
 });
-const sensorModuleSchema = z.object({
-  _id: z.string(),
-  sensorData: z.array(
-    z.object({
-      vibration: z.array(z.number()),
-      temperature: z.array(z.number()),
-    }),
-  ),
-  moduleType: z.string(),
-  sectionName: z.object({
-    vibration: z.array(z.string()),
-    temperature: z.array(z.string()),
+const healthStatusesSchema = z.object({
+  sectionName: z.string(),
+  sensorData: z.object({
+    vibration: z.number(),
+    temperature: z.number(),
   }),
-  healthStatuses: z.object({
-    vibration: z.array(z.enum(['bad', 'good', 'moderate'])),
-    temperature: z.array(z.enum(['bad', 'good', 'moderate'])),
-  }),
+  healthStatuses: z.enum(['bad', 'good', 'moderate']),
 });
 const machineHealthStatusSchema = z.object({
   healthStatus: z.enum(['bad', 'good', 'moderate']),
   issues: z.array(z.string()),
-  sensorModulesAttached: z.array(sensorModuleSchema),
+  healthStatuses: z.array(healthStatusesSchema),
 });
 export const machineValidation = {
   createNonConnectedMachineValidationSchema,

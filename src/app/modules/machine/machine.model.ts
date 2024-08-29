@@ -27,7 +27,16 @@ export const MachineSchema: Schema = new Schema<TMachine>(
     },
     name: { type: String, required: true },
     issues: {
-      type: [String],
+      type: [
+        new Schema(
+          {
+            issue: { type: String, required: true },
+          },
+          {
+            timestamps: true,
+          },
+        ),
+      ],
       required: false,
     },
     // address: { type: AddressSchema, required: false },

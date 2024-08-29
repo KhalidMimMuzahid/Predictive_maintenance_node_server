@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { TAI, TAiData, TThreshold } from './ai.interface';
 import {
-  THealthStatuses,
   TModule,
   TSectionName,
 } from '../sensorModuleAttached/sensorModuleAttached.interface';
@@ -63,18 +62,18 @@ const AISchema = new Schema<TAI>({
           ),
           required: true,
         },
-        healthStatuses: {
-          type: new Schema<THealthStatuses>(
-            {
-              temperature: [String],
-              vibration: [String],
-            },
-            {
-              timestamps: false,
-            },
-          ),
-          required: false,
-        },
+        // healthStatuses: {
+        //   type: new Schema<THealthStatuses>(
+        //     {
+        //       temperature: [String],
+        //       vibration: [String],
+        //     },
+        //     {
+        //       timestamps: false,
+        //     },
+        //   ),
+        //   required: false,
+        // },
         sensorData: [
           {
             type: new mongoose.Schema<TModule>(

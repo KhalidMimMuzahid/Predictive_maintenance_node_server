@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import {
-  THealthStatuses,
   TModule,
   TModuleType,
   TSectionName,
@@ -15,7 +14,7 @@ export type TAiData = {
   sensorModuleAttached?: mongoose.Types.ObjectId;
   moduleType: TModuleType;
   sectionName: TSectionName;
-  healthStatuses: THealthStatuses;
+  // healthStatuses: THealthStatuses;
   sensorData: TModule[];
 };
 export type TAI = {
