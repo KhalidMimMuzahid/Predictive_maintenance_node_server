@@ -13,11 +13,18 @@ export type TSectionName2 = {
   temperature: [string];
 };
 
+
+
 // for module-3:
 export type TModule3 = {
   vibration: [number, number, number, number, number, number];
   temperature: [number, number, number];
 };
+
+
+
+
+
 export type TSectionName3 = {
   vibration: [string, string, string, string, string, string];
   temperature: [string, string, string];
