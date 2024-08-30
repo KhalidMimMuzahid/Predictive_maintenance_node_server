@@ -10,9 +10,19 @@ export const MachineSchema: Schema = new Schema<TMachine>(
   {
     machineNo: { type: String, required: true },
     healthStatus: {
-      type: String,
-      enum: ['bad', 'good', 'moderate', 'unknown'],
-      required: true,
+      type: new Schema(
+        {
+          health: {
+            type: String,
+            enum: ['bad', 'good', 'moderate', 'unknown'],
+            required: true,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
     },
     packageStatus: {
       type: String,

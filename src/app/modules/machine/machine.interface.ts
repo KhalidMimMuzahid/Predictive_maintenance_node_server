@@ -6,7 +6,9 @@ export type TIssue = {
 };
 export type TMachine = {
   machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"
-  healthStatus: THealthStatus; // based oon what ?????????
+  healthStatus: {
+    health: THealthStatus;
+  }; // based oon what ?????????
   packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;

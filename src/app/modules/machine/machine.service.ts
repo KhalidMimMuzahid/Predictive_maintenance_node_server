@@ -15,7 +15,6 @@ import { predefinedValueServices } from '../predefinedValue/predefinedValue.serv
 
 import { ReservationRequest } from '../reservation/reservation.model';
 import { AI } from '../ai/ai.model';
-
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -32,7 +31,7 @@ const addNonConnectedMachineInToDB = async ({
   if (!subscriptionPurchasedData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'subscriptionPurchased you provided is found as you purchased it yet',
+      'subscriptionPurchased you provided is found as you has not purchased it yet',
     );
   }
 
@@ -63,7 +62,7 @@ const addNonConnectedMachineInToDB = async ({
   // });
   // console.log(subscriptionPurchased);
 
-  machineData.healthStatus = 'unknown';
+  // machineData.healthStatus = 'unknown';
   const lastAddedMachine = await Machine.findOne(
     { user: machineData?.user },
     { machineNo: 1 },
@@ -258,7 +257,7 @@ const addSensorConnectedMachineInToDB = async ({
     // create machine
 
     machineData.sensorModulesAttached = [createdSensorModuleAttached?._id];
-    machineData.healthStatus = 'unknown';
+    // machineData.healthStatus = 'unknown';
     machineData.subscriptionPurchased = subscriptionPurchasedData?._id;
 
     const lastAddedMachine = await Machine.findOne(
@@ -354,7 +353,7 @@ const addModuleToMachineInToDB = async ({
   if (!subscriptionPurchasedData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'subscriptionPurchased you provided is found as you purchased it yet',
+      'subscriptionPurchased you provided is found as you has not purchased it yet',
     );
   }
 
@@ -638,7 +637,11 @@ const machineHealthStatus = async ({
   //   machine,
   //   machineHealthData,
   // });
-  machineData.healthStatus = machineHealthData?.healthStatus;
+  if (machineData.healthStatus?.health !== machineHealthData?.healthStatus) {
+    machineData.healthStatus = {
+      health: machineHealthData?.healthStatus,
+    };
+  }
 
   // machineData.issues = machineHealthData?.issues;
   const newIssues: TIssue[] = [];
@@ -680,12 +683,91 @@ const machineHealthStatus = async ({
 
 const machineReport = async ({
   machine,
-  period,
+  startDate,
+  endDate,
+  limit,
 }: {
   machine: string;
-  period: TPeriod;
+  startDate: Date;
+  endDate: Date;
+  limit: number;
 }) => {
-  return machine;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sensorDataWithHealthStatus: any[] | null = [];
+
+  try {
+    sensorDataWithHealthStatus = await AI.aggregate([
+      {
+        $match: {
+          type: 'aiData',
+          'aiData.machine': new mongoose.Types.ObjectId(machine),
+          $and: [
+            { createdAt: { $gte: startDate } },
+            { createdAt: { $lte: endDate } },
+          ],
+        },
+      },
+      {
+        $sort: {
+          createdAt: 1,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          documents: { $push: '$$ROOT' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          documents: {
+            $let: {
+              vars: {
+                interval: {
+                  $floor: { $divide: ['$count', limit] },
+                },
+              },
+              in: {
+                $filter: {
+                  input: '$documents',
+                  as: 'doc',
+                  cond: {
+                    $eq: [
+                      {
+                        $mod: [
+                          { $indexOfArray: ['$documents', '$$doc'] },
+                          '$$interval',
+                        ],
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          documents: { $slice: ['$documents', limit] },
+        },
+      },
+      {
+        $unwind: '$documents',
+      },
+      {
+        $replaceRoot: { newRoot: '$documents' },
+      },
+    ]);
+  } catch (error) {
+    sensorDataWithHealthStatus = [];
+  }
+
+  const machineData = await Machine.findById(machine).select('issues');
+  return { sensorDataWithHealthStatus, issues: machineData?.issues };
 };
 
 const machinePerformanceBrandWise = async () => {
@@ -807,7 +889,6 @@ const machinePerformanceModelWise = async () => {
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
-
   addSensorAttachedModuleInToMachineIntoDB,
   updateMachinePackageStatus,
   getMyWashingMachineService,

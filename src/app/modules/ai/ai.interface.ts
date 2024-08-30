@@ -6,6 +6,7 @@ export type TThreshold = {
   temperature: number;
   vibrations: number;
 };
+
 export type TAiData = {
   machine: mongoose.Types.ObjectId;
   sectionName: string;
