@@ -13,11 +13,18 @@ export type TSectionName2 = {
   temperature: [string];
 };
 
+
+
 // for module-3:
 export type TModule3 = {
   vibration: [number, number, number, number, number, number];
   temperature: [number, number, number];
 };
+
+
+
+
+
 export type TSectionName3 = {
   vibration: [string, string, string, string, string, string];
   temperature: [string, string, string];
@@ -41,19 +48,19 @@ export type TSectionName =
   | TSectionName4;
 export type TModuleType = 'module-1' | 'module-2' | 'module-3' | 'module-4';
 
-export type THealthStatus = 'bad' | 'good' | 'moderate' | 'unknown';
+// export type THealthStatus = 'bad' | 'good' | 'moderate' | 'unknown';
 
-export type THealthStatuses = {
-  vibration: THealthStatus[];
-  temperature: THealthStatus[];
-};
+// export type THealthStatuses = {
+//   vibration: THealthStatus[];
+//   temperature: THealthStatus[];
+// };
 
 export type TSensorModuleAttached = {
   sensorModule: Types.ObjectId; // objectId of TSensor
   macAddress: string;
   isAttached: boolean; // if true, means this module sensor is attached to the machine (then machine field must be empty); if it is false, means this sensor module is purchased by user but not added to any machine yet (machine field must have _id of machine object)
   machine?: Types.ObjectId; // objectId of Machine model  ; if machine field is not empty , that means this machine is connected to this sensor
-  healthStatuses: THealthStatuses;
+  // healthStatuses: THealthStatuses;
   user: Types.ObjectId; // objectId of User model who purchase this sensor
   purpose?: string; // showa admin can set this value when it will be installed in the machine by showa admin/engineer
   sectionName: TSectionName; // showa admin can set this value

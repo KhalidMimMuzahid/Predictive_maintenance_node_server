@@ -1,20 +1,17 @@
 import { Types } from 'mongoose';
-import { TAddress, TCompany, TIsDeleted } from '../common/common.interface';
-import {
-  THealthStatuses,
-  TModule,
-  TModuleType,
-  TSectionName,
-} from '../sensorModuleAttached/sensorModuleAttached.interface';
+import { TCompany, TIsDeleted } from '../common/common.interface';
 export type THealthStatus = 'bad' | 'good' | 'moderate' | 'unknown';
-
+export type TIssue = {
+  issue: string;
+};
 export type TMachine = {
   machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"
   healthStatus: THealthStatus; // based oon what ?????????
   packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;
-  address?: TAddress;
+  issues?: TIssue[];
+  // address?: TAddress;
   // userType: 'showa-user'; // default value 'showa-user'; for future we may need, if showa-user and other user type like organization or anything
   user: Types.ObjectId; // objectId of User model
   usedFor?: TCompany; // shop or company info ;
@@ -39,24 +36,23 @@ export type TMachine = {
   // objectId of TAttachedSensor model
 };
 
-
-
-
-
-
-
-                   
-
-
-
-
- export type TMachineHealthStatus = {
-   healthStatus: THealthStatus;
-   sensorModulesAttached: {
-     _id: Types.ObjectId;
-     moduleType: TModuleType;
-     sectionName: TSectionName;
-     healthStatuses: THealthStatuses;
-     sensorData: TModule[];
-   }[];
- };
+export type TMachineHealthStatus = {
+  healthStatus: THealthStatus;
+  issues: string[];
+  healthStatuses: {
+    // timeStamp: string;
+    sectionName: string;
+    sensorData: {
+      vibration: number;
+      temperature: number;
+    };
+    healthStatus: THealthStatus;
+  }[];
+  // sensorModulesAttached: {
+  //   _id: Types.ObjectId;
+  //   moduleType: TModuleType;
+  //   sectionName: TSectionName;
+  //   healthStatuses: THealthStatuses;
+  //   sensorData: TModule[];
+  // }[];
+};

@@ -40,6 +40,7 @@ type TReservationStatus =
 
 export type TMachineType2 = 'washing-machine' | 'general-machine';
 export type TReservationRequest = {
+  isValid: boolean; // to generate ai performance
   user: Types.ObjectId; // objectId of the user model
   requestId: string; // customized unique Identifier
   machine: Types.ObjectId; //ObjectId for Machine Model;
@@ -49,10 +50,8 @@ export type TReservationRequest = {
   isSensorConnected: boolean; // machineType as figma; true if sensor is sensor-connected, false if not sensor-non-connected
   machineType: TMachineType2;
   problem: TProblem;
-
   schedule: TSchedule;
   reasonOfReSchedule: string; // service provider engineer will set this value
   invoice: Types.ObjectId; // objectId of invoice Model for this reservation
-
   reservationRequestGroup?: Types.ObjectId; // objectId of reservationGroup
 };

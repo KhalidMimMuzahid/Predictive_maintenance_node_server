@@ -5,6 +5,9 @@ import httpStatus from 'http-status';
 import { extraDataServices } from './extraData.service';
 import sendResponse from '../../utils/sendResponse';
 import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
+import { TAuth } from '../../interface/error';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import { TFeedback } from './extraData.interface';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
   const emailOrPhone: string = req?.query?.emailOrPhone as string;
@@ -22,6 +25,44 @@ const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
     success: true,
     message: 'Request for deleting Your account has sent successfully',
     data: results,
+  });
+});
+const addFeedback: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const feedback = req?.body as Partial<TFeedback>;
+  const result = await extraDataServices.addFeedback({
+    user: auth?._id,
+    feedback,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'feedback has added successfully',
+    data: result,
+  });
+});
+
+const reviewFeedback: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+  const feedback = req?.query?.feedback as string;
+  if (!feedback) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'feedback  is required to reviewed feedback',
+    );
+  }
+  const result = await extraDataServices.reviewFeedback(feedback);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'feedback has reviewed successfully',
+    data: result,
   });
 });
 
@@ -68,8 +109,11 @@ const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 export const extraDataController = {
   deleteMyAccount,
+  addFeedback,
+  reviewFeedback,
   sendIotDataAiServer,
   uploadPhoto,
 };

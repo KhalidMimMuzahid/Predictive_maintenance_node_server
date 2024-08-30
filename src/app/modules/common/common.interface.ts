@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 export type TAddress = {
-  googleString?: string;
+  googleString?: string; // google map string
   street?: string;
   city?: string;
   prefecture?: string;

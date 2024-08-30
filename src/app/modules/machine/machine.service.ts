@@ -1,4 +1,4 @@
-import { TMachine, TMachineHealthStatus } from './machine.interface';
+import { TIssue, TMachine, TMachineHealthStatus } from './machine.interface';
 import { Machine } from './machine.model';
 
 import { checkMachineData } from './machine.utils';
@@ -12,6 +12,8 @@ import { SensorModule } from '../sensorModule/sensorModule.model';
 import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
+
+import { ReservationRequest } from '../reservation/reservation.model';
 import { AI } from '../ai/ai.model';
 
 // implement usages of purchased subscription  ; only for machine
@@ -47,7 +49,7 @@ const addNonConnectedMachineInToDB = async ({
     );
   }
 
-  checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
+  await checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
 
   // check purchased subscription here
 
@@ -153,7 +155,7 @@ const addSensorConnectedMachineInToDB = async ({
     );
   }
 
-  checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
+  await checkMachineData(machineData); // we are validation machine data for handling washing/general machine data according to it's category
 
   // create sensor module attached
 
@@ -623,9 +625,9 @@ const machineHealthStatus = async ({
 }) => {
   const machineData = await Machine.findById(machine, {
     healthStatus: 1,
-    sensorModulesAttached: 1,
+    issues: 1,
+    // sensorModulesAttached: 1,
   });
-
   if (!machineData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -637,22 +639,36 @@ const machineHealthStatus = async ({
   //   machineHealthData,
   // });
   machineData.healthStatus = machineHealthData?.healthStatus;
+
+  // machineData.issues = machineHealthData?.issues;
+  const newIssues: TIssue[] = [];
+  machineHealthData?.issues?.forEach((newIssue) => {
+    const isIssueAAlreadyOccurred = machineData?.issues?.some(
+      (existingIssue) => existingIssue?.issue === newIssue,
+    );
+    if (isIssueAAlreadyOccurred) {
+      newIssues.push(
+        machineData?.issues?.find((each) => each?.issue === newIssue),
+      );
+    } else {
+      newIssues.push({
+        issue: newIssue,
+      });
+    }
+  });
+
+  machineData.issues = newIssues;
   await machineData.save();
   await Promise.all(
-    machineHealthData?.sensorModulesAttached?.map(async (each) => {
-      await SensorModuleAttached.findByIdAndUpdate(each?._id?.toString(), {
-        healthStatuses: each?.healthStatuses,
-      });
-
+    machineHealthData?.healthStatuses?.map((each) => {
       // And now save all the sensor data and its health status
 
-      await AI.create({
+      AI.create({
         type: 'aiData',
         aiData: {
-          sensorModuleAttached: each?._id,
-          moduleType: each?.moduleType,
+          machine: machineData?._id,
           sectionName: each?.sectionName,
-          healthStatuses: each?.healthStatuses,
+          healthStatus: each?.healthStatus,
           sensorData: each?.sensorData,
         },
       });
@@ -660,6 +676,122 @@ const machineHealthStatus = async ({
   );
 
   return null;
+};
+
+const machinePerformanceBrandWise = async () => {
+  const brandsData = await predefinedValueServices.getMachineBrands();
+  const brandsList = brandsData?.brands?.map((each) => each?.brand);
+  // return brandsList;
+
+  const machineBrandNamePerformanceArray = await Promise.all(
+    brandsList.map(async (brandName) => {
+      const machineCount = await Machine.countDocuments({
+        brand: brandName,
+      });
+      const allReservationBrandWise = await ReservationRequest.aggregate([
+        {
+          $match: {
+            status: { $nin: ['completed', 'canceled'] },
+          },
+        },
+        {
+          $lookup: {
+            from: 'machines', // Name of the showaUser collection
+            localField: 'machine',
+            foreignField: '_id',
+            as: 'machine',
+          },
+        },
+        {
+          $unwind: '$machine',
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$machine',
+          },
+        },
+        { $match: { brand: brandName } },
+        { $count: 'totalReservations' },
+      ]);
+      const reservationCountBrandWise =
+        allReservationBrandWise[0]?.totalReservations || 0;
+      // console.log('------', reservationCount);
+      let performance: number;
+
+      if (machineCount === 0) {
+        performance = null;
+      } else {
+        performance =
+          ((machineCount - reservationCountBrandWise) / machineCount) * 100;
+      }
+
+      return { [brandName]: performance };
+    }),
+  );
+
+  return machineBrandNamePerformanceArray;
+};
+
+const machinePerformanceModelWise = async () => {
+  const brandsData = await predefinedValueServices.getMachineBrands();
+
+  // console.log(brandsData);
+  const modelsList: string[] = [];
+
+  brandsData?.brands?.forEach((each) => {
+    if (each?.models?.length > 0) {
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      modelsList.push(...each?.models);
+    }
+  });
+
+  const machineModelNamePerformanceArray = await Promise.all(
+    modelsList.map(async (modelName) => {
+      const machineCount = await Machine.countDocuments({
+        model: modelName,
+      });
+      const allReservationModelWise = await ReservationRequest.aggregate([
+        {
+          $match: {
+            status: { $nin: ['completed', 'canceled'] },
+          },
+        },
+        {
+          $lookup: {
+            from: 'machines', // Name of the showaUser collection
+            localField: 'machine',
+            foreignField: '_id',
+            as: 'machine',
+          },
+        },
+        {
+          $unwind: '$machine',
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$machine',
+          },
+        },
+        { $match: { model: modelName } },
+        { $count: 'totalReservations' },
+      ]);
+      const reservationCountModelWise =
+        allReservationModelWise[0]?.totalReservations || 0;
+      // console.log('------', reservationCount);
+      let performance: number;
+
+      if (machineCount === 0) {
+        performance = null;
+      } else {
+        performance =
+          ((machineCount - reservationCountModelWise) / machineCount) * 100;
+      }
+
+      return { [modelName]: performance };
+    }),
+  );
+
+  return machineModelNamePerformanceArray;
 };
 
 export const machineServices = {
@@ -677,6 +809,8 @@ export const machineServices = {
   deleteMachineService,
   addModuleToMachineInToDB,
   machineHealthStatus,
+  machinePerformanceBrandWise,
+  machinePerformanceModelWise,
   // changeStatusService,
   // addSensorService,
 };

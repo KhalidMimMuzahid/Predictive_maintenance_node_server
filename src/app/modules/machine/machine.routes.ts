@@ -46,10 +46,23 @@ router.get('/getMachineBy_id', machineController.getMachineBy_id);
 router.delete('/', machineController.deleteMachine);
 
 // this endpoint is not used in this server
+// -relocated-to-another-server
 router.patch(
-  '/machine-health-status-relocated-to-another-server',
+  '/machine-health-status',
   validateRequest(machineValidation.machineHealthStatusSchema),
   machineController.machineHealthStatus,
+);
+router.get(
+  '/machine-performance-brand-wise',
+  machineController.machinePerformanceBrandWise,
+);
+router.get(
+  '/machine-performance-brand-wise',
+  machineController.machinePerformanceBrandWise,
+);
+router.get(
+  '/machine-performance-model-wise',
+  machineController.machinePerformanceModelWise,
 );
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);

@@ -179,6 +179,107 @@ const addIotSectionName = async (sectionName: string) => {
   }
 };
 
+const addMachineBrandName = async (brandName: string) => {
+
+
+  const machineBrands = await PredefinedValue.findOne(
+    {
+      type: 'machine',
+    },
+    { 'machine.brands': 1 },
+  );
+  const brandsList =
+    machineBrands?.machine?.brands?.map((each) => each?.brand) || [];
+
+  if (brandsList?.findIndex((each) => each === brandName) !== -1) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `brand Name cannot be duplicated`,
+    );
+  }
+
+
+
+
+  const previousMachineBrandsNames = await PredefinedValue.findOne(
+    {
+      type: 'machine',
+    },
+    { 'machine.brands': 1 },
+  );
+  if (previousMachineBrandsNames) {
+    previousMachineBrandsNames.machine?.brands.push({
+      brand: brandName,
+      models: [],
+    });
+
+    const updatedPreviousMachineBrandsNames =
+      await previousMachineBrandsNames.save();
+    if (!updatedPreviousMachineBrandsNames) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newMachineBrandNames: TPredefinedValue = {
+      type: 'machine',
+      machine: {
+        brands: [
+          {
+            brand: brandName,
+            models: [],
+          },
+        ],
+      },
+    };
+    const createdMachineBrandNames =
+      await PredefinedValue.create(newMachineBrandNames);
+
+    if (!createdMachineBrandNames) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+
+const addMachineModelName = async ({
+  predefinedValue,
+  brand,
+  modelName,
+}: {
+  predefinedValue: string;
+  brand: string;
+  modelName: string;
+}) => {
+  const updatedPredefinedValue = await PredefinedValue.findOneAndUpdate(
+    {
+      _id: new mongoose.Types.ObjectId(predefinedValue),
+      'machine.brands._id': new mongoose.Types.ObjectId(brand),
+    },
+    {
+      $push: {
+        'machine.brands.$.models': modelName,
+      },
+    },
+  );
+
+  if (!updatedPredefinedValue) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Something went wrong, please try again',
+    );
+  }
+
+  return null;
+};
+
 const addReservationRequestStatus = async (status: string) => {
   const previousStatus = await PredefinedValue.findOne(
     {
@@ -401,12 +502,27 @@ const getShopCategories = async () => {
   return shopCategories?.marketplace?.shop?.categories || [];
   // return productCategories;
 };
+
+const getMachineBrands = async () => {
+  const machineBrands = await PredefinedValue.findOne(
+    {
+      type: 'machine',
+    },
+    { 'machine.brands': 1 },
+  );
+  return machineBrands?.machine?.brands
+    ? { brands: machineBrands?.machine?.brands, _id: machineBrands?._id }
+    : null;
+  
+  // return productCategories;
+};
 export const predefinedValueServices = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
   addIotSectionName,
-
+  addMachineBrandName,
+  addMachineModelName,
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
   addReservationRequestArea,
@@ -415,6 +531,7 @@ export const predefinedValueServices = {
   getProductCategories,
   getShopCategories,
   getIotSectionNames,
+  getMachineBrands,
 }; 
 
 

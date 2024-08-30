@@ -71,6 +71,34 @@ const createReservationRequest: RequestHandler = catchAsync(
   },
 );
 
+
+const setReservationAsInvalid: RequestHandler = catchAsync(async (req, res) => {
+  // const { uid } = req.params;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer', 'serviceProviderAdmin'],
+  });
+  const reservationRequest = req?.query?.reservationRequest as string;
+  if (!reservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequest Id is required to make a reservation invalid',
+    );
+  }
+
+  const results =
+    await reservationServices.setReservationAsInvalid(reservationRequest);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'reservation reschedule successfully',
+    data: results,
+  });
+});
+
 const reschedule: RequestHandler = catchAsync(async (req, res) => {
   // const { uid } = req.params;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -531,6 +559,7 @@ const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
 
 export const reservationController = {
   createReservationRequest,
+  setReservationAsInvalid,
   reschedule,
   getMyReservations,
   getMyReservationsByStatus,

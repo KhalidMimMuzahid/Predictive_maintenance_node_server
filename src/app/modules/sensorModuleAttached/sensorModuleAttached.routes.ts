@@ -13,7 +13,7 @@ router.post(
   sensorModuleAttachedControllers.addSensorAttachedModule,
 );
 
-
+// relocated-to-another-server
 // this endpoint is not used in this server
 router.patch('/add-sensor-data-relocated-to-another-server', sensorModuleAttachedControllers.addSensorData);
 

@@ -458,6 +458,7 @@ const getPostsForMyFeed = async ({
         type: 1,
         userPost: 1,
         advertisement: 1,
+        createdAt: 1,
         // likes: 1,
         likeObject: {
           likesCount: { $size: '$likes' },
@@ -511,6 +512,7 @@ const getPostsForMyFeed = async ({
           },
         },
         // for user ends
+        createdAt: 1,
         location: 1,
         viewPrivacy: 1,
         commentPrivacy: 1,
