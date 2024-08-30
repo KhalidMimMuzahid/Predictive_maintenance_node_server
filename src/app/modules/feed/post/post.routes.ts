@@ -35,6 +35,6 @@ router.get(
 router.get('/get-all-shares-by-post', postController.getAllSharesByPost);
 
 router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
-//router.get('/get-post-by-postId', postController.getPostByPostId);
+router.get('/get-post-by-postId', postController.getPostByPostId);
 
 export const postRoutes = router;

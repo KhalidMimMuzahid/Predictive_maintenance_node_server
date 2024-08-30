@@ -1,11 +1,6 @@
 import { Types } from 'mongoose';
-import { TPostBiddingProcess } from '../reservationGroup/reservationGroup.interface';
 import { TIsDeleted } from '../common/common.interface';
-
-
-
-
-
+import { TPostBiddingProcess } from '../reservationGroup/reservationGroup.interface';
 
 export type TInspecting = {
   additionalProducts?: {
@@ -91,6 +86,9 @@ export type TInspection = {
   };
   observation?: string;
 };
+
+export type TInvoiceStatus = 'ongoing' | 'completed' | 'canceled'; // last three status of reservationRequest Model status, you can see the reservationRequest Model
+
 export type TInvoice = {
   invoiceNo: string; // customized unique number
 
@@ -111,7 +109,7 @@ export type TInvoice = {
   };
   inspection?: TInspection;
 
-  taskStatus: 'ongoing' | 'completed' | 'canceled'; // last three status of reservationRequest Model status, you can see the reservationRequest Model
+  taskStatus: TInvoiceStatus;
 
   // we nee feedbackBy engineer
   feedbackByUser?: {

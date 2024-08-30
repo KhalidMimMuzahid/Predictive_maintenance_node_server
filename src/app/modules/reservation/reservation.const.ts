@@ -1,6 +1,7 @@
 import {
   TMachineType,
   TMachineType2,
+  TPeriod,
   TReservationType,
 } from './reservation.interface';
 
@@ -28,4 +29,4 @@ export const machineTypeArray2: TMachineType2[] = [
   'general-machine',
 ];
 
-
+export const periodTypeArray: TPeriod[] = ['weekly', 'monthly', 'yearly'];

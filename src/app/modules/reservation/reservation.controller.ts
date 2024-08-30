@@ -5,15 +5,19 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
+import { invoiceStatusArray } from '../invoice/invoice.const';
+import { TInvoiceStatus } from '../invoice/invoice.interface';
 import {
   machineTypeArray,
   machineTypeArray2,
+  periodTypeArray,
   resTypeArrayForServiceProvider,
   reservationTypeArray,
 } from './reservation.const';
 import {
   TMachineType,
   TMachineType2,
+  TPeriod,
   TProblem,
   TReservationType,
   TSchedule,
@@ -463,6 +467,96 @@ const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
     });
   });
 
+// const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
+//   catchAsync(async (req, res) => {
+//     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//     checkUserAccessApi({
+//       auth,
+//       accessUsers: ['serviceProviderAdmin'],
+//     });
+
+//     const adminUserId = auth?._id;
+//     const period: string = req?.query?.period as string;
+
+//     // Get the period from the query parameter (weekly, monthly, yearly)
+
+//     if (!period) {
+//       return res.status(httpStatus.BAD_REQUEST).send({
+//         success: false,
+//         message: 'Period query parameter is required (weekly, monthly, yearly)',
+//       });
+//     }
+
+//     // Call the service to get the completed reservation requests for the specified period
+//     const result =
+//       await reservationServices.getCompletedReservationRequestForServiceProviderCompany(
+//         adminUserId,
+//         period,
+//       );
+
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Completed reservation requests retrieved successfully',
+//       data: result,
+//     });
+//   });
+
+const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    const auth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin'],
+    });
+
+    const adminUserId = auth?._id;
+    const period: TPeriod = req?.query?.period as TPeriod;
+    const range: number = parseInt(req?.query?.range as string) || 1;
+    const status: TInvoiceStatus =
+      (req?.query?.status as TInvoiceStatus) || 'completed';
+    const limit: number = parseInt(req?.query?.limit as string) || 10;
+    const page: number = parseInt(req?.query?.page as string) || 1;
+
+    if (!invoiceStatusArray.some((each) => each === status)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `status type must be any of ${invoiceStatusArray.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+
+    if (!periodTypeArray.some((each) => each === period)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `period type must be any of ${periodTypeArray.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+
+    const result =
+      await reservationServices.getCompletedReservationRequestForServiceProviderCompany(
+        { adminUserId, period, range, limit, page, status },
+      );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Completed reservation requests retrieved successfully',
+      data: result,
+    });
+  });
+
 export const reservationController = {
   createReservationRequest,
   setReservationAsInvalid,
@@ -480,4 +574,5 @@ export const reservationController = {
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
+  getCompletedReservationRequestForServiceProviderCompany,
 };
