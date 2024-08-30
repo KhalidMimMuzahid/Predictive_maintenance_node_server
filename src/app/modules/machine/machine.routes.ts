@@ -48,10 +48,11 @@ router.delete('/', machineController.deleteMachine);
 // this endpoint is not used in this server
 // -relocated-to-another-server
 router.patch(
-  '/machine-health-status',
+  '/machine-health-status-relocated-to-another-server',
   validateRequest(machineValidation.machineHealthStatusSchema),
   machineController.machineHealthStatus,
 );
+router.get('/machine-report', machineController.machineReport);
 router.get(
   '/machine-performance-brand-wise',
   machineController.machinePerformanceBrandWise,

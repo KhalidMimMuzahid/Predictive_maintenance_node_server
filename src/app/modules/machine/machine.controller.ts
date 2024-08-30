@@ -325,6 +325,30 @@ const machineHealthStatus: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const machineReport: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const machine: string = req.query?.machine as string;
+  if (!machine) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'machine is required to get machine report',
+    );
+  }
+
+  const result = await machineServices.machineReport({
+    machine,
+    period: '',
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine status has updated successfully',
+    data: result,
+  });
+});
+
 const machinePerformanceBrandWise: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -370,6 +394,7 @@ export const machineController = {
   getMachineBy_id,
   deleteMachine,
   machineHealthStatus,
+  machineReport,
   machinePerformanceBrandWise,
   machinePerformanceModelWise,
   // changeStatus,

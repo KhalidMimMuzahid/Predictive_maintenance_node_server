@@ -659,7 +659,7 @@ const machineHealthStatus = async ({
 
   machineData.issues = newIssues;
   await machineData.save();
-  await Promise.all(
+  Promise.all(
     machineHealthData?.healthStatuses?.map((each) => {
       // And now save all the sensor data and its health status
 
@@ -676,6 +676,16 @@ const machineHealthStatus = async ({
   );
 
   return null;
+};
+
+const machineReport = async ({
+  machine,
+  period,
+}: {
+  machine: string;
+  period: TPeriod;
+}) => {
+  return machine;
 };
 
 const machinePerformanceBrandWise = async () => {
@@ -809,6 +819,7 @@ export const machineServices = {
   deleteMachineService,
   addModuleToMachineInToDB,
   machineHealthStatus,
+  machineReport,
   machinePerformanceBrandWise,
   machinePerformanceModelWise,
   // changeStatusService,
