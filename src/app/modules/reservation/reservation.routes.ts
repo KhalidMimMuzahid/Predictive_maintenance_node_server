@@ -55,4 +55,9 @@ router.get(
   reservationController.getDashboardScreenAnalyzingForServiceProviderCompany,
 );
 
+router.get(
+  '/get-completed-reservation-request-for-service-provider-company',
+  reservationController.getCompletedReservationRequestForServiceProviderCompany,
+);
+
 export const reservationRoutes = router;

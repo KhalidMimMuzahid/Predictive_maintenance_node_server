@@ -2,10 +2,13 @@ import S3 from 'aws-sdk/clients/s3';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
 import { addDays } from '../../utils/addDays';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
+import { TInvoiceStatus } from '../invoice/invoice.interface';
 import { Invoice } from '../invoice/invoice.model';
+import { isEngineerBelongsToThisTeamByReservation } from '../invoice/invoice.utils';
 import { Machine } from '../machine/machine.model';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
@@ -13,14 +16,13 @@ import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPur
 import {
   TMachineType,
   TMachineType2,
+  TPeriod,
   TProblem,
   TReservationRequest,
   TReservationType,
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
-import { TAuth } from '../../interface/error';
-import { isEngineerBelongsToThisTeamByReservation } from '../invoice/invoice.utils';
 
 const createReservationRequestIntoDB = async ({
   user,
@@ -750,6 +752,699 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
   };
 };
 
+// const getCompletedReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+//   period: string,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'completed',
+//   };
+
+//   let dateRangeFilter = {};
+
+//   // Set the date range filter based on the period
+//   const currentDate = new Date();
+//   if (period === 'weekly') {
+//     const oneWeekAgo = new Date(currentDate);
+//     oneWeekAgo.setDate(currentDate.getDate() - 7);
+//     dateRangeFilter = { createdAt: { $gte: oneWeekAgo, $lte: currentDate } };
+//   } else if (period === 'monthly') {
+//     const oneMonthAgo = new Date(currentDate);
+//     oneMonthAgo.setMonth(currentDate.getMonth() - 1);
+//     dateRangeFilter = { createdAt: { $gte: oneMonthAgo, $lte: currentDate } };
+//   } else if (period === 'yearly') {
+//     const oneYearAgo = new Date(currentDate);
+//     oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
+//     dateRangeFilter = { createdAt: { $gte: oneYearAgo, $lte: currentDate } };
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid period specified. Valid values are: weekly, monthly, yearly.',
+//     );
+//   }
+
+//   // Apply date range filter to match query
+//   Object.assign(matchQuery, dateRangeFilter);
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+
+//   return result;
+// };
+
+// const getCompletedReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+//   period: string,
+//   offset: number = 1,
+//   limit: number = 10, // Default limit to 10 items per page
+//   page: number = 1,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'completed',
+//   };
+
+//   // Determine the date range based on the period and offset
+//   const currentDate = new Date();
+//   let startDate: Date;
+//   let endDate: Date;
+
+//   if (period === 'weekly') {
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - offset * 7 - 7);
+//     endDate = new Date(currentDate);
+//     endDate.setDate(currentDate.getDate() - offset * 7);
+//   } else if (period === 'monthly') {
+//     startDate = new Date(
+//       currentDate.getFullYear(),
+//       currentDate.getMonth() - offset,
+//       1,
+//     );
+//     endDate = new Date(
+//       currentDate.getFullYear(),
+//       currentDate.getMonth() - (offset - 1),
+//       1,
+//     );
+//     endDate.setMonth(endDate.getMonth() + 1);
+//     endDate.setDate(0);
+//   } else if (period === 'yearly') {
+//     startDate = new Date(currentDate.getFullYear() - offset, 0, 1);
+
+//     endDate = new Date(currentDate.getFullYear() - (offset - 1), 0, 1);
+//     endDate.setFullYear(endDate.getFullYear() + 1);
+
+//     endDate.setDate(0);
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid period specified. Valid values are: weekly, monthly, yearly.',
+//     );
+//   }
+
+//   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
+//   console.log(matchQuery);
+
+//   const totalRequests = await Invoice.countDocuments(matchQuery);
+
+//   const totalPages = Math.ceil(totalRequests / limit);
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//     {
+//       $skip: (page - 1) * limit,
+//     },
+//     {
+//       $limit: limit,
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+//   console.log(result);
+
+//   return {
+//     requests: result,
+//     pagination: {
+//       totalRequests,
+//       currentPage: page,
+//       totalPages,
+//       pageSize: limit,
+//     },
+//   };
+// };
+
+// const getCompletedReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+//   period: string,
+//   //offset: number = 1,
+//   limit: number = 10, // Default limit to 10 items per page
+//   page: number = 1,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'completed',
+//   };
+
+//   const currentDate = new Date();
+//   let startDate: Date;
+//   let endDate: Date;
+
+//   if (period === 'weekly') {
+//     // Last week calculation
+//     const daysToLastWeekStart = 7 + ((currentDate.getDay() + 6) % 7); // Calculate days to last week's start
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - daysToLastWeekStart); // Last week's start date
+//     endDate = new Date(startDate);
+//     endDate.setDate(startDate.getDate() + 6); // Last week's end date
+//   } else if (period === 'monthly') {
+//     // Last 30 days calculation
+//     endDate = new Date(currentDate);
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 30); // 30 days ago from today
+//   } else if (period === 'yearly') {
+//     // Last 365 days calculation
+//     endDate = new Date(currentDate); // Current date
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 365); // 365 days ago from today
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid period specified. Valid values are: weekly, monthly, yearly.',
+//     );
+//   }
+
+//   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
+//   console.log(matchQuery);
+
+//   const totalRequests = await Invoice.countDocuments(matchQuery);
+//   const totalPages = Math.ceil(totalRequests / limit);
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//     {
+//       $skip: (page - 1) * limit,
+//     },
+//     {
+//       $limit: limit,
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+//   console.log(result);
+
+//   return {
+//     requests: result,
+//     pagination: {
+//       totalRequests,
+//       currentPage: page,
+//       totalPages,
+//       pageSize: limit,
+//     },
+//   };
+// };
+
+// const getCompletedReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+//   period: string,
+//   //offset: number = 1,
+//   limit: number = 10, // Default limit to 10 items per page
+//   page: number = 1,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'completed',
+//   };
+
+//   // Determine the date range based on the period and offset
+//   const currentDate = new Date();
+//   let startDate: Date;
+//   let endDate: Date;
+
+//   if (period === 'weekly') {
+//     // Last week calculation
+//     const dayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+//     const daysToLastWeekStart = dayOfWeek + 7; // Days to the start of last week
+//     const lastWeekStart = new Date(currentDate);
+//     lastWeekStart.setDate(currentDate.getDate() - daysToLastWeekStart); // Start of last week
+//     const lastWeekEnd = new Date(lastWeekStart);
+//     lastWeekEnd.setDate(lastWeekStart.getDate() + 6); // End of last week
+//     startDate = lastWeekStart;
+//     endDate = lastWeekEnd;
+//   } else if (period === 'monthly') {
+//     // Last 30 days calculation
+//     endDate = new Date(currentDate); // Today's date
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 30); // 30 days before today
+//   } else if (period === 'yearly') {
+//     // Last 365 days calculation
+//     endDate = new Date(currentDate); // Today's date
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 365); // 365 days before today
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid period specified. Valid values are: weekly, monthly, yearly.',
+//     );
+//   }
+
+//   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
+//   console.log(matchQuery);
+
+//   const totalRequests = await Invoice.countDocuments(matchQuery);
+
+//   const totalPages = Math.ceil(totalRequests / limit);
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//     {
+//       $skip: (page - 1) * limit,
+//     },
+//     {
+//       $limit: limit,
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+
+//   return {
+//     requests: result,
+//     pagination: {
+//       totalRequests,
+//       currentPage: page,
+//       totalPages,
+//       pageSize: limit,
+//     },
+//   };
+// };
+
+// const getCompletedReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+//   period: string,
+//   limit: number = 10, // Default limit to 10 items per page
+//   page: number = 1,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'completed',
+//   };
+
+//   // Determine the date range based on the period
+//   const currentDate = new Date();
+//   let startDate: Date;
+//   let endDate: Date;
+
+//   if (period === 'weekly') {
+//     // Last 7 days calculation
+//     endDate = new Date(currentDate); // Today's date
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 7); // 7 days before today
+//     endDate.setDate(endDate.getDate() - 1); // One day before today
+//   } else if (period === 'monthly') {
+//     // Last 30 days calculation
+//     endDate = new Date(currentDate); // Today's date
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 30); // 30 days before today
+//   } else if (period === 'yearly') {
+//     // Last 365 days calculation
+//     endDate = new Date(currentDate); // Today's date
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - 365); // 365 days before today
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid period specified. Valid values are: weekly, monthly, yearly.',
+//     );
+//   }
+
+//   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
+
+//   console.log(matchQuery);
+
+//   const totalRequests = await Invoice.countDocuments(matchQuery);
+
+//   const totalPages = Math.ceil(totalRequests / limit);
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//     {
+//       $skip: (page - 1) * limit,
+//     },
+//     {
+//       $limit: limit,
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+
+//   return {
+//     requests: result,
+//     pagination: {
+//       totalRequests,
+//       currentPage: page,
+//       totalPages,
+//       pageSize: limit,
+//     },
+//   };
+// };
+
+// const getCompletedReservationRequestForServiceProviderCompany = async (
+//   adminUserid: mongoose.Types.ObjectId,
+//   period: string,
+//   offset: number = 1, // Default offset to 1 for the current
+//   limit: number = 10, // Default limit to 10 items per page
+//   page: number = 1,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserid,
+//   });
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found for this user.',
+//     );
+//   }
+
+//   const matchQuery = {
+//     'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+//     taskStatus: 'completed',
+//   };
+
+//   // Determine the date range based on the period and offset
+//   const currentDate = new Date();
+//   let startDate: Date;
+//   let endDate: Date;
+
+//   if (period === 'weekly') {
+//     // Calculate start and end dates for the specified week
+//     endDate = new Date(currentDate);
+//     endDate.setDate(currentDate.getDate() - (offset - 1) * 7 - 1); // End of the offset-th week
+//     startDate = new Date(currentDate);
+//     startDate.setDate(currentDate.getDate() - offset * 7); // Start of the offset-th week
+//   } else if (period === 'monthly') {
+//     // Calculate start and end dates for the specified month
+//     endDate = new Date(currentDate);
+//     endDate.setMonth(currentDate.getMonth() - (offset - 1)); // End of the offset-th month
+//     endDate.setDate(0); // Last day of the previous month
+//     startDate = new Date(endDate);
+//     startDate.setMonth(endDate.getMonth() - 1); // Start of the offset-th month
+//     startDate.setDate(1); // First day of the month
+//   } else if (period === 'yearly') {
+//     // Calculate start and end dates for the specified year
+//     endDate = new Date(currentDate);
+//     endDate.setFullYear(currentDate.getFullYear() - (offset - 1)); // End of the offset-th year
+//     endDate.setMonth(11); // December
+//     endDate.setDate(31); // Last day of the year
+//     startDate = new Date(endDate);
+//     startDate.setFullYear(endDate.getFullYear() - 1); // Start of the offset-th year
+//     startDate.setMonth(0); // January
+//     startDate.setDate(1); // First day of the year
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid period specified. Valid values are: weekly, monthly, yearly.',
+//     );
+//   }
+
+//   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
+
+//   console.log(matchQuery);
+
+//   const totalRequests = await Invoice.countDocuments(matchQuery);
+
+//   const totalPages = Math.ceil(totalRequests / limit);
+
+//   const aggArray = [
+//     {
+//       $match: matchQuery,
+//     },
+//     {
+//       $lookup: {
+//         from: 'reservationrequests',
+//         localField: 'reservationRequest',
+//         foreignField: '_id',
+//         as: 'reservationRequest',
+//       },
+//     },
+//     {
+//       $unwind: '$reservationRequest',
+//     },
+//     {
+//       $replaceRoot: {
+//         newRoot: '$reservationRequest',
+//       },
+//     },
+//     {
+//       $skip: (page - 1) * limit,
+//     },
+//     {
+//       $limit: limit,
+//     },
+//   ];
+
+//   const result = await Invoice.aggregate(aggArray);
+
+//   return {
+//     requests: result,
+//     pagination: {
+//       totalRequests,
+//       currentPage: page,
+//       totalPages,
+//       pageSize: limit,
+//     },
+//   };
+// };
+
+const getCompletedReservationRequestForServiceProviderCompany = async ({
+  adminUserId,
+  period,
+  range,
+  limit,
+  page,
+  status,
+}: {
+  adminUserId: mongoose.Types.ObjectId;
+  period: TPeriod;
+  range: number;
+  limit: number;
+  page: number;
+  status: TInvoiceStatus;
+}) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserId,
+  });
+
+  if (!serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Service provider company not found for this user.',
+    );
+  }
+
+  const matchQuery = {
+    'postBiddingProcess.serviceProviderCompany': serviceProviderCompany._id,
+    taskStatus: status,
+  };
+
+  const currentDate = new Date();
+  let startDate: Date;
+  let endDate: Date;
+
+  if (period === 'weekly') {
+    startDate = new Date(currentDate);
+    startDate.setDate(currentDate.getDate() - range * 7);
+    endDate = new Date(currentDate);
+    endDate.setDate(currentDate.getDate() - (range - 1) * 7);
+  } else if (period === 'monthly') {
+    endDate = new Date(currentDate);
+    startDate = new Date(currentDate);
+    startDate.setDate(currentDate.getDate() - 30 * range);
+    endDate.setDate(endDate.getDate() - 30 * (range - 1));
+  } else if (period === 'yearly') {
+    endDate = new Date(currentDate);
+    startDate = new Date(currentDate);
+    startDate.setDate(currentDate.getDate() - 365 * range);
+    endDate.setDate(endDate.getDate() - 365 * (range - 1));
+  }
+
+  matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
+
+  console.log(matchQuery);
+
+  const totalRequests = await Invoice.countDocuments(matchQuery);
+
+  const totalPages = Math.ceil(totalRequests / limit);
+
+  const aggArray = [
+    {
+      $match: matchQuery,
+    },
+    {
+      $lookup: {
+        from: 'reservationrequests',
+        localField: 'reservationRequest',
+        foreignField: '_id',
+        as: 'reservationRequest',
+      },
+    },
+    {
+      $unwind: '$reservationRequest',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+    {
+      $skip: (page - 1) * limit,
+    },
+    {
+      $limit: limit,
+    },
+  ];
+
+  const result = await Invoice.aggregate(aggArray);
+  console.log(result);
+
+  return {
+    requests: result,
+    pagination: {
+      totalRequests,
+      currentPage: page,
+      totalPages,
+      pageSize: limit,
+    },
+  };
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   reschedule,
@@ -766,4 +1461,5 @@ export const reservationServices = {
   deleteReservation,
   getReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
+  getCompletedReservationRequestForServiceProviderCompany,
 };
