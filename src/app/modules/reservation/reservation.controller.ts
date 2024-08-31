@@ -71,7 +71,6 @@ const createReservationRequest: RequestHandler = catchAsync(
   },
 );
 
-
 const setReservationAsInvalid: RequestHandler = catchAsync(async (req, res) => {
   // const { uid } = req.params;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -466,41 +465,6 @@ const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
       data: result,
     });
   });
-
-// const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
-//   catchAsync(async (req, res) => {
-//     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-//     checkUserAccessApi({
-//       auth,
-//       accessUsers: ['serviceProviderAdmin'],
-//     });
-
-//     const adminUserId = auth?._id;
-//     const period: string = req?.query?.period as string;
-
-//     // Get the period from the query parameter (weekly, monthly, yearly)
-
-//     if (!period) {
-//       return res.status(httpStatus.BAD_REQUEST).send({
-//         success: false,
-//         message: 'Period query parameter is required (weekly, monthly, yearly)',
-//       });
-//     }
-
-//     // Call the service to get the completed reservation requests for the specified period
-//     const result =
-//       await reservationServices.getCompletedReservationRequestForServiceProviderCompany(
-//         adminUserId,
-//         period,
-//       );
-
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: 'Completed reservation requests retrieved successfully',
-//       data: result,
-//     });
-//   });
 
 const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
   catchAsync(async (req, res) => {

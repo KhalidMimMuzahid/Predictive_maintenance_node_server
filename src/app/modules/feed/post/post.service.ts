@@ -828,6 +828,37 @@ const getPostByPostId = async (postId: string) => {
   return postData[0];
 };
 
+const deletePost = async ({
+  postId,
+  auth,
+}: {
+  postId: string;
+  auth: TAuth;
+}) => {
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  const user = await User.findById(auth._id);
+  console.log(user);
+
+  if (!user) {
+    throw new AppError(httpStatus.UNAUTHORIZED, 'User not authenticated');
+  }
+
+  if (post.user.toString() !== auth._id.toString()) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You do not have permission to delete this post',
+    );
+  }
+
+  await Post.findByIdAndDelete(postId);
+
+  return;
+};
+
 export const postServices = {
   createPost,
   sharePost,
@@ -843,4 +874,5 @@ export const postServices = {
   getAllSharesByPost,
   getAllReplaysByComment,
   getPostByPostId,
+  deletePost,
 };

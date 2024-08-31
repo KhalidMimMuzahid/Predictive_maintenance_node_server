@@ -433,6 +433,36 @@ const getPostByPostId: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const deletePost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const postId = req?.query?.postId as string;
+
+  if (!postId) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'postId is required to delete the post',
+    );
+  }
+
+  const result = await postServices.deletePost({
+    postId,
+    auth,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Post deleted successfully',
+    data: result,
+  });
+});
+
 export const postController = {
   createPost,
   sharePost,
@@ -448,4 +478,5 @@ export const postController = {
   getAllSharesByPost,
   getAllReplaysByComment,
   getPostByPostId,
+  deletePost,
 };
