@@ -91,7 +91,7 @@ const setBiddingDateSchema = z.object({
 });
 
 const addBidSchema = z.object({
-  biddingAmount: z.number().min(10, 'bidding Amount can not be less that one'),
+  biddingAmount: z.number().min(1, 'bidding Amount can not be less that one'),
 });
 
 export const reservationGroupValidation = {

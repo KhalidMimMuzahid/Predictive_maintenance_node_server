@@ -49,8 +49,45 @@ const machineHealthStatusSchema = z.object({
   issues: z.array(z.string()),
   healthStatuses: z.array(healthStatusesSchema),
 });
+
+
+const durationDateSchema = z.object({
+  duration: z
+    .object({
+      startDate: z.string(),
+      endDate: z.string(),
+    })
+    .refine(
+      (date) => {
+        if (date) {
+          const { startDate, endDate } = date;
+
+          try {
+            return (
+              new Date(endDate) > new Date(startDate) &&
+              // new Date(endDate) < new Date() &&
+              new Date(startDate) < new Date()
+            );
+          } catch (error) {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      },
+
+      {
+        message:
+          'Please follow the rules for setting bid starting and ending date',
+        path: ['date'],
+      },
+    ),
+});
 export const machineValidation = {
   createNonConnectedMachineValidationSchema,
   createConnectedMachineValidationSchema,
   machineHealthStatusSchema,
+  durationDateSchema,
 };
+
+

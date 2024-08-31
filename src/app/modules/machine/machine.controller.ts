@@ -9,6 +9,7 @@ import AppError from '../../errors/AppError';
 import mongoose, { Types } from 'mongoose';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import { TBiddingDate } from '../reservationGroup/reservationGroup.interface';
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
@@ -325,6 +326,37 @@ const machineHealthStatus: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const machineReport: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const machine: string = req.query?.machine as string;
+  const limit: number = parseInt(req?.query?.limit as string) as number;
+  if (!machine || !limit) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'machine and limit are required to get machine report',
+    );
+  }
+  const biddingDate: TBiddingDate = req?.body?.duration;
+
+  const { startDate, endDate } = biddingDate;
+  new Date(biddingDate?.startDate);
+  const result = await machineServices.machineReport({
+    machine,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    limit,
+  });
+
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine report has successfully',
+    data: result,
+  });
+});
+
 const machinePerformanceBrandWise: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -370,6 +402,7 @@ export const machineController = {
   getMachineBy_id,
   deleteMachine,
   machineHealthStatus,
+  machineReport,
   machinePerformanceBrandWise,
   machinePerformanceModelWise,
   // changeStatus,

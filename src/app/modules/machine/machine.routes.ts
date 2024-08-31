@@ -53,6 +53,12 @@ router.patch(
   machineController.machineHealthStatus,
 );
 router.get(
+  '/machine-report',
+
+  validateRequest(machineValidation.durationDateSchema),
+  machineController.machineReport,
+);
+router.get(
   '/machine-performance-brand-wise',
   machineController.machinePerformanceBrandWise,
 );
