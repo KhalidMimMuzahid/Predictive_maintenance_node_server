@@ -37,5 +37,6 @@ router.get('/get-all-shares-by-post', postController.getAllSharesByPost);
 router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
 router.get('/get-post-by-postId', postController.getPostByPostId);
 router.delete('/delete-post', postController.deletePost);
+router.get('/get-post-by-user', postController.getPostsByUser);
 
 export const postRoutes = router;

@@ -436,6 +436,7 @@ const getPostByPostId: RequestHandler = catchAsync(async (req, res) => {
 const deletePost: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  // Checking the permission of this API
   checkUserAccessApi({
     auth,
     accessUsers: 'all',
@@ -462,6 +463,25 @@ const deletePost: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const userId = req?.query?.userId as string;
+
+  if (!userId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User ID is required');
+  }
+
+  const postsData = await postServices.getPostsByUser(userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Posts retrieved successfully for user',
+    data: postsData,
+  });
+});
 
 export const postController = {
   createPost,
@@ -479,4 +499,5 @@ export const postController = {
   getAllReplaysByComment,
   getPostByPostId,
   deletePost,
+  getPostsByUser,
 };
