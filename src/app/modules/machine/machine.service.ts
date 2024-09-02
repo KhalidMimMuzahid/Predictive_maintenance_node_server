@@ -15,6 +15,7 @@ import { predefinedValueServices } from '../predefinedValue/predefinedValue.serv
 
 import { ReservationRequest } from '../reservation/reservation.model';
 import { AI } from '../ai/ai.model';
+import { timeDifference } from '../../utils/timeDifference';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -768,63 +769,140 @@ const machineReport = async ({
 
   const machineData = await Machine.findById(machine).select('issues');
   // const aggregationPipeline = ;
-  const chartData = await AI.aggregate([
-    // Match documents within the specified time range
-    {
-      $match: {
-        type: 'aiData',
+  // const chartData = await AI.aggregate([
+  //   // Match documents within the specified time range
+  //   {
+  //     $match: {
+  //       type: 'aiData',
+  //       'aiData.machine': new mongoose.Types.ObjectId(machine),
+  //       $and: [
+  //         { createdAt: { $gte: startDate } },
+  //         { createdAt: { $lte: endDate } },
+  //       ],
+  //       'aiData.sensorData': { $exists: true }, // Ensure sensorData exists
+  //     },
+  //   },
 
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-        'aiData.sensorData': { $exists: true }, // Ensure sensorData exists
-      },
-    },
+  //   // Sort by createdAt to ensure data is ordered by time
+  //   {
+  //     $sort: { createdAt: 1 },
+  //   },
 
-    // Sort by createdAt to ensure data is ordered by time
-    {
-      $sort: { createdAt: 1 },
-    },
+  //   // Add a sequential index to each document
+  //   {
+  //     $setWindowFields: {
+  //       sortBy: { createdAt: 1 },
+  //       output: {
+  //         index: { $documentNumber: {} },
+  //       },
+  //     },
+  //   },
 
-    // Add a sequential index to each document
-    {
-      $setWindowFields: {
-        sortBy: { createdAt: 1 },
-        output: {
-          index: { $documentNumber: {} },
-        },
-      },
-    },
+  //   // Group the documents into equal-sized buckets
+  //   {
+  //     $group: {
+  //       _id: {
+  //         $floor: {
+  //           $divide: ['$index', { $divide: ['$index', limit] }],
+  //         },
+  //       },
+  //       avgVibration: { $avg: '$aiData.sensorData.vibration' },
+  //       avgTemperature: { $avg: '$aiData.sensorData.temperature' },
+  //     },
+  //   },
 
-    // Group the documents into equal-sized buckets
-    {
-      $group: {
-        _id: {
-          $floor: {
-            $divide: ['$index', { $divide: ['$index', limit] }],
+  //   // Project the required fields
+  //   // {
+  //   //   $project: {
+  //   //     _id: 0,
+  //   //     avgVibration: 1,
+  //   //     avgTemperature: 1,
+  //   //   },
+  //   // },
+
+  //   // Limit the results to limit
+  //   // {
+  //   //   $limit: limit,
+  //   // },
+  // ]).exec();
+
+  // Calculate the difference in milliseconds
+  const differenceInSeconds = timeDifference(
+    endDate as unknown as number,
+    startDate as unknown as number,
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dateQueryArray: any[] = [];
+  const increment = Math.ceil(differenceInSeconds / limit);
+  for (let index = 0; index < limit; index++) {
+    const newStartDateNumber = new Date(startDate);
+    newStartDateNumber.setSeconds(
+      newStartDateNumber.getSeconds() + index * increment,
+    );
+
+    const newEndDateNumber = new Date(startDate);
+    newEndDateNumber.setSeconds(
+      newEndDateNumber.getSeconds() + (index + 1) * increment,
+    );
+
+    const dateQuery = [
+      { createdAt: { $gte: new Date(newStartDateNumber) } },
+      { createdAt: { $lte: new Date(newEndDateNumber) } },
+    ];
+
+    // calculating middle time
+    const time1 = new Date(newStartDateNumber).getTime();
+    const time2 = new Date(newEndDateNumber).getTime();
+    // Calculate the middle timestamp
+    const middleTime = (time1 + time2) / 2;
+
+    dateQueryArray.push({ dateQuery, middleTime: new Date(middleTime) });
+    // { createdAt: { $gte: startDate } },
+    // { createdAt: { $lte: endDate } },
+  }
+
+  const chartData = await Promise.all(
+    dateQueryArray?.map(async (each) => {
+      // And now save all the sensor data and its health status
+
+      const averageSensorDataArray = await AI.aggregate([
+        // Match your conditions (if any). If you want to apply a filter, add it here.
+        {
+          $match: {
+            type: 'aiData',
+            'aiData.machine': new mongoose.Types.ObjectId(machine),
+            $and: each?.dateQuery,
+            'aiData.sensorData': { $exists: true },
           },
         },
-        avgVibration: { $avg: '$aiData.sensorData.vibration' },
-        avgTemperature: { $avg: '$aiData.sensorData.temperature' },
-      },
-    },
+        // Unwind the array if 'sensorData' was an array (skip this stage if it's not)
+        // { $unwind: "$aiData.sensorData" },
 
-    // Project the required fields
-    // {
-    //   $project: {
-    //     _id: 0,
-    //     avgVibration: 1,
-    //     avgTemperature: 1,
-    //   },
-    // },
+        // Group by a field (or null if you want overall averages) and calculate averages
+        {
+          $group: {
+            _id: null, // Use null if you want a global average, or group by a specific field
+            avgVibration: { $avg: '$aiData.sensorData.vibration' },
+            avgTemperature: { $avg: '$aiData.sensorData.temperature' },
+          },
+        },
+      ]);
 
-    // Limit the results to limit
-    // {
-    //   $limit: limit,
-    // },
-  ]).exec();
+      const averageSensorData = averageSensorDataArray[0];
+      return {
+        sensorData:
+          averageSensorData?.avgVibration && averageSensorData?.avgVibration
+            ? {
+                vibration: averageSensorData?.avgVibration,
+                temperature: averageSensorData?.avgTemperature,
+              }
+            : null,
 
+        middleTime: each?.middleTime,
+      };
+    }),
+  );
   return {
     sensorDataWithHealthStatus,
     issues: machineData?.issues,
