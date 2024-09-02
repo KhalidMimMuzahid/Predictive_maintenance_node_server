@@ -699,13 +699,12 @@ const getPostByPostId = async (postId: string) => {
           seenBy: { $slice: ['$seenBy', -3] },
         },
         user: {
+          _id: 1,
           role: 1,
           showaUser: {
             $cond: {
               if: { $gt: [{ $size: '$user.showaUser' }, 0] },
               then: {
-                _id: { $arrayElemAt: ['$user.showaUser._id', 0] },
-                user: { $arrayElemAt: ['$user.showaUser.user', 0] },
                 name: { $arrayElemAt: ['$user.showaUser.name', 0] },
                 photoUrl: { $arrayElemAt: ['$user.showaUser.photoUrl', 0] },
               },
@@ -859,27 +858,36 @@ const deletePost = async ({
   return;
 };
 
-const getPostsByUser = async (userId: string) => {
+const getPostsByUser = async ({
+  userId,
+  isMyPost,
+}: {
+  userId: string;
+  isMyPost: boolean;
+}) => {
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid userId provided');
   }
 
+  console.log(userId);
+
+  const userPost = isMyPost
+    ? { user: new mongoose.Types.ObjectId(userId) }
+    : {
+        user: new mongoose.Types.ObjectId(userId),
+        viewPrivacy: { $in: ['public', 'friends'] },
+      };
+
+  // const totalPosts = await Post.countDocuments(userPost);
+
   const postsData = await Post.aggregate([
-    {
-      $match: { user: new mongoose.Types.ObjectId(userId) },
-    },
+    { $match: userPost },
     {
       $lookup: {
         from: 'users',
         localField: 'user',
         foreignField: '_id',
         as: 'user',
-      },
-    },
-    {
-      $unwind: {
-        path: '$user',
-        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -966,13 +974,12 @@ const getPostsByUser = async (userId: string) => {
           seenBy: { $slice: ['$seenBy', -3] },
         },
         user: {
+          _id: 1,
           role: 1,
           showaUser: {
             $cond: {
               if: { $gt: [{ $size: '$user.showaUser' }, 0] },
               then: {
-                _id: { $arrayElemAt: ['$user.showaUser._id', 0] },
-                user: { $arrayElemAt: ['$user.showaUser.user', 0] },
                 name: { $arrayElemAt: ['$user.showaUser.name', 0] },
                 photoUrl: { $arrayElemAt: ['$user.showaUser.photoUrl', 0] },
               },
@@ -983,8 +990,6 @@ const getPostsByUser = async (userId: string) => {
             $cond: {
               if: { $gt: [{ $size: '$user.showaAdmin' }, 0] },
               then: {
-                _id: { $arrayElemAt: ['$user.showaAdmin._id', 0] },
-                user: { $arrayElemAt: ['$user.showaAdmin.user', 0] },
                 name: { $arrayElemAt: ['$user.showaAdmin.name', 0] },
                 photoUrl: { $arrayElemAt: ['$user.showaAdmin.photoUrl', 0] },
               },
@@ -995,8 +1000,6 @@ const getPostsByUser = async (userId: string) => {
             $cond: {
               if: { $gt: [{ $size: '$user.showaSubAdmin' }, 0] },
               then: {
-                _id: { $arrayElemAt: ['$user.showaSubAdmin._id', 0] },
-                user: { $arrayElemAt: ['$user.showaSubAdmin.user', 0] },
                 name: { $arrayElemAt: ['$user.showaSubAdmin.name', 0] },
                 photoUrl: { $arrayElemAt: ['$user.showaSubAdmin.photoUrl', 0] },
               },
@@ -1007,11 +1010,7 @@ const getPostsByUser = async (userId: string) => {
             $cond: {
               if: { $gt: [{ $size: '$user.serviceProviderAdmin' }, 0] },
               then: {
-                _id: { $arrayElemAt: ['$user.serviceProviderAdmin._id', 0] },
-                user: { $arrayElemAt: ['$user.serviceProviderAdmin.user', 0] },
-                name: {
-                  $arrayElemAt: ['$user.serviceProviderAdmin.name', 0],
-                },
+                name: { $arrayElemAt: ['$user.serviceProviderAdmin.name', 0] },
                 photoUrl: {
                   $arrayElemAt: ['$user.serviceProviderAdmin.photoUrl', 0],
                 },
@@ -1023,10 +1022,6 @@ const getPostsByUser = async (userId: string) => {
             $cond: {
               if: { $gt: [{ $size: '$user.serviceProviderSubAdmin' }, 0] },
               then: {
-                _id: { $arrayElemAt: ['$user.serviceProviderSubAdmin._id', 0] },
-                user: {
-                  $arrayElemAt: ['$user.serviceProviderSubAdmin.user', 0],
-                },
                 name: {
                   $arrayElemAt: ['$user.serviceProviderSubAdmin.name', 0],
                 },
@@ -1041,12 +1036,6 @@ const getPostsByUser = async (userId: string) => {
             $cond: {
               if: { $gt: [{ $size: '$user.serviceProviderEngineer' }, 0] },
               then: {
-                _id: {
-                  $arrayElemAt: ['$user.serviceProviderEngineer._id', 0],
-                },
-                user: {
-                  $arrayElemAt: ['$user.serviceProviderEngineer.user', 0],
-                },
                 name: {
                   $arrayElemAt: ['$user.serviceProviderEngineer.name', 0],
                 },
@@ -1061,12 +1050,6 @@ const getPostsByUser = async (userId: string) => {
             $cond: {
               if: { $gt: [{ $size: '$user.serviceProviderBranchManager' }, 0] },
               then: {
-                _id: {
-                  $arrayElemAt: ['$user.serviceProviderBranchManager._id', 0],
-                },
-                user: {
-                  $arrayElemAt: ['$user.serviceProviderBranchManager.user', 0],
-                },
                 name: {
                   $arrayElemAt: ['$user.serviceProviderBranchManager.name', 0],
                 },
@@ -1084,13 +1067,6 @@ const getPostsByUser = async (userId: string) => {
       },
     },
   ]);
-
-  if (!postsData || postsData.length === 0) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      `No posts found for user with id ${userId}`,
-    );
-  }
 
   return postsData;
 };

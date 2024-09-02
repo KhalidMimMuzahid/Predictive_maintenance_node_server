@@ -473,7 +473,10 @@ const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'User ID is required');
   }
 
-  const postsData = await postServices.getPostsByUser(userId);
+  const postsData = await postServices.getPostsByUser({
+    userId,
+    isMyPost: auth._id?.toString() === userId,
+  });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
