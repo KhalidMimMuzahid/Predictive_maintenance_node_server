@@ -767,7 +767,69 @@ const machineReport = async ({
   }
 
   const machineData = await Machine.findById(machine).select('issues');
-  return { sensorDataWithHealthStatus, issues: machineData?.issues };
+  // const aggregationPipeline = ;
+  const chartData = await AI.aggregate([
+    // Match documents within the specified time range
+    {
+      $match: {
+        type: 'aiData',
+
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+        'aiData.sensorData': { $exists: true }, // Ensure sensorData exists
+      },
+    },
+
+    // Sort by createdAt to ensure data is ordered by time
+    {
+      $sort: { createdAt: 1 },
+    },
+
+    // Add a sequential index to each document
+    {
+      $setWindowFields: {
+        sortBy: { createdAt: 1 },
+        output: {
+          index: { $documentNumber: {} },
+        },
+      },
+    },
+
+    // Group the documents into equal-sized buckets
+    {
+      $group: {
+        _id: {
+          $floor: {
+            $divide: ['$index', { $divide: ['$index', limit] }],
+          },
+        },
+        avgVibration: { $avg: '$aiData.sensorData.vibration' },
+        avgTemperature: { $avg: '$aiData.sensorData.temperature' },
+      },
+    },
+
+    // Project the required fields
+    // {
+    //   $project: {
+    //     _id: 0,
+    //     avgVibration: 1,
+    //     avgTemperature: 1,
+    //   },
+    // },
+
+    // Limit the results to limit
+    // {
+    //   $limit: limit,
+    // },
+  ]).exec();
+
+  return {
+    sensorDataWithHealthStatus,
+    issues: machineData?.issues,
+    chartData,
+  };
 };
 
 const machinePerformanceBrandWise = async () => {

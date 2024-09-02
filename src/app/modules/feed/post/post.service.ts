@@ -434,6 +434,7 @@ const getPostsForMyFeed = async ({
       $project: {
         _id: 1,
         // for user start
+        'user._id': 1,
         'user.role': 1,
         'user.showaUser.photoUrl': 1,
         'user.showaUser.name': 1,
@@ -487,6 +488,7 @@ const getPostsForMyFeed = async ({
         // for user start
         // user: 1,
         user: {
+          _id: '$user._id',
           role: '$user.role',
 
           serviceProviderAdmin: {
