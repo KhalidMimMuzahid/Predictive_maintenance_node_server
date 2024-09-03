@@ -52,7 +52,7 @@ router.patch(
   validateRequest(machineValidation.machineHealthStatusSchema),
   machineController.machineHealthStatus,
 );
-router.get(
+router.post(
   '/machine-report',
   validateRequest(machineValidation.durationDateSchema),
   machineController.machineReport,

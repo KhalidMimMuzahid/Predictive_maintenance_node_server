@@ -15,7 +15,7 @@ import fileUpload from 'express-fileupload';
 
 const app: Application = express();
 const server = createServer(app);
-
+export const users = new Map();
 async function main() {
   try {
     const io = new Server(server, { cors: { origin: '*' } });
@@ -27,8 +27,22 @@ async function main() {
     app.use(fileUpload());
     io.on('connection', (socket) => {
       console.log(`${socket.id} socket just connected!`);
+      let connectedUser;
+      socket.on('register', (user) => {
+        console.log('A socket connected: ', socket.id);
+        connectedUser = user;
+
+        if (!users.has(user)) {
+          // Replace the value
+          users.set(user, socket?.id);
+        } else {
+          //
+        }
+        users.set(socket.id, user);
+      });
       socket.on('disconnect', () => {
-        console.log('A socket disconnected');
+        console.log('A socket disconnected: ', socket.id);
+        console.log({ connectedUser });
       });
     });
 
@@ -41,7 +55,27 @@ async function main() {
     app.use('/api/v2', manageAuth, router);
 
     const showWelcome = (req: Request, res: Response) => {
-      res.status(200).json({ message: 'Welcome to Showa home version 2.0.2' });
+      // const { user, type, socketId } = req?.body;
+      // if (type === 'add') {
+      //   if (!users.has(user)) {
+      //     // Replace the value
+      //     users.set(user, [socketId]);
+      //   } else {
+      //   }
+      // }
+
+      // console.log(users);
+      // else if(data?.type === "get"){
+      //   res.status(200).json({
+      //     // message: 'Welcome to Showa home version 2.0.2' ,
+      //     body: data,
+      //   });
+      // }
+
+      res.status(200).json({
+        // message: 'Welcome to Showa home version 2.0.2' ,
+        body: users,
+      });
     };
     app.use('/', showWelcome);
     app.use(globalErrorHandler);
