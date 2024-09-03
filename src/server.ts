@@ -26,10 +26,11 @@ async function main() {
     // app.use(express.urlencoded({extended: true}))
     app.use(fileUpload());
     io.on('connection', (socket) => {
-      console.log(`${socket.id} socket just connected!`);
+      // console.log(`${socket.id} socket just connected!`);
       let connectedUser;
       socket.on('register', (user) => {
-        console.log('A socket connected: ', socket.id);
+        console.log('A socket' + socket.id + 'connected with user: ', user);
+        console.log({ user });
         connectedUser = user;
 
         if (!users.has(user)) {
@@ -41,8 +42,10 @@ async function main() {
         users.set(socket.id, user);
       });
       socket.on('disconnect', () => {
-        console.log('A socket disconnected: ', socket.id);
-        console.log({ connectedUser });
+        console.log(
+          'A socket' + socket.id + 'connected with user: ',
+          connectedUser,
+        );
       });
     });
 
