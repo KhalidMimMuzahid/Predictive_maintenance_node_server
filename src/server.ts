@@ -28,8 +28,10 @@ async function main() {
     io.on('connection', (socket) => {
       // console.log(`${socket.id} socket just connected!`);
       let connectedUser;
+
       socket.on('register', (user) => {
-        console.log('A socket' + socket.id + 'connected with user: ', user);
+        console.log('\n---------------- start----------------------\n');
+        console.log('A socket' + socket.id + ' connected with user: ', user);
         console.log({ user });
         connectedUser = user;
 
@@ -43,9 +45,10 @@ async function main() {
       });
       socket.on('disconnect', () => {
         console.log(
-          'A socket' + socket.id + 'connected with user: ',
+          'A socket' + socket.id + ' disconnect with user: ',
           connectedUser,
         );
+        console.log('\n---------------- end----------------------\n');
       });
     });
 
