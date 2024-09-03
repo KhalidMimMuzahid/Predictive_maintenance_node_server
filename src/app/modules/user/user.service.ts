@@ -3,6 +3,7 @@ import AppError from '../../errors/AppError';
 import { User } from './user.model';
 import { jwtFunc } from '../../utils/jwtFunction';
 import { TAuth } from '../../interface/error';
+import { users } from '../../../server';
 
 // 'showaAdmin'
 // 'showaSubAdmin'
@@ -145,6 +146,10 @@ const getUserBy_id = async ({
 
   return user;
 };
+
+const checkUserOnlineByUser = async (user: string) => {
+  return { isActive: users.has(user) };
+};
 const getUsersInfoByUsersArray = async ({
   usersArray,
   rootUserFields,
@@ -279,6 +284,7 @@ const unfollowUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
 export const userServices = {
   signIn,
   getUserBy_id,
+  checkUserOnlineByUser,
   getUsersInfoByUsersArray,
   getAllShowaCustomersFromDB,
   getUserWalletInfo,

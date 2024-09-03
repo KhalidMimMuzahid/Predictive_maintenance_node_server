@@ -28,7 +28,7 @@ async function main() {
     io.on('connection', (socket) => {
       const socketId = socket?.id;
       // console.log(`${socket.id} socket just connected!`);
-      let connectedUser;
+      let connectedUser: string;
 
       socket.on('register', (user) => {
         console.log('\n---------------- start----------------------\n');

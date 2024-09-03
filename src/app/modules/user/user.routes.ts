@@ -32,6 +32,7 @@ subModuleRoutes.forEach((route) => router.use(route.path, route.route));
 // );
 router.get('/sign-in', userControllers.signIn);
 router.get('/get-user', userControllers.getUserBy_id);
+router.get('/check-user-online-by-user', userControllers.checkUserOnlineByUser);
 router.post(
   '/get-users-info-by-users-array',
   userControllers.getUsersInfoByUsersArray,
