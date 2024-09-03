@@ -31,8 +31,8 @@ async function main() {
 
       socket.on('register', (user) => {
         console.log('\n---------------- start----------------------\n');
-        console.log('A socket' + socket.id + ' connected with user: ', user);
-        console.log({ user });
+        console.log('A socket ' + socket.id + ' connected with user: ', user);
+        // console.log({ user });
         connectedUser = user;
 
         if (!users.has(user)) {
@@ -45,7 +45,7 @@ async function main() {
       });
       socket.on('disconnect', () => {
         console.log(
-          'A socket' + socket.id + ' disconnect with user: ',
+          'A socket ' + socket.id + ' disconnect with user: ',
           connectedUser,
         );
         console.log('\n---------------- end----------------------\n');
