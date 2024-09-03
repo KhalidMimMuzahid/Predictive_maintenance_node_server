@@ -26,28 +26,48 @@ async function main() {
     // app.use(express.urlencoded({extended: true}))
     app.use(fileUpload());
     io.on('connection', (socket) => {
+      const socketId = socket?.id;
       // console.log(`${socket.id} socket just connected!`);
       let connectedUser;
 
       socket.on('register', (user) => {
         console.log('\n---------------- start----------------------\n');
         console.log('A socket ' + socket.id + ' connected with user: ', user);
-        // console.log({ user });
-        connectedUser = user;
+        if (user) {
+          connectedUser = user;
 
-        if (!users.has(user)) {
-          // Replace the value
-          users.set(user, socket?.id);
-        } else {
-          //
+          if (!users.has(user)) {
+            // Replace the value
+            users.set(user, [socketId]);
+          } else {
+            const socketIds = users.get(user) as string[];
+            socketIds.push(socketId);
+            users.set(user, socketIds);
+          }
+          // users.set(user, socket?.id);
         }
-        users.set(socket.id, user);
+
+        console.log(users);
       });
       socket.on('disconnect', () => {
+        if (users.has(connectedUser)) {
+          const socketIds = users.get(connectedUser) as string[];
+          const index = socketIds.findIndex((item) => item === socketId);
+          if (index !== -1) {
+            // Remove the element at the found index
+            socketIds.splice(index, 1);
+            if (socketIds?.length) {
+              users.set(connectedUser, socketIds);
+            } else {
+              users.delete(connectedUser);
+            }
+          }
+        }
         console.log(
           'A socket ' + socket.id + ' disconnect with user: ',
           connectedUser,
         );
+        console.log(users);
         console.log('\n---------------- end----------------------\n');
       });
     });
@@ -61,26 +81,48 @@ async function main() {
     app.use('/api/v2', manageAuth, router);
 
     const showWelcome = (req: Request, res: Response) => {
-      // const { user, type, socketId } = req?.body;
-      // if (type === 'add') {
-      //   if (!users.has(user)) {
-      //     // Replace the value
-      //     users.set(user, [socketId]);
-      //   } else {
+      // {
+      //   console.log('---------------------------');
+      //   const { type, register, disconnect } = req.body;
+      //   if (type === 'register') {
+      //     const { user, socketId } = register;
+      //     if (user) {
+      //       if (!users.has(user)) {
+      //         // Replace the value
+      //         users.set(user, [socketId]);
+      //       } else {
+      //         const socketIds = users.get(user) as string[];
+      //         socketIds.push(socketId);
+      //         users.set(user, socketIds);
+      //       }
+      //       // users.set(user, socket?.id);
+      //     }
+      //   } else if (type === 'disconnect') {
+      //     const { user, socketId } = disconnect;
+      //     if (users.has(user)) {
+      //       const socketIds = users.get(user) as string[];
+      //       const index = socketIds.findIndex((item) => item === socketId);
+      //       if (index !== -1) {
+      //         // Remove the element at the found index
+      //         socketIds.splice(index, 1);
+      //         if (socketIds?.length) {
+      //           users.set(user, socketIds);
+      //         } else {
+      //           users.delete(user);
+      //         }
+      //       }
+      //     }
       //   }
+      //   console.log(users);
+      //   // else if(data?.type === "get"){
+      //   //   res.status(200).json({
+      //   //     // message: 'Welcome to Showa home version 2.0.2' ,
+      //   //     body: data,
+      //   //   });
+      //   // }
       // }
-
-      // console.log(users);
-      // else if(data?.type === "get"){
-      //   res.status(200).json({
-      //     // message: 'Welcome to Showa home version 2.0.2' ,
-      //     body: data,
-      //   });
-      // }
-
       res.status(200).json({
-        // message: 'Welcome to Showa home version 2.0.2' ,
-        body: users,
+        message: 'Welcome to Showa home version 2.0.2',
       });
     };
     app.use('/', showWelcome);
