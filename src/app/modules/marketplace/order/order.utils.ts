@@ -23,7 +23,7 @@ export const orderProducts = async ({
   session: mongoose.mongo.ClientSession;
 }) => {
   const productData = await Product.findById(product).select(
-    'salePrice stockManagement',
+    'salePrice stockManagement shop ownedBy',
   );
 
   if (!productData) {
@@ -45,6 +45,9 @@ export const orderProducts = async ({
   order.orderId = padNumberWithZeros(lastOrderId, 6);
   const transferFee: number = 0;
   order.user = auth?._id;
+  if (productData?.shop) {
+    order.shop = productData?.shop;
+  }
   order.product = productData?._id;
   order.status = 'pending';
   order.paymentType = paymentType;

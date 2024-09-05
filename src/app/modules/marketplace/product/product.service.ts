@@ -54,6 +54,26 @@ const createProduct = async ({
 
   if (auth?.role === 'showaAdmin') {
     product.ownedBy = 'showa';
+    const shop = await Shop.findOne({ ownedBy: 'showa' });
+    // product.shop
+    if (!shop) {
+      const newShop = await Shop.create({
+        ownedBy: 'showa',
+        type: 'all',
+        status: 'success',
+        shopName: 'Showa',
+      });
+      if (!newShop) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      }
+      product.shop = newShop?._id;
+    } else {
+      product.shop = shop?._id;
+    }
+    
   } else if (auth?.role === 'serviceProviderAdmin') {
     product.ownedBy = 'serviceProviderCompany';
 

@@ -7,6 +7,7 @@ import {
 // vendor
 export type TServiceProviderBranch = {
   status: 'pending' | 'success' | 'suspended';
+  photoUrl?: string;
   type: 'branch'; //| 'vendor'; //  branch-office or vendor
   branchName: string;
   department: string; // Chief Executive Office, Chief Operating Office, Head of Business, Head of Engineer,Head of Accounts, or others

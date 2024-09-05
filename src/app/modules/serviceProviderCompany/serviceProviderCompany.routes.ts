@@ -9,6 +9,10 @@ router.get(
   serviceProviderCompanyControllers.getServiceProviderCompanyForAdmin,
 );
 router.get(
+  '/get-all-profile-by-service-provider-company',
+  serviceProviderCompanyControllers.getAllProfileByServiceProviderCompany,
+);
+router.get(
   '/service-provider-company-by_id',
   serviceProviderCompanyControllers.getServiceProviderCompanyBy_id,
 );
