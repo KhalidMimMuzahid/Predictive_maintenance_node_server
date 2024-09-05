@@ -1,11 +1,11 @@
 import { RequestHandler } from 'express';
-import catchAsync from '../../../utils/catchAsync';
-import { TAuth } from '../../../interface/error';
-import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
-import { TShop } from './shop.interface';
-import AppError from '../../../errors/AppError';
 import httpStatus from 'http-status';
+import AppError from '../../../errors/AppError';
+import { TAuth } from '../../../interface/error';
+import catchAsync from '../../../utils/catchAsync';
+import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
 import sendResponse from '../../../utils/sendResponse';
+import { TShop } from './shop.interface';
 import { shopServices } from './shop.service';
 
 const createShop: RequestHandler = catchAsync(async (req, res) => {
@@ -33,6 +33,36 @@ const createShop: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getShopDashboard: RequestHandler = async (req, res) => {
+  const auth = req.headers.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderAdmin'],
+  });
+
+  const shopId = req.query.shopId as string;
+
+  if (!shopId) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: 'Shop ID is required to get the dashboard summary',
+    });
+  }
+
+  const result = await shopServices.getShopDashboard({
+    shopId,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'get shop dashboard summary',
+    data: result,
+  });
+};
+
 export const shopController = {
   createShop,
+  getShopDashboard,
 };

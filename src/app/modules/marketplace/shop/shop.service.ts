@@ -1,11 +1,13 @@
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import { ServiceProviderCompany } from '../../serviceProviderCompany/serviceProviderCompany.model';
+import { ServiceProviderAdmin } from '../../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
+import Order from '../order/order.model';
+import Product from '../product/product.model';
 import { TShop } from './shop.interface';
 import Shop from './shop.model';
-import { ServiceProviderAdmin } from '../../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
-import mongoose from 'mongoose';
 
 const createShop = async ({
   auth,
@@ -66,6 +68,166 @@ const createShop = async ({
   }
 };
 
+const getShopDashboard = async ({ shopId }: { shopId: string }) => {
+  const shopObjectId = new mongoose.Types.ObjectId(shopId);
+
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+  const todayEnd = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  const sevenDaysAgoStart = new Date(
+    sevenDaysAgo.getFullYear(),
+    sevenDaysAgo.getMonth(),
+    sevenDaysAgo.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+
+  const todaysSales = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+        createdAt: { $gte: todayStart, $lt: todayEnd },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSales: { $sum: '$cost.totalAmount' },
+      },
+    },
+  ]);
+
+  const todaysUnits = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+        createdAt: { $gte: todayStart, $lt: todayEnd },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalUnits: { $sum: '$cost.quantity' },
+      },
+    },
+  ]);
+
+  const activeCustomers = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+        createdAt: { $gte: todayStart, $lt: todayEnd },
+      },
+    },
+    {
+      $group: {
+        _id: '$user',
+      },
+    },
+    {
+      $count: 'totalActiveCustomers',
+    },
+  ]);
+
+  const newCustomers = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+        createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
+      },
+    },
+    {
+      $group: {
+        _id: '$user',
+        firstPurchaseDate: { $min: '$createdAt' },
+      },
+    },
+    {
+      $match: {
+        firstPurchaseDate: { $gte: sevenDaysAgoStart },
+      },
+    },
+    {
+      $count: 'totalNewCustomers',
+    },
+  ]);
+
+  const totalProducts = await Product.countDocuments({
+    shop: shopObjectId,
+  });
+
+  const totalSales = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSales: { $sum: '$cost.totalAmount' },
+      },
+    },
+  ]);
+
+  const totalSalesLastSevenDays = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+        createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSales: { $sum: '$cost.totalAmount' },
+      },
+    },
+  ]);
+
+  return {
+    todaysSales: {
+      totalSales: todaysSales[0]?.totalSales || 0,
+    },
+    todaysUnits: {
+      totalUnits: todaysUnits[0]?.totalUnits || 0,
+    },
+    totalActiveCustomers: activeCustomers[0]?.totalActiveCustomers || 0,
+    totalNewCustomers: newCustomers[0]?.totalNewCustomers || 0,
+    totalProducts,
+    totalSales: totalSales[0]?.totalSales || 0,
+    totalSalesLastSevenDays: totalSalesLastSevenDays[0]?.totalSales || 0,
+  };
+};
+
 export const shopServices = {
   createShop,
+  getShopDashboard,
 };
