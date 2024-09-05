@@ -55,3 +55,4 @@ export const IsDeletedSchema = new Schema<TIsDeleted>({
   value: { type: Boolean, default: false, required: true },
   deletedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 });
+

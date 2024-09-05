@@ -11,7 +11,7 @@ const orderSchema = new Schema<TOrder>(
     shop: { type: Schema.Types.ObjectId, ref: 'Shop', required: true },
     status: {
       type: String,
-      enum: ['pending', 'in-progress', 'delivered'],
+      enum: ['pending', 'in-progress', 'shipped', 'delivered', 'canceled'],
       required: true,
     },
     paymentType: {

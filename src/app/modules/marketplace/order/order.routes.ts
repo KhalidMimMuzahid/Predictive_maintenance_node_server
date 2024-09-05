@@ -10,11 +10,15 @@ router.post(
   validateRequest(orderValidation.orderValidationSchema),
   orderController.orderProduct,
 );
+
+router.patch('/cancel-or-accept-order', orderController.cancelOrAcceptOrder);
+
 router.get('/get-my-all-order', orderController.getMyAllOrder);
 router.get(
   '/get-order-details-by-order',
   orderController.getOrderDetailsByOrder,
 );
+router.get('/get-all-orders-by-shop', orderController.getAllOrdersByShop);
 router.get('/get-all-orders', orderController.getAllOrders);
 
 export const orderRoutes = router;
