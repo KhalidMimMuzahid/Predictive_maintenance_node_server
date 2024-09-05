@@ -70,5 +70,6 @@ export type TProduct = {
       user: Types.ObjectId; // objectId of the User
     }[];
   };
+  soldCount: number;
   // reviews and ratings
 };

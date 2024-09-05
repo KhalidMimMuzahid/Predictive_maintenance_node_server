@@ -24,6 +24,23 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
     });
   },
 );
+const getAllProfileByServiceProviderCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+    const result =
+      await serviceProviderCompanyServices.getAllProfileByServiceProviderCompany(
+        auth?._id,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'serviceProviderCompany retrieved successfully',
+      data: result,
+    });
+  },
+);
 const getServiceProviderCompanyBy_id: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -97,6 +114,7 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
+  getAllProfileByServiceProviderCompany,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,

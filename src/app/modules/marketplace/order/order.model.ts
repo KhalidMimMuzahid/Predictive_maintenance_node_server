@@ -8,6 +8,7 @@ const orderSchema = new Schema<TOrder>(
     orderId: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    shop: { type: Schema.Types.ObjectId, ref: 'Shop', required: true },
     status: {
       type: String,
       enum: ['pending', 'in-progress', 'delivered'],

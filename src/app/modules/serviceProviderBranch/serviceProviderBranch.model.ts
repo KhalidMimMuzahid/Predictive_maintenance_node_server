@@ -5,6 +5,7 @@ import { AddressSchema } from '../common/common.model';
 const serviceProviderBranchSchema = new Schema<TServiceProviderBranch>(
   {
     status: { type: String, enum: ['pending', 'success', 'blocked'] },
+    photoUrl: String,
     type: { type: String, default: 'branch' }, // Assuming default type is 'branch'
     branchName: { type: String },
     department: String,

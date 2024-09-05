@@ -43,6 +43,25 @@ const getUserBy_id: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const checkUserOnlineByUser: RequestHandler = catchAsync(async (req, res) => {
+  const user: string = req?.query?.user as string;
+
+  //   console.log({ auth: req?.headers.auth });
+  if (!user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'user is required to check online user',
+    );
+  }
+  const result = await userServices.checkUserOnlineByUser(user);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User retrieved successfully',
+    data: result,
+  });
+});
 const getUsersInfoByUsersArray: RequestHandler = catchAsync(
   async (req, res) => {
     const rootUserFields: string = req?.query?.rootUserFields as string;
@@ -153,6 +172,7 @@ const unfollowUser: RequestHandler = catchAsync(async (req, res) => {
 export const userControllers = {
   signIn,
   getUserBy_id,
+  checkUserOnlineByUser,
   getUsersInfoByUsersArray,
   getAllShowaCustomers,
   getUserWalletInfo,

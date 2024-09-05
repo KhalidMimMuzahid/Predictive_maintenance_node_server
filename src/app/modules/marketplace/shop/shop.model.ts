@@ -8,7 +8,7 @@ const shopSchema = new Schema<TShop>(
     serviceProviderAdmin: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false,
     },
     ownedBy: {
       type: String,
@@ -22,7 +22,7 @@ const shopSchema = new Schema<TShop>(
     },
     serviceProviderCompany: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
       ref: 'ServiceProviderCompany',
     },
     status: {
@@ -36,12 +36,12 @@ const shopSchema = new Schema<TShop>(
     },
     shopRegNo: {
       type: String,
-      required: true,
+      required: false,
     },
-    address: { type: AddressSchema, required: true },
+    address: { type: AddressSchema, required: false },
     phone: {
       type: String,
-      required: true,
+      required: false,
     },
 
     photoUrl: String,
