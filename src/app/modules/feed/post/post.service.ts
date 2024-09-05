@@ -673,6 +673,9 @@ const getPostByPostId = async (postId: string) => {
         as: 'user.serviceProviderBranchManager',
       },
     },
+
+    { $sort: { createdAt: -1 } },
+
     {
       $project: {
         _id: 1,
@@ -684,6 +687,7 @@ const getPostByPostId = async (postId: string) => {
         type: 1,
         userPost: 1,
         advertisement: 1,
+        createdAt: 1,
         likeObject: {
           likesCount: { $size: '$likes' },
           likes: { $slice: ['$likes', -3] },
@@ -948,6 +952,9 @@ const getPostsByUser = async ({
         as: 'user.serviceProviderBranchManager',
       },
     },
+
+    { $sort: { createdAt: -1 } },
+
     {
       $project: {
         _id: 1,
@@ -959,6 +966,7 @@ const getPostsByUser = async ({
         type: 1,
         userPost: 1,
         advertisement: 1,
+        createdAt: 1,
         likeObject: {
           likesCount: { $size: '$likes' },
           likes: { $slice: ['$likes', -3] },

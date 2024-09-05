@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
-import { TOrder } from './order.interface';
 import { paymentTypesArray } from './order.const';
+import { TOrder } from './order.interface';
 
 // Define the schema for the TProduct type
 const orderSchema = new Schema<TOrder>(

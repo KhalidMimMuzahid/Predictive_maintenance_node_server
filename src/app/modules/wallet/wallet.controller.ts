@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express';
+import httpStatus from 'http-status';
+import { Types } from 'mongoose';
 import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import httpStatus from 'http-status';
 import { walletServices } from './wallet.service';
-import { Types } from 'mongoose';
 
 const addTransfer: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -138,6 +138,73 @@ const getRecentMBTransfer: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+// const addCardToMyWallet: RequestHandler = catchAsync(async (req, res) => {
+//   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//   const card: TCard = req.body;
+
+//   const results = await walletServices.addCardToMyWallet({
+//     userId: auth._id,
+//     card,
+//   });
+
+//   // Send response
+//   sendResponse(res, {
+//     statusCode: httpStatus.CREATED,
+//     success: true,
+//     message: 'Card added to wallet successfully',
+//     data: results,
+//   });
+// });
+
+// const deleteCardFromMyWallet: RequestHandler = catchAsync(async (req, res) => {
+//   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//   const cardId = req?.params?.cardId as string;
+
+//   const results = await walletServices.deleteCardFromMyWallet({
+//     userId: auth._id,
+//     cardId,
+//   });
+
+//   // Send response
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'Card removed from wallet successfully',
+//     data: results,
+//   });
+// });
+
+// const deleteCardFromMyWallet: RequestHandler = catchAsync(async (req, res) => {
+//   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+//   checkUserAccessApi({
+//     auth,
+//     accessUsers: 'all',
+//   });
+
+//   const walletId = req?.query?.wallet as string;
+//   const cardId = req?.query?.card as string;
+
+//   if (!walletId || !cardId) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       `Wallet and card are required to delete the card`,
+//     );
+//   }
+
+//   const results = await walletServices.deleteCardFromMyWallet({
+//     walletId,
+//     cardId,
+//   });
+
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'Card has been removed successfully',
+//     data: results,
+//   });
+// });
 
 export const walletControllers = {
   addTransfer,

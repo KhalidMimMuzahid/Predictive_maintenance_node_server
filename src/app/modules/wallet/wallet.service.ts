@@ -1,14 +1,14 @@
 import { Types } from 'mongoose';
 
-import { User } from '../user/user.model';
-import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-import { Wallet } from './wallet.model';
-import { Transaction } from '../transaction/transaction.model';
-import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
-import { TWallet } from './wallet.interface';
+import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
+import AppError from '../../errors/AppError';
+import { Transaction } from '../transaction/transaction.model';
+import { User } from '../user/user.model';
+import { TWallet } from './wallet.interface';
+import { Wallet } from './wallet.model';
 
 const stripe = new Stripe(config.stripeSecretKey);
 
@@ -278,6 +278,82 @@ const getRecentMBTransfer = async (userId: Types.ObjectId) => {
     .limit(3);
   return transactions;
 };
+
+// const addCardToMyWallet = async ({
+//   userId,
+//   card,
+// }: {
+//   userId: Types.ObjectId;
+//   card: TCard;
+// }) => {
+//   const user = await User.findById(userId).populate('wallet');
+
+//   if (!user || !user.wallet) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'User or wallet not found');
+//   }
+
+//   const wallet = user.wallet as typeof Wallet.prototype; // Cast to wallet model type
+//   //const wallet = user.wallet as TWallet; // Cast to wallet model type
+
+//   // const cardToAdd = {
+//   //   card,
+//   //   isDeleted: false,
+//   // };
+
+//   wallet.cards.push(card);
+
+//   await wallet.save();
+
+//   return wallet;
+// };
+
+// const deleteCardFromMyWallet = async ({
+//   userId,
+//   cardId,
+// }: {
+//   userId: Types.ObjectId;
+//   cardId: string;
+// }) => {
+//   const user = await User.findById(userId).populate('wallet');
+
+//   if (!user || !user.wallet) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'User or wallet not found');
+//   }
+
+//   const wallet = user.wallet as typeof Wallet.prototype; // Cast to wallet model type
+
+//   const cardIndex = wallet.cards.findIndex(
+//     (card) => card._id.toString() === cardId,
+//   );
+
+//   if (cardIndex === -1) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'Card not found in wallet');
+//   }
+
+//   wallet.cards.splice(cardIndex, 1);
+
+//   await wallet.save();
+
+//   return wallet;
+// };
+
+// const deleteCardFromMyWallet = async ({
+//   walletId,
+//   cardId,
+// }: {
+//   walletId: string;
+//   cardId: string;
+// }) => {
+//   await Wallet.findByIdAndUpdate(walletId, {
+//     $pull: {
+//       cards: {
+//         _id: new mongoose.Types.ObjectId(cardId),
+//       },
+//     },
+//   });
+
+//   return;
+// };
 
 export const walletServices = {
   addTransfer,
