@@ -7,10 +7,16 @@ import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
 import sendResponse from '../../../utils/sendResponse';
 import {
   actionTypeArray,
+  actionTypeForChangesStatus,
   orderStatusArray,
   paymentTypesArray,
 } from './order.const';
-import { TActionType, TOrders, TPaymentType } from './order.interface';
+import {
+  TActionType,
+  TActionTypeForChangesStatus,
+  TOrders,
+  TPaymentType,
+} from './order.interface';
 import { orderServices } from './order.service';
 
 const orderProduct: RequestHandler = catchAsync(async (req, res) => {
@@ -91,6 +97,52 @@ const cancelOrAcceptOrder: RequestHandler = catchAsync(async (req, res) => {
     // auth,
     order,
     actionType,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'order has updated successfully',
+    data: result,
+  });
+});
+const changeStatusWithDate: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderAdmin', 'serviceProviderSubAdmin'],
+  });
+
+  const order = req?.query?.order as string;
+  const actionType = req?.query?.actionType as TActionTypeForChangesStatus;
+  const date = req?.body?.date;
+  if (!order) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'order is required to cancel or approved',
+    );
+  }
+
+  if (!actionTypeForChangesStatus.some((each) => each === actionType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `actionTYpe must be any of ${actionTypeForChangesStatus.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+
+  const result = await orderServices.changeStatusWithDate({
+    // auth,
+    order,
+    actionType,
+    date,
   });
   // send response
   sendResponse(res, {
@@ -192,6 +244,7 @@ const getAllOrders: RequestHandler = catchAsync(async (req, res) => {
 export const orderController = {
   orderProduct,
   cancelOrAcceptOrder,
+  changeStatusWithDate,
   getMyAllOrder,
   getOrderDetailsByOrder,
   getAllOrdersByShop,

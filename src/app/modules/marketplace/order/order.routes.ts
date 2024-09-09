@@ -12,6 +12,12 @@ router.post(
 );
 
 router.patch('/cancel-or-accept-order', orderController.cancelOrAcceptOrder);
+router.patch(
+  '/change-status-with-date',
+
+  validateRequest(orderValidation.changeStatusValidationSchema),
+  orderController.changeStatusWithDate,
+);
 
 router.get('/get-my-all-order', orderController.getMyAllOrder);
 router.get(

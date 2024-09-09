@@ -3,7 +3,12 @@ import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import Cart from '../cart/cart.model';
-import { TActionType, TOrders, TPaymentType } from './order.interface';
+import {
+  TActionType,
+  TActionTypeForChangesStatus,
+  TOrders,
+  TPaymentType,
+} from './order.interface';
 import Order from './order.model';
 import { orderProducts } from './order.utils';
 
@@ -72,17 +77,30 @@ const cancelOrAcceptOrder = async ({
     const updatedOrder = await Order.findOneAndUpdate(
       {
         _id: new mongoose.Types.ObjectId(order),
-        status: 'pending',
+
+        $and: [
+          {
+            status: {
+              $ne: 'canceled', //delivered' | 'canceled
+            },
+          },
+          {
+            status: {
+              $ne: 'delivered', //delivered' | 'canceled
+            },
+          },
+        ],
       },
 
       {
         status: 'canceled',
+        'canceled.isActivated': true,
       },
     );
     if (!updatedOrder) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'this order status is pending or this order is not founded ',
+        'this order status are already canceled or delivered or this order is not founded ',
       );
     }
   } else if (actionType === 'accept') {
@@ -94,6 +112,7 @@ const cancelOrAcceptOrder = async ({
 
       {
         status: 'inprogress',
+        'inprogress.isActivated': true,
       },
     );
     if (!updatedOrder) {
@@ -104,6 +123,60 @@ const cancelOrAcceptOrder = async ({
     }
   }
 };
+
+const changeStatusWithDate = async ({
+  // auth,
+  order,
+  actionType,
+  date,
+}: {
+  // auth: TAuth;
+  order: string;
+  actionType: TActionTypeForChangesStatus;
+  date: string;
+}) => {
+  if (actionType === 'inprogress') {
+    const updatedOrder = await Order.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(order),
+        status: 'pending',
+      },
+
+      {
+        status: 'inprogress',
+        'inprogress.isActivated': true,
+        'inprogress.customDate': new Date(date),
+      },
+    );
+    if (!updatedOrder) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'this order status is not pending now or this order is not founded ',
+      );
+    }
+  } else if (actionType === 'shipped') {
+    const updatedOrder = await Order.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(order),
+
+        status: 'inprogress',
+      },
+
+      {
+        status: 'shipped',
+        'shipped.isActivated': true,
+        'shipped.customDate': new Date(date),
+      },
+    );
+    if (!updatedOrder) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'this order status is not inprogress now or this order is not founded ',
+      );
+    }
+  }
+};
+
 const getMyAllOrder = async (user: mongoose.Types.ObjectId) => {
   const orders = await Order.find({ user });
 
@@ -150,6 +223,7 @@ const getAllOrders = async () => {
 export const orderServices = {
   orderProduct,
   cancelOrAcceptOrder,
+  changeStatusWithDate,
   getMyAllOrder,
   getOrderDetailsByOrder,
   getAllOrdersByShop,

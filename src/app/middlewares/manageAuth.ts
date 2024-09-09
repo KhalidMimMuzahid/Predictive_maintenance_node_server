@@ -20,6 +20,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
       pathname?.endsWith('get-all-service-provider-companies') ||
       pathname?.endsWith('machine-health-status') ||
       pathname?.endsWith('get-thresholds') ||
+      pathname?.endsWith('get-ai-data') ||
       pathname?.endsWith('delete-my-account')
     ) {
       return next();

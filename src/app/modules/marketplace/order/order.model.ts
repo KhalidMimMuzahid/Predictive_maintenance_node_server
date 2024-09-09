@@ -14,6 +14,98 @@ const orderSchema = new Schema<TOrder>(
       enum: ['pending', 'in-progress', 'shipped', 'delivered', 'canceled'],
       required: true,
     },
+    pending: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+    inprogress: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+    shipped: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+
+    delivered: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+    canceled: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+
     paymentType: {
       type: String,
       enum: paymentTypesArray,

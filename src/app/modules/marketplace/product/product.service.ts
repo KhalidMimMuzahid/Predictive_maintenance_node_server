@@ -2,7 +2,13 @@ import httpStatus from 'http-status';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
-import { TProduct, TProductFilter, TReviewObject } from './product.interface';
+import {
+  TProduct,
+  TProductFilter,
+  TReviewObject,
+  TSortType,
+  TSortedBy,
+} from './product.interface';
 import Product from './product.model';
 import Shop from '../shop/shop.model';
 import PredefinedValue from '../../predefinedValue/predefinedValue.model';
@@ -51,7 +57,7 @@ const createProduct = async ({
     6,
   );
   product.addedBy = auth?._id;
-
+  product.stockManagement.soldCount = 0;
   if (auth?.role === 'showaAdmin') {
     product.ownedBy = 'showa';
     const shop = await Shop.findOne({ ownedBy: 'showa' });
@@ -73,7 +79,6 @@ const createProduct = async ({
     } else {
       product.shop = shop?._id;
     }
-    
   } else if (auth?.role === 'serviceProviderAdmin') {
     product.ownedBy = 'serviceProviderCompany';
 
@@ -178,7 +183,70 @@ const getAllProductsCategoryWise = async () => {
 
   return products;
 };
+const getAllProductsByShopDashboard = async ({ shop }: { shop: string }) => {
+  const productsCount = await Product.countDocuments({
+    shop: new mongoose.Types.ObjectId(shop),
+  });
+  const lowStockProductCOunt = await Product.countDocuments({
+    shop: new mongoose.Types.ObjectId(shop),
+    'stockManagement.availableStock': {
+      $lte: 5,
+    },
+  });
+  const packageData = 'Silver';
+  return { productsCount, lowStockProductCOunt, packageData };
+};
 
+const getAllProductsByShop = async ({
+  shop,
+  sortedBy,
+  sortType,
+}: {
+  shop: string;
+  sortedBy: TSortedBy;
+  sortType: TSortType;
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let result: any;
+  if (sortedBy === 'time') {
+    result = await Product.find(
+      {
+        shop: new mongoose.Types.ObjectId(shop),
+      },
+      {},
+      { _id: sortType === 'asc' ? 1 : -1 },
+    );
+  } else if (sortedBy === 'price') {
+    result = await Product.find(
+      {
+        shop: new mongoose.Types.ObjectId(shop),
+      },
+      {},
+      { salePrice: sortType === 'asc' ? 1 : -1 },
+    );
+  } else if (sortedBy === 'top-sold') {
+    result = await Product.find(
+      {
+        shop: new mongoose.Types.ObjectId(shop),
+        'stockManagement.availableStock': {
+          $lte: 5,
+        },
+      },
+      {},
+      { soldCount: sortType === 'asc' ? 1 : -1 },
+    );
+  } else if (sortedBy === 'low-stock') {
+    result = await Product.find(
+      {
+        shop: new mongoose.Types.ObjectId(shop),
+      },
+      {},
+      { 'stockManagement.availableStock': sortType === 'asc' ? 1 : -1 },
+    );
+  }
+
+  return result;
+};
 const getProductByProduct_id = async (productId: string) => {
   const product = await Product.findOne({ _id: productId });
 
@@ -197,5 +265,8 @@ export const productServices = {
   addReview,
   getAllProducts,
   getAllProductsCategoryWise,
+  getAllProductsByShopDashboard,
+  getAllProductsByShop,
+
   getProductByProduct_id,
 };

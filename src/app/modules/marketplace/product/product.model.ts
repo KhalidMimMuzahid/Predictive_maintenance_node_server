@@ -41,6 +41,7 @@ const productSchema = new Schema<TProduct>(
 
     stockManagement: {
       availableStock: { type: Number, required: true },
+      soldCount: { type: Number, required: true },
       trackStockQuantity: { type: Boolean, required: true },
     },
 

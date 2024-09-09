@@ -19,7 +19,15 @@ export const WalletSchema = new Schema<TWallet>(
       type: Schema.Types.ObjectId,
       ref: 'ServiceProviderBranch',
     },
-    cards: { type: [CardSchema], required: true },
+    cards: {
+      type: [
+        new Schema({
+          isDeleted: Boolean,
+          card: CardSchema,
+        }),
+      ],
+      required: true,
+    },
     stripeCustomerId: {
       type: String,
     },

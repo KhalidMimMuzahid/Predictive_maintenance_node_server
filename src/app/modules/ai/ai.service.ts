@@ -4,6 +4,7 @@ import { predefinedValueServices } from '../predefinedValue/predefinedValue.serv
 import { TThreshold } from './ai.interface';
 import { AI } from './ai.model';
 import { ReservationRequest } from '../reservation/reservation.model';
+import { addDays } from '../../utils/addDays';
 
 const addThreshold = async ({
   thresholdData,
@@ -75,6 +76,37 @@ const getThresholds = async () => {
   });
   return processedData;
 };
+const getAiData = async () => {
+  const currentDate = new Date();
+  console.log(currentDate);
+  const startDate = addDays(-7);
+  console.log(startDate);
+  const thresholdData = await AI.aggregate([
+    {
+      $match: {
+        type: 'aiData',
+        $and: [{ createdAt: { $gte: startDate } }],
+      },
+    },
+    {
+      $unwind: '$aiData',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$aiData',
+      },
+    },
+    {
+      $project: {
+        sectionName: 1,
+        healthStatus: 1,
+        sensorData: 1,
+      },
+    },
+  ]);
+  return thresholdData;
+};
 
 const aiPerformance = async () => {
   const totalReservationCount = await ReservationRequest.countDocuments({});
@@ -90,5 +122,6 @@ const aiPerformance = async () => {
 export const aiServices = {
   addThreshold,
   getThresholds,
+  getAiData,
   aiPerformance,
 };
