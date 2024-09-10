@@ -7,6 +7,9 @@ import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import Shop from '../marketplace/shop/shop.model';
 import { userServices } from '../user/user.service';
+import { TServiceProviderCompany } from './serviceProviderCompany.interface';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 
 const getServiceProviderCompanyForAdmin = async (
   _id: mongoose.Types.ObjectId,
@@ -16,6 +19,104 @@ const getServiceProviderCompanyForAdmin = async (
   });
 
   return serviceProviderCompany;
+};
+
+const editServiceProviderCompany = async ({
+  user,
+  serviceProviderCompany,
+  serviceProviderCompanyData,
+}: {
+  user: mongoose.Types.ObjectId;
+  serviceProviderCompany: string;
+  serviceProviderCompanyData: Partial<TServiceProviderCompany>;
+}) => {
+  //
+
+  const existingServiceProviderCompany = await ServiceProviderCompany.findById(
+    serviceProviderCompany,
+  );
+
+  if (!existingServiceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderCompany is not found with this serviceProviderCompany ID',
+    );
+  }
+
+  if (
+    existingServiceProviderCompany?.serviceProviderAdmin?.toHexString() !==
+    user.toString()
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you are not the admin this serviceProviderCompany',
+    );
+  }
+
+  if (serviceProviderCompanyData?.companyName) {
+    existingServiceProviderCompany.companyName =
+      serviceProviderCompanyData?.companyName;
+  }
+
+  if (serviceProviderCompanyData?.photoUrl) {
+    existingServiceProviderCompany.photoUrl =
+      serviceProviderCompanyData?.photoUrl;
+  }
+  if (serviceProviderCompanyData?.address) {
+    existingServiceProviderCompany.address =
+      serviceProviderCompanyData?.address;
+  }
+  if (serviceProviderCompanyData?.representativeName) {
+    existingServiceProviderCompany.representativeName =
+      serviceProviderCompanyData?.representativeName;
+  }
+  if (serviceProviderCompanyData?.fax) {
+    existingServiceProviderCompany.fax = serviceProviderCompanyData?.fax;
+  }
+  if (serviceProviderCompanyData?.corporateNo) {
+    existingServiceProviderCompany.corporateNo =
+      serviceProviderCompanyData?.corporateNo;
+  }
+  if (serviceProviderCompanyData?.phone) {
+    existingServiceProviderCompany.phone = serviceProviderCompanyData?.phone;
+  }
+  if (serviceProviderCompanyData?.currency) {
+    existingServiceProviderCompany.currency =
+      serviceProviderCompanyData?.currency;
+  }
+  if (serviceProviderCompanyData?.invoiceRegistrationNo) {
+    existingServiceProviderCompany.invoiceRegistrationNo =
+      serviceProviderCompanyData?.invoiceRegistrationNo;
+  }
+  if (serviceProviderCompanyData?.emergencyContact) {
+    const emergencyContact = serviceProviderCompanyData?.emergencyContact;
+    if (emergencyContact?.departmentInCharge) {
+      serviceProviderCompanyData.emergencyContact.departmentInCharge =
+        emergencyContact?.departmentInCharge;
+    }
+    if (emergencyContact?.personInChargeName) {
+      serviceProviderCompanyData.emergencyContact.personInChargeName =
+        emergencyContact?.personInChargeName;
+    }
+    if (emergencyContact?.contactNo) {
+      serviceProviderCompanyData.emergencyContact.contactNo =
+        emergencyContact?.contactNo;
+    }
+    if (emergencyContact?.email) {
+      serviceProviderCompanyData.emergencyContact.email =
+        emergencyContact?.email;
+    }
+  }
+  const updatedServiceProviderCompany =
+    await existingServiceProviderCompany.save();
+
+  if (!updatedServiceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Something went wrong, please try again',
+    );
+  }
+  return updatedServiceProviderCompany;
 };
 const getAllProfileByServiceProviderCompany = async (
   _id: mongoose.Types.ObjectId,
@@ -158,6 +259,7 @@ const getAllMembersForServiceProviderCompany = async (
 
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
+  editServiceProviderCompany,
   getAllProfileByServiceProviderCompany,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,

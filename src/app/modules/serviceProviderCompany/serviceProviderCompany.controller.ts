@@ -6,6 +6,7 @@ import sendResponse from '../../utils/sendResponse';
 import { TAuth } from '../../interface/error';
 import { serviceProviderCompanyServices } from './serviceProviderCompany.service';
 import AppError from '../../errors/AppError';
+import { TServiceProviderCompany } from './serviceProviderCompany.interface';
 
 const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
   async (req, res) => {
@@ -20,6 +21,37 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: 'serviceProviderCompany retrieved successfully',
+      data: result,
+    });
+  },
+);
+
+const editServiceProviderCompany: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+    const serviceProviderCompany = req?.query?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderCompany is required to edit serviceProviderCompany',
+      );
+    }
+    const serviceProviderCompanyData =
+      req?.body as Partial<TServiceProviderCompany>;
+    const result =
+      await serviceProviderCompanyServices.editServiceProviderCompany({
+        user: auth?._id,
+        serviceProviderCompany,
+        serviceProviderCompanyData,
+      });
+    // send response
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'serviceProviderCompany has updated successfully',
       data: result,
     });
   },
@@ -114,6 +146,7 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
+  editServiceProviderCompany,
   getAllProfileByServiceProviderCompany,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,

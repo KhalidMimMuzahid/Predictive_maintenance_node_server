@@ -11,6 +11,11 @@ router.post(
   productController.createProduct,
 );
 router.post(
+  '/edit',
+  validateRequest(productValidation.editProductValidationSchema),
+  productController.editProduct,
+);
+router.post(
   '/add-review',
   validateRequest(productValidation.reviewValidationSchema),
   productController.addReview,

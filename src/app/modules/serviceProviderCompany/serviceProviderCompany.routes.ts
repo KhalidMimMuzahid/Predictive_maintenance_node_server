@@ -1,5 +1,7 @@
 import express, { Router } from 'express';
 import { serviceProviderCompanyControllers } from './serviceProviderCompany.controller';
+import validateRequest from '../../middlewares/validateRequest';
+import { serviceProviderAdminValidation } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.validation';
 
 const router: Router = express.Router();
 
@@ -7,6 +9,13 @@ const router: Router = express.Router();
 router.get(
   '/service-provider-company-for-admin',
   serviceProviderCompanyControllers.getServiceProviderCompanyForAdmin,
+);
+router.patch(
+  '/edit-service-provider-company',
+  validateRequest(
+    serviceProviderAdminValidation.serviceProviderCompanyUpdateValidationSchema,
+  ),
+  serviceProviderCompanyControllers.editServiceProviderCompany,
 );
 router.get(
   '/get-all-profile-by-service-provider-company',

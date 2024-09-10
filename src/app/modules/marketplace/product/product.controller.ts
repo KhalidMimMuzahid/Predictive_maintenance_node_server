@@ -37,6 +37,37 @@ const createProduct: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const editProduct: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'serviceProviderAdmin'],
+  });
+  const productData: Partial<TProduct> = req?.body as Partial<TProduct>;
+  const product = req.query.product as string;
+
+  if (!product) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'product is required to edit product',
+    );
+  }
+  const result = await productServices.editProduct({
+    auth,
+    product,
+    productData,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'product has added successfully',
+    data: result,
+  });
+});
 const getAllProducts: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -222,6 +253,7 @@ const getProductByProduct_id: RequestHandler = catchAsync(async (req, res) => {
 
 export const productController = {
   createProduct,
+  editProduct,
   addReview,
   getAllProducts,
   getAllProductsCategoryWise,

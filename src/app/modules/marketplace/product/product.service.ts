@@ -98,6 +98,119 @@ const createProduct = async ({
   }
   return result;
 };
+const editProduct = async ({
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  auth,
+  product,
+  productData,
+}: {
+  auth: TAuth;
+  product: string;
+  productData: Partial<TProduct>;
+}) => {
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'marketplace',
+      'marketplace.type': 'product',
+    },
+    { 'marketplace.product.categories': 1 },
+  );
+  const category = predefinedValue?.marketplace?.product?.categories?.find(
+    (each) => each?.category === productData?.category,
+  );
+
+  if (!category) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'product category must be available in category list',
+    );
+  }
+
+  const isSubCategoryAvailable = category?.subCategories?.some(
+    (each) => each === productData?.subCategory,
+  );
+  if (!isSubCategoryAvailable) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'sub category must be available in category list',
+    );
+  }
+
+  const existingProduct = await Product.findById(product);
+  if (!existingProduct) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'product has not found with the provided ID',
+    );
+  }
+
+  existingProduct.stockManagement.soldCount =
+    existingProduct?.stockManagement?.soldCount || 0;
+
+  if (productData?.name) {
+    existingProduct.name = productData?.name;
+  }
+  if (productData?.details) {
+    existingProduct.details = productData?.details;
+  }
+  if (productData?.category) {
+    existingProduct.category = productData?.category;
+  }
+  if (productData?.subCategory) {
+    existingProduct.subCategory = productData?.subCategory;
+  }
+  if (productData?.regularPrice) {
+    existingProduct.regularPrice = productData?.regularPrice;
+  }
+  if (productData?.salePrice) {
+    existingProduct.salePrice = productData?.salePrice;
+  }
+  if (productData?.taxStatus) {
+    existingProduct.taxStatus = productData?.taxStatus;
+  }
+  if (productData?.taxRate) {
+    existingProduct.taxRate = productData?.taxRate;
+  }
+  if (productData?.packageSize) {
+    const packageSize = productData?.packageSize;
+    if (packageSize?.height) {
+      existingProduct.packageSize.height = packageSize?.height;
+    }
+    if (packageSize?.weight) {
+      existingProduct.packageSize.weight = packageSize?.weight;
+    }
+    if (packageSize?.width) {
+      existingProduct.packageSize.width = packageSize?.width;
+    }
+    if (packageSize?.length) {
+      existingProduct.packageSize.length = packageSize?.length;
+    }
+  }
+  if (productData?.stockManagement) {
+    const stockManagement = productData?.stockManagement;
+    if (stockManagement?.availableStock) {
+      existingProduct.stockManagement.availableStock =
+        stockManagement?.availableStock;
+    }
+    if (stockManagement?.trackStockQuantity) {
+      existingProduct.stockManagement.trackStockQuantity =
+        stockManagement?.trackStockQuantity;
+    }
+  }
+
+  if (productData?.photos) {
+    existingProduct.photos = productData?.photos;
+  }
+  const updatedProduct = await existingProduct?.save();
+
+  if (!updatedProduct) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'something went wrong, please try again',
+    );
+  }
+  return updatedProduct;
+};
 const addReview = async ({
   reviewObject,
   user,
@@ -228,9 +341,6 @@ const getAllProductsByShop = async ({
     result = await Product.find(
       {
         shop: new mongoose.Types.ObjectId(shop),
-        'stockManagement.availableStock': {
-          $lte: 5,
-        },
       },
       {},
       { soldCount: sortType === 'asc' ? 1 : -1 },
@@ -239,6 +349,9 @@ const getAllProductsByShop = async ({
     result = await Product.find(
       {
         shop: new mongoose.Types.ObjectId(shop),
+        'stockManagement.availableStock': {
+          $lte: 5,
+        },
       },
       {},
       { 'stockManagement.availableStock': sortType === 'asc' ? 1 : -1 },
@@ -262,6 +375,7 @@ const getProductByProduct_id = async (productId: string) => {
 
 export const productServices = {
   createProduct,
+  editProduct,
   addReview,
   getAllProducts,
   getAllProductsCategoryWise,
