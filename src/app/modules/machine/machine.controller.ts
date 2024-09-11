@@ -287,7 +287,27 @@ const getAllMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+const getAllSensorSectionWiseByMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    const machine: string = req.query?.machine as string;
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    if (!machine) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'machine is required to get all sensor section wise',
+      );
+    }
+    const result =
+      await machineServices.getAllSensorSectionWiseByMachine(machine);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensors section wise have retrieved successfully',
+      data: result,
+    });
+  },
+);
 const getMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
   const machine: string = req.query?.machine as string;
   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -399,7 +419,9 @@ export const machineController = {
   getUserConnectedMachine,
   getUserNonConnectedGeneralMachine,
   getAllMachineBy_id, // its user_id
+  getAllSensorSectionWiseByMachine,
   getMachineBy_id,
+
   deleteMachine,
   machineHealthStatus,
   machineReport,

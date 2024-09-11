@@ -609,6 +609,123 @@ const getAllMachineBy_id = async (user_id: string) => {
 
   return machine;
 };
+const getAllSensorSectionWiseByMachine = async (machine: string) => {
+  // const machineData = await Machine.findById(machine);
+  // TODO:  "machine="
+  // {
+  //   machine: "machine_id",
+  //   sensorModuleAttached: "sensorModuleAttached_id",
+  //   sensorType: "temperature" or "vibration",
+  //   sensorId: "index no of this sensor"
+  // }
+
+  const sensorModuleAttachedData = await Machine.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(machine),
+      },
+    },
+    {
+      $lookup: {
+        from: 'sensormoduleattacheds',
+        localField: 'sensorModulesAttached',
+        foreignField: '_id',
+        as: 'sensorModulesAttached',
+      },
+    },
+    {
+      $unwind: '$sensorModulesAttached',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$sensorModulesAttached',
+      },
+    },
+
+    // 66de94702cb33950bc34853c
+    {
+      $project: {
+        _id: 1,
+        // sensorModulesAttached: 1,
+        macAddress: 1,
+        sectionName: 1,
+        moduleType: 1,
+      },
+    },
+  ]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reFactoringData: any = {};
+  sensorModuleAttachedData?.forEach((currentValue) => {
+    currentValue?.sectionName?.vibration?.forEach(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any, index: number) => {
+        reFactoringData[item] = reFactoringData[item]
+          ? reFactoringData[item]?.push({
+              machine,
+              sensorModuleAttached: currentValue?._id,
+              macAddress: currentValue?.macAddress,
+              sensorType: 'vibration',
+              sensorPosition: index,
+            })
+          : (reFactoringData[item] = [
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'vibration',
+                sensorPosition: index,
+              },
+            ]);
+      },
+    );
+    currentValue?.sectionName?.temperature?.forEach(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any, index: number) => {
+        reFactoringData[item] = reFactoringData[item]
+          ? reFactoringData[item]?.push({
+              machine,
+              sensorModuleAttached: currentValue?._id,
+              macAddress: currentValue?.macAddress,
+              sensorType: 'temperature',
+              sensorPosition: index,
+            })
+          : (reFactoringData[item] = [
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'temperature',
+                sensorPosition: index,
+              },
+            ]);
+      },
+    );
+  });
+  // return sensorModuleAttachedData;
+
+  const result = await Promise.all(
+    Object.keys(reFactoringData)?.map(async (sectionName) => {
+      const aiData = await AI.findOne({
+        type: 'aiData',
+        'aiData.machine': new mongoose.Types.ObjectId(machine),
+        'aiData.sectionName': sectionName,
+      }).sort({
+        createdAt: -1,
+      });
+
+      return {
+        ...reFactoringData[sectionName][0],
+        healthStatus: aiData?.aiData?.healthStatus,
+      };
+    }),
+  );
+  return {
+    // sensorModuleAttachedData, reFactoringData,
+    result,
+  };
+};
 const getMachineBy_id = async (machine: string) => {
   const machineData = await Machine.findById(machine);
 
@@ -1036,6 +1153,7 @@ export const machineServices = {
   getMyGeneralMachineService,
   getUserNonConnectedGeneralMachineService,
   getAllMachineBy_id,
+  getAllSensorSectionWiseByMachine,
   getMachineBy_id,
   deleteMachineService,
   addModuleToMachineInToDB,

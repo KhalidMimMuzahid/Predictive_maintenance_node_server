@@ -42,6 +42,10 @@ router.get(
   machineController.getUserConnectedMachine,
 );
 router.get('/getAllMachineBy_id', machineController.getAllMachineBy_id);
+router.get(
+  '/get-all-sensor-section-wise-by-machine',
+  machineController.getAllSensorSectionWiseByMachine,
+);
 router.get('/getMachineBy_id', machineController.getMachineBy_id);
 router.delete('/', machineController.deleteMachine);
 
