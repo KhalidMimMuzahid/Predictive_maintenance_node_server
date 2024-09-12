@@ -16,6 +16,7 @@ import { predefinedValueServices } from '../predefinedValue/predefinedValue.serv
 import { ReservationRequest } from '../reservation/reservation.model';
 import { AI } from '../ai/ai.model';
 import { timeDifference } from '../../utils/timeDifference';
+import { Request } from 'express';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -591,15 +592,84 @@ const deleteMachineService = async (
       'There is no machine with this id!',
     );
   }
+  machine.sensorModulesAttached = [];
+  machine.subscriptionPurchased = undefined;
   machine.isDeleted = {
     value: true,
     deletedBy: userId,
   };
-  const deletedMachine = await machine.save();
-  if (!deletedMachine) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Machine could not be deleted');
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const deletedMachine = await machine.save({ session });
+    if (!deletedMachine) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Machine could not be deleted',
+      );
+    }
+
+    if (machine?.subscriptionPurchased?.toString()) {
+      const updatedSubscriptionPurchased =
+        await SubscriptionPurchased.findByIdAndUpdate(
+          machine?.subscriptionPurchased?.toString(),
+          {
+            $pull: {
+              'usage.showaUser.machines': machineId,
+            },
+            $inc: {
+              'usage.showaUser.totalAvailableMachine': 1,
+            },
+          },
+          {
+            session,
+          },
+        );
+
+      if (!updatedSubscriptionPurchased) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Machine could not be deleted',
+        );
+      }
+    }
+
+    const deTouchedIOTs = await Promise.all(
+      machine?.sensorModulesAttached?.map(async (each) => {
+        const deTouchedIOT = await SensorModuleAttached.findByIdAndUpdate(
+          each?.toString(),
+          {
+            isAttached: false,
+            $unset: {
+              machine: '',
+            },
+          },
+          {
+            session,
+          },
+        );
+        return deTouchedIOT;
+      }),
+    );
+
+    if (deTouchedIOTs?.length !== machine?.sensorModulesAttached?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Machine could not be deleted',
+      );
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return null;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
-  return deletedMachine;
+
+  return 'deletedMachine';
 };
 
 const getAllMachineBy_id = async (user_id: string) => {
@@ -736,9 +806,11 @@ const machineHealthStatus = async ({
   machine,
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   machineHealthData,
+  req,
 }: {
   machine: Types.ObjectId;
   machineHealthData: Partial<TMachineHealthStatus>;
+  req: Request;
 }) => {
   const machineData = await Machine.findById(machine, {
     healthStatus: 1,
@@ -780,6 +852,7 @@ const machineHealthStatus = async ({
 
   machineData.issues = newIssues;
   await machineData.save();
+  const now = new Date(Date.now());
   Promise.all(
     machineHealthData?.healthStatuses?.map((each) => {
       // And now save all the sensor data and its health status
@@ -793,6 +866,11 @@ const machineHealthStatus = async ({
           sensorData: each?.sensorData,
         },
       });
+
+      req.io.emit(
+        `machine=${machine?.toString()}&sectionName=${each?.sectionName}`,
+        { healthStatus: each?.healthStatus, createdAt: now },
+      );
     }),
   );
 
@@ -1168,3 +1246,5 @@ export const machineServices = {
 // {
 //   _id: new ObjectId('666297956c7f2e81f8c4f2cc')
 //   }
+// 66c723fa286f19782bb2ae97
+// 66b5febeb66123d7db67bba1

@@ -222,8 +222,19 @@ const addSensorDataInToDB = async ({
     { $push: { sensorData: sensorData } },
     { new: false },
   );
-
-  req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
+  sensorData?.temperature?.forEach((each, index) => {
+    req.io.emit(
+      `macAddress=${macAddress}&sensorType=temperature&sensorPosition=${index}`,
+      { value: each, createdAt: now },
+    );
+  });
+  sensorData?.vibration?.forEach((each, index) => {
+    req.io.emit(
+      `macAddress=${macAddress}&sensorType=vibration&sensorPosition=${index}`,
+      { value: each, createdAt: now },
+    );
+  });
+  // req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
 
   return null;
 };

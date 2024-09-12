@@ -69,7 +69,7 @@ export const MachineSchema: Schema = new Schema<TMachine>(
     subscriptionPurchased: {
       type: Schema.Types.ObjectId,
       ref: 'SubscriptionPurchased',
-      required: true,
+      required: false,
     },
 
     isDeleted: {

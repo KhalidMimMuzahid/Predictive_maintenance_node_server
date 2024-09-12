@@ -336,6 +336,7 @@ const machineHealthStatus: RequestHandler = catchAsync(async (req, res) => {
   const result = await machineServices.machineHealthStatus({
     machine: new mongoose.Types.ObjectId(machine),
     machineHealthData,
+    req,
   });
   // send response
   sendResponse(res, {
