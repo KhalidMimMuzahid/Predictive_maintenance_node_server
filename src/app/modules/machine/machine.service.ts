@@ -786,8 +786,11 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
       });
 
       return {
+        // [sectionName]: {
         ...reFactoringData[sectionName][0],
         healthStatus: aiData?.aiData?.healthStatus,
+        sectionName,
+        // },
       };
     }),
   );
