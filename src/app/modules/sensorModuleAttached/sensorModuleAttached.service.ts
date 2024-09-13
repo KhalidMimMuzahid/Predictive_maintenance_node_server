@@ -4,6 +4,7 @@ import { SensorModule } from '../sensorModule/sensorModule.model';
 import {
   TModule,
   TSensorModuleAttached,
+  TSensorType,
 } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
 import {
@@ -271,10 +272,14 @@ const getAllAttachedSensorModulesByMachine = async (
 
 const getSensorDataFromDB = async ({
   macAddress,
+  sensorType,
+  sensorPosition,
   page,
   limit,
 }: {
   macAddress: string;
+  sensorType: TSensorType;
+  sensorPosition: number;
   page: number;
   limit: number;
 }) => {
@@ -352,6 +357,25 @@ const getSensorDataFromDB = async ({
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sensorData =
+    sensorModuleAttached?.sensorData?.length > 0
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sensorModuleAttached?.sensorData?.map((each: any) => {
+          const value = each[sensorType][sensorPosition];
+
+          if (!value && value !== 0) {
+            throw new AppError(
+              httpStatus.BAD_REQUEST,
+              `No sensor data for position of ${sensorPosition}`,
+            );
+          }
+          return {
+            value,
+            createdAt: each?.createdAt,
+          };
+        })
+      : [];
   const sensor = {
     prevPage:
       limitTemp <= 0
@@ -360,19 +384,20 @@ const getSensorDataFromDB = async ({
           ? false
           : page - 1,
     nextPage: page == Math.ceil(dataCount / limit) ? false : page + 1,
-    sensorData: sensorModuleAttached?.sensorData || [],
-    finished: true,
-    sensorModule_id: sensorModuleAttached.sensorModule,
-
+    sensorData,
+    // finished: true,
+    // sensorModuleAttached: sensorModuleAttached.sensorModule,
+    sensorType,
+    sensorPosition,
     macAddress,
     // price: iot.price,
     // status: iot.status,
     // uid: iot.uid,
-    purpose: sensorModuleAttached.purpose,
-    sectionName: sensorModuleAttached.sectionName,
-    isSwitchedOn: sensorModuleAttached.isSwitchedOn,
-    moduleType: sensorModuleAttached.moduleType,
-    machine_id: sensorModuleAttached.machine,
+    // purpose: sensorModuleAttached.purpose,
+    // sectionName: sensorModuleAttached.sectionName,
+    // isSwitchedOn: sensorModuleAttached.isSwitchedOn,
+    // moduleType: sensorModuleAttached.moduleType,
+    // machine_id: sensorModuleAttached.machine,
   };
 
   return { totalData: sensor?.sensorData?.length || 0, ...sensor };

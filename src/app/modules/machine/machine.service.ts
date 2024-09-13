@@ -823,6 +823,9 @@ const machineHealthStatus = async ({
       'no machine has found with this machine',
     );
   }
+
+  const now = new Date(Date.now());
+
   // console.log({
   //   machine,
   //   machineHealthData,
@@ -831,6 +834,10 @@ const machineHealthStatus = async ({
     machineData.healthStatus = {
       health: machineHealthData?.healthStatus,
     };
+    req.io.emit(`machine=${machine?.toString()}`, {
+      healthStatus: machineHealthData?.healthStatus,
+      createdAt: now,
+    });
   }
 
   // machineData.issues = machineHealthData?.issues;
@@ -852,7 +859,9 @@ const machineHealthStatus = async ({
 
   machineData.issues = newIssues;
   await machineData.save();
-  const now = new Date(Date.now());
+
+ 
+
   Promise.all(
     machineHealthData?.healthStatuses?.map((each) => {
       // And now save all the sensor data and its health status

@@ -64,23 +64,28 @@ const addThreshold = async ({
 };
 
 const getThresholds = async () => {
-  const thresholdData = await AI.find({
-    type: 'threshold',
-  });
-  const processedData = thresholdData?.map((each) => {
-    return {
-      sectionName: each?.threshold?.sectionName,
-      temperature: each?.threshold?.temperature,
-      vibrations: each?.threshold?.vibrations,
-    };
-  });
+  const sections = await predefinedValueServices.getIotSectionNames();
+  // console.log(sections);
+
+  const processedData = await Promise.all(
+    sections?.map(async (sectionName) => {
+      const thresholdData = await AI.findOne({
+        type: 'threshold',
+        'threshold.sectionName': sectionName,
+      });
+
+      return {
+        sectionName: sectionName,
+        temperature: thresholdData?.threshold?.temperature || null,
+        vibrations: thresholdData?.threshold?.vibrations || null,
+      };
+    }),
+  );
+
   return processedData;
 };
 const getAiData = async () => {
-  const currentDate = new Date();
-  console.log(currentDate);
   const startDate = addDays(-7);
-  console.log(startDate);
   const thresholdData = await AI.aggregate([
     {
       $match: {

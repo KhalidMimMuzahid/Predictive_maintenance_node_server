@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-
+export type TSensorType = 'vibration' | 'temperature';
 // for module-1:
 export type TModule1 = { vibration: [number]; temperature: [number] };
 export type TSectionName1 = { vibration: [string]; temperature: [string] };
