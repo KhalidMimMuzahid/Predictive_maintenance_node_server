@@ -786,16 +786,16 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
       });
 
       return {
-        // [sectionName]: {
-        ...reFactoringData[sectionName][0],
-        healthStatus: aiData?.aiData?.healthStatus,
-        sectionName,
-        // },
+        [sectionName]: {
+          sensors: reFactoringData[sectionName],
+          healthStatus: aiData?.aiData?.healthStatus,
+        },
       };
     }),
   );
   return {
-    // sensorModuleAttachedData, reFactoringData,
+    // sensorModuleAttachedData,
+    // reFactoringData,
     result,
   };
 };
