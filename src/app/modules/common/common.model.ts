@@ -36,10 +36,7 @@ export const PaymentSchema: Schema = new Schema<TPayment>({
     state: { type: String, required: true },
     zip: { type: String, required: true },
   },
-  // more fields can be defined here
 });
-
-
 
 export const CompanySchema: Schema = new Schema<TCompany>({
   category: {

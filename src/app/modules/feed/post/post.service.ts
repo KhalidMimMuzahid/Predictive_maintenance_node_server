@@ -887,8 +887,6 @@ const getPostsByUser = async ({
         viewPrivacy: { $in: ['public', 'friends'] },
       };
 
-  // const totalPosts = await Post.countDocuments(userPost);
-
   const postsData = await Post.aggregate([
     { $match: userPost },
     {

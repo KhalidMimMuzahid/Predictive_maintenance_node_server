@@ -31,7 +31,6 @@ export type TPayment = {
 
 // id registration
 
-
 export type TCompany = {
   category: 'home' | 'shop' | 'company' | 'others';
   name?: string;

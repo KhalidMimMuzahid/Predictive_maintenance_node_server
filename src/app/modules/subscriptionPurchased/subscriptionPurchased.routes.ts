@@ -7,5 +7,13 @@ router.post(
   '/purchased-subscription',
   subscriptionPurchasedControllers.purchaseSubscription,
 );
+router.get(
+  '/get-my-all-subscriptions',
+  subscriptionPurchasedControllers.getAllMySubscriptions,
+);
+router.patch(
+  '/renew-subscription',
+  subscriptionPurchasedControllers.renewSubscription,
+);
 
 export const subscriptionPurchasedRoutes = router;

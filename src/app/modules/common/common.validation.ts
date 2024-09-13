@@ -14,7 +14,6 @@ export const createAddressValidationSchema = z.object({
   details: z.string().optional(),
 });
 
-
 export const createCardValidationSchema = z.object({
   cardType: z.enum(['debit', 'credit']),
   cardName: z.string(),

@@ -36,6 +36,7 @@ const createShop: RequestHandler = catchAsync(async (req, res) => {
 const getShopDashboard: RequestHandler = async (req, res) => {
   const auth = req.headers.auth as unknown as TAuth;
 
+  // Check user access
   checkUserAccessApi({
     auth,
     accessUsers: ['serviceProviderAdmin'],
@@ -50,6 +51,7 @@ const getShopDashboard: RequestHandler = async (req, res) => {
     });
   }
 
+  // Call service method
   const result = await shopServices.getShopDashboard({
     shopId,
   });
@@ -62,7 +64,38 @@ const getShopDashboard: RequestHandler = async (req, res) => {
   });
 };
 
+const getProductSalesForGraph: RequestHandler = async (req, res) => {
+  const auth = req.headers.auth as unknown as TAuth;
+
+  // Check user access
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderAdmin'],
+  });
+
+  const shopId = req?.query?.shopId as string;
+
+  if (!shopId) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: 'Shop ID is required to get the dashboard summary',
+    });
+  }
+
+  const result = await shopServices.getProductSalesForGraph({
+    shopId,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'grt product sales for graph',
+    data: result,
+  });
+};
+
 export const shopController = {
   createShop,
   getShopDashboard,
+  getProductSalesForGraph,
 };

@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
+import { addDays } from '../../../utils/addDays';
 import { ServiceProviderCompany } from '../../serviceProviderCompany/serviceProviderCompany.model';
 import { ServiceProviderAdmin } from '../../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
 import Order from '../order/order.model';
@@ -72,43 +73,19 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
   const shopObjectId = new mongoose.Types.ObjectId(shopId);
 
   const today = new Date();
-  const todayStart = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-    0,
-    0,
-    0,
-    0,
-  );
-  const todayEnd = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-    23,
-    59,
-    59,
-    999,
-  );
+  today.setHours(0, 0, 0, 0);
 
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-  const sevenDaysAgoStart = new Date(
-    sevenDaysAgo.getFullYear(),
-    sevenDaysAgo.getMonth(),
-    sevenDaysAgo.getDate(),
-    0,
-    0,
-    0,
-    0,
-  );
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
 
+  const sevenDaysAgoStart = new Date(today);
+  sevenDaysAgoStart.setDate(today.getDate() - 7);
   const todaysSales = await Order.aggregate([
     {
       $match: {
         shop: shopObjectId,
         paidStatus: { isPaid: true },
-        createdAt: { $gte: todayStart, $lt: todayEnd },
+        createdAt: { $gte: today, $lt: todayEnd },
       },
     },
     {
@@ -123,8 +100,9 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
     {
       $match: {
         shop: shopObjectId,
-        paidStatus: { isPaid: true },
-        createdAt: { $gte: todayStart, $lt: todayEnd },
+        //paidStatus: { isPaid: true },
+        createdAt: { $gte: today, $lt: todayEnd },
+        status: { $ne: 'canceled' },
       },
     },
     {
@@ -139,8 +117,8 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
     {
       $match: {
         shop: shopObjectId,
-        paidStatus: { isPaid: true },
-        createdAt: { $gte: todayStart, $lt: todayEnd },
+
+        createdAt: { $gte: today, $lt: todayEnd },
       },
     },
     {
@@ -157,8 +135,7 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
     {
       $match: {
         shop: shopObjectId,
-        paidStatus: { isPaid: true },
-        createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
+        createdAt: { $gte: addDays(-7), $lt: todayEnd },
       },
     },
     {
@@ -196,22 +173,6 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
     },
   ]);
 
-  const totalSalesLastSevenDays = await Order.aggregate([
-    {
-      $match: {
-        shop: shopObjectId,
-        paidStatus: { isPaid: true },
-        createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalSales: { $sum: '$cost.totalAmount' },
-      },
-    },
-  ]);
-
   return {
     todaysSales: {
       totalSales: todaysSales[0]?.totalSales || 0,
@@ -223,11 +184,71 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
     totalNewCustomers: newCustomers[0]?.totalNewCustomers || 0,
     totalProducts,
     totalSales: totalSales[0]?.totalSales || 0,
-    totalSalesLastSevenDays: totalSalesLastSevenDays[0]?.totalSales || 0,
+  };
+};
+
+const getProductSalesForGraph = async ({ shopId }: { shopId: string }) => {
+  const shopObjectId = new mongoose.Types.ObjectId(shopId);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
+
+  const sevenDaysAgoStart = new Date(today);
+  sevenDaysAgoStart.setDate(today.getDate() - 7);
+
+  const productSalesLastSevenDays = await Order.aggregate([
+    {
+      $match: {
+        shop: shopObjectId,
+        paidStatus: { isPaid: true },
+        createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        },
+        totalSales: { $sum: '$cost.totalAmount' },
+      },
+    },
+    {
+      $sort: {
+        '_id.day': 1,
+      },
+    },
+    {
+      $project: {
+        day: '$_id.day',
+        totalSales: 1,
+        _id: 0,
+      },
+    },
+  ]);
+
+  const salesByDay = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(sevenDaysAgoStart);
+    date.setDate(date.getDate() + index);
+    const dayString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const daySales = productSalesLastSevenDays.find(
+      (sale) => sale.day === dayString,
+    );
+    return {
+      day: dayString,
+      totalSales: daySales ? daySales.totalSales : 0,
+    };
+  });
+
+  return {
+    productSalesLastSevenDays: salesByDay,
   };
 };
 
 export const shopServices = {
   createShop,
   getShopDashboard,
+  getProductSalesForGraph,
 };

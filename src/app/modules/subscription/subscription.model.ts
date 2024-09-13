@@ -1,4 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
+import { IsDeletedSchema } from '../common/common.model';
+import { moduleTypeEnum } from '../sensorModule/sensorModule.constant';
 import {
   TBasic,
   TPackage,
@@ -8,8 +10,6 @@ import {
   TStandard,
   TSubscription,
 } from './subscription.interface';
-import { moduleTypeEnum } from '../sensorModule/sensorModule.constant';
-import { IsDeletedSchema } from '../common/common.model';
 
 const priceSchema = new Schema<TPrice>({
   netAmount: {
@@ -141,6 +141,11 @@ export const SubscriptionSchema: Schema = new Schema<TSubscription>(
     timestamps: true,
   },
 );
+SubscriptionSchema.pre('find', function (next) {
+  this.find({ 'isDeleted.value': { $ne: true } });
+  next();
+});
+
 export const Subscription = mongoose.model<TSubscription>(
   'Subscription',
   SubscriptionSchema,

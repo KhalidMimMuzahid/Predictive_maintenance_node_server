@@ -13,5 +13,7 @@ router.post('/create-payment-intent', walletControllers.createPaymentIntent);
 router.post('/transfer-mb', walletControllers.mbTransfer);
 router.get('/get-my-mb-transaction', walletControllers.getMyMBTransaction);
 router.get('/get-recent-mb-transfer', walletControllers.getRecentMBTransfer);
+router.post('/add-card', walletControllers.addCardToMyWallet);
+router.delete('/delete-card', walletControllers.deleteCardFromMyWallet);
 
 export const walletRoutes = router;

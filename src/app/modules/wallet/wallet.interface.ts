@@ -9,11 +9,7 @@ export type TWallet = {
   user?: Types.ObjectId; // it user is ObjectId of the user model
   serviceProviderCompany?: Types.ObjectId; // objectId of ServiceProviderCompany model; used for company wallet
   serviceProviderBranch?: Types.ObjectId;
-  cards: {
-    _id: any;
-    card: TCard;
-    isDeleted: boolean;
-  }[];
+  cards: { card: TCard; isDeleted: boolean }[];
   stripeCustomerId?: string;
   bankAccount?: Record<string, any>;
   balance: number; //

@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-import { Subscription } from '../subscription/subscription.model';
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
+import { addDays } from '../../utils/addDays';
 import {
   TBasic,
   TDiscount,
@@ -9,12 +9,13 @@ import {
   TShowaUser,
   TStandard,
 } from '../subscription/subscription.interface';
+import { Subscription } from '../subscription/subscription.model';
 import {
   TPurchasedPrice,
   TShowaUserForUses,
+  TSubscriptionPurchased,
   TUsage,
 } from './subscriptionPurchased.interface';
-import { addDays } from '../../utils/addDays';
 import { SubscriptionPurchased } from './subscriptionPurchased.model';
 
 const createSubscription = async ({
@@ -97,6 +98,57 @@ const createSubscription = async ({
   return subscriptionPurchaseData;
 };
 
+const getAllMySubscriptions = async (userId: mongoose.Types.ObjectId) => {
+  const purchases: TSubscriptionPurchased[] = await SubscriptionPurchased.find({
+    user: userId,
+  }).populate({
+    path: 'subscription',
+    //select: 'subscriptionTitle package price validity features',
+  });
+
+  if (!purchases.length) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'No subscriptions found for the user',
+    );
+  }
+
+  return purchases;
+};
+
+const renewSubscription = async ({
+  user,
+  subscriptionPurchasedId,
+  additionalValidityPeriod,
+}: {
+  user: mongoose.Types.ObjectId;
+  subscriptionPurchasedId: string;
+  additionalValidityPeriod: number;
+}) => {
+  const subscriptionPurchase = await SubscriptionPurchased.findOne({
+    _id: subscriptionPurchasedId,
+    user,
+  });
+
+  if (!subscriptionPurchase) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Subscription not found for the user',
+    );
+  }
+  const currentExpDate = subscriptionPurchase.expDate;
+  const newExpDate = new Date(
+    currentExpDate.getTime() + additionalValidityPeriod * 24 * 60 * 60 * 1000,
+  );
+
+  subscriptionPurchase.expDate = newExpDate;
+  await subscriptionPurchase.save();
+
+  return subscriptionPurchase;
+};
+
 export const subscriptionPurchasedServices = {
   createSubscription,
+  getAllMySubscriptions,
+  renewSubscription,
 };
