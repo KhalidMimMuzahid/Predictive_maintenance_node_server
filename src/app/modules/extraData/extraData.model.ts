@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import mongoose, { Schema } from 'mongoose';
 
-import { TDeleteUser, TExtraData, TFeedback } from './extraData.interface';
+import {
+  TDeleteUser,
+  TExtraData,
+  TFeedback,
+  TInviteMember,
+  TServiceProviderAdmin,
+  TShowaUser,
+} from './extraData.interface';
 export const DeleteUserSchema = new Schema<TDeleteUser>({
   emailOrPhone: {
     type: String,
@@ -23,12 +30,52 @@ const FeedbackSchema = new Schema<TFeedback>({
     },
   ],
 });
-
+const InviteMemberSchema = new Schema<TInviteMember>({
+  type: {
+    type: String,
+    enum: ['serviceProviderAdmin', 'showaUser'],
+    required: true,
+  },
+  serviceProviderAdmin: {
+    type: new Schema<TServiceProviderAdmin>({
+      email: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      companyName: {
+        type: String,
+        required: true,
+      },
+    }),
+    required: false,
+  },
+  showaUser: {
+    type: new Schema<TShowaUser>({
+      email: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: { firstName: { type: String }, lastName: { type: String } },
+        required: true,
+      },
+    }),
+    required: false,
+  },
+});
 export const ExtraDataSchema: Schema = new Schema<TExtraData>(
   {
     type: {
       type: String,
-      enum: ['deleteUser', 'feedback', 'more'],
+      enum: ['deleteUser', 'feedback', 'inviteMember', 'more'],
     },
     deleteUser: {
       type: DeleteUserSchema,
@@ -36,6 +83,10 @@ export const ExtraDataSchema: Schema = new Schema<TExtraData>(
     },
     feedback: {
       type: FeedbackSchema,
+      required: false,
+    },
+    inviteMember: {
+      type: InviteMemberSchema,
       required: false,
     },
   },

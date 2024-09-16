@@ -245,7 +245,7 @@ const getAttachedSensorModulesByuser = async (
 ) => {
   const sensors = await SensorModuleAttached.find({ user: userId })
     .select(
-      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType',
+      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType createdAt',
     )
     .populate('machine');
   return sensors;

@@ -7,7 +7,7 @@ import sendResponse from '../../utils/sendResponse';
 import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
 import { TAuth } from '../../interface/error';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
-import { TFeedback } from './extraData.interface';
+import { TFeedback, TInviteMember } from './extraData.interface';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
   const emailOrPhone: string = req?.query?.emailOrPhone as string;
@@ -41,6 +41,30 @@ const addFeedback: RequestHandler = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'feedback has added successfully',
+    data: result,
+  });
+});
+
+const inviteMember: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['showaAdmin', 'serviceProviderAdmin'],
+  });
+  const inviteMember = req?.body?.data as Partial<TInviteMember>;
+
+  if (inviteMember?.type === 'showaUser')
+    delete inviteMember.serviceProviderAdmin;
+  if (inviteMember?.type === 'serviceProviderAdmin')
+    delete inviteMember.showaUser;
+  const result = await extraDataServices.inviteMember({
+    inviteMember,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'invitation has sent successfully',
     data: result,
   });
 });
@@ -113,6 +137,7 @@ const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
 export const extraDataController = {
   deleteMyAccount,
   addFeedback,
+  inviteMember,
   reviewFeedback,
   sendIotDataAiServer,
   uploadPhoto,
