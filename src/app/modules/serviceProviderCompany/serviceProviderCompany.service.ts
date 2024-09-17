@@ -7,9 +7,13 @@ import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import Shop from '../marketplace/shop/shop.model';
 import { userServices } from '../user/user.service';
-import { TServiceProviderCompany } from './serviceProviderCompany.interface';
+import {
+  TCompanyStatus,
+  TServiceProviderCompany,
+} from './serviceProviderCompany.interface';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import { TSortType } from '../marketplace/product/product.interface';
 
 const getServiceProviderCompanyForAdmin = async (
   _id: mongoose.Types.ObjectId,
@@ -184,9 +188,28 @@ const getServiceProviderCompanyBy_id = async (
 
   return serviceProviderCompanyData;
 };
-const getAllServiceProviderCompanies = async () => {
-  const serviceProviderCompanies = await ServiceProviderCompany.find().populate(
-    [
+const getAllServiceProviderCompanies = async ({
+  area,
+  sortType,
+  status,
+}: {
+  area: string;
+  sortType: TSortType;
+  status: TCompanyStatus;
+}) => {
+  const query = {};
+  if (area) {
+    query['address.city'] = area;
+  }
+
+  if (status) {
+    query['status'] = status;
+  }
+  const serviceProviderCompanies = await ServiceProviderCompany.find(query)
+    .sort({
+      createdAt: sortType === 'desc' ? -1 : 1,
+    })
+    .populate([
       {
         path: 'serviceProviderAdmin',
 
@@ -195,8 +218,7 @@ const getAllServiceProviderCompanies = async () => {
           options: { strictPopulate: false },
         },
       },
-    ],
-  );
+    ]);
 
   return serviceProviderCompanies;
 };

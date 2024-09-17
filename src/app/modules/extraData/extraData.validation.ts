@@ -36,17 +36,15 @@ const inviteMemberValidationSchema = z.object({
           const { type } = data;
 
           if (type === 'showaUser' && !data?.showaUser) {
-            console.log('xxx');
             return false;
           }
           if (type === 'serviceProviderAdmin' && !data?.serviceProviderAdmin) {
-            console.log('yyy');
             return false;
           }
 
           return true;
         } else {
-          console.log('zzz');
+
           return false;
         }
       },

@@ -28,5 +28,5 @@ export const sendMail = async ({
     html: htmlBody, // html body
   });
 
-  return;
+  return null;
 };

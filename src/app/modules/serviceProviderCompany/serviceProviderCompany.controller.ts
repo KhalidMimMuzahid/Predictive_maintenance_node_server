@@ -1,3 +1,4 @@
+import { companyStatusArray } from './serviceProviderCompany.const';
 import { checkUserAccessApi } from './../../utils/checkUserAccessApi';
 import httpStatus from 'http-status';
 import { RequestHandler } from 'express';
@@ -6,7 +7,11 @@ import sendResponse from '../../utils/sendResponse';
 import { TAuth } from '../../interface/error';
 import { serviceProviderCompanyServices } from './serviceProviderCompany.service';
 import AppError from '../../errors/AppError';
-import { TServiceProviderCompany } from './serviceProviderCompany.interface';
+import {
+  TCompanyStatus,
+  TServiceProviderCompany,
+} from './serviceProviderCompany.interface';
+import { TSortType } from '../marketplace/product/product.interface';
 
 const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
   async (req, res) => {
@@ -101,10 +106,29 @@ const getServiceProviderCompanyBy_id: RequestHandler = catchAsync(
 );
 const getAllServiceProviderCompanies: RequestHandler = catchAsync(
   async (req, res) => {
-    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-    // checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
+
+    const area = req?.query?.area as string;
+    const sortType = (req?.query?.sortType as TSortType) || 'desc';
+    const status = (req?.query?.status as TCompanyStatus) || 'success';
+
+    if (!companyStatusArray.some((each) => each === status)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `status must be any of ${companyStatusArray.reduce((total, current) => {
+          total = total + `${current}, `;
+          return total;
+        }, '')}`,
+      );
+    }
     const result =
-      await serviceProviderCompanyServices.getAllServiceProviderCompanies();
+      await serviceProviderCompanyServices.getAllServiceProviderCompanies({
+        area,
+        sortType,
+        status,
+      });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,

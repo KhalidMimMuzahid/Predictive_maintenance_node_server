@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
 import { TAddress, TCard } from '../common/common.interface';
-
+export type TCompanyStatus = 'pending' | 'success' | 'suspended';
 export type TServiceProviderCompany = {
   serviceProviderAdmin: Types.ObjectId; // objectId of user, who is admin/owner of this company
-  status: 'pending' | 'success' | 'suspended';
+  status: TCompanyStatus;
   companyName: string;
   photoUrl?: string; // company  profile photo
   address: TAddress;
