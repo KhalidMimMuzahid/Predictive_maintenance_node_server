@@ -26,7 +26,7 @@ export type TServiceProviderCompany = {
     branchName: string;
     accountNo: number;
     postalCode: string;
-    address: TAddress;
+    address?: TAddress;
     departmentInCharge: string; // ???????
     personInChargeName: string; // ???????
     card: TCard; // should i transfer this card to wallet for service provide company???

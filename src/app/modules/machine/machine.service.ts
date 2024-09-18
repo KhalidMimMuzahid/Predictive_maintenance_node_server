@@ -727,18 +727,24 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const reFactoringData: any = {};
+  // console.log(sensorModuleAttachedData);
   sensorModuleAttachedData?.forEach((currentValue) => {
+    // console.log(currentValue);
+
     currentValue?.sectionName?.vibration?.forEach(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (item: any, index: number) => {
         reFactoringData[item] = reFactoringData[item]
-          ? reFactoringData[item]?.push({
-              machine,
-              sensorModuleAttached: currentValue?._id,
-              macAddress: currentValue?.macAddress,
-              sensorType: 'vibration',
-              sensorPosition: index,
-            })
+          ? [
+              ...reFactoringData[item],
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'vibration',
+                sensorPosition: index,
+              },
+            ]
           : (reFactoringData[item] = [
               {
                 machine,
@@ -754,13 +760,16 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (item: any, index: number) => {
         reFactoringData[item] = reFactoringData[item]
-          ? reFactoringData[item]?.push({
-              machine,
-              sensorModuleAttached: currentValue?._id,
-              macAddress: currentValue?.macAddress,
-              sensorType: 'temperature',
-              sensorPosition: index,
-            })
+          ? [
+              ...reFactoringData[item],
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'temperature',
+                sensorPosition: index,
+              },
+            ]
           : (reFactoringData[item] = [
               {
                 machine,
@@ -774,7 +783,6 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
     );
   });
   // return sensorModuleAttachedData;
-
   const result = await Promise.all(
     Object.keys(reFactoringData)?.map(async (sectionName) => {
       const aiData = await AI.findOne({
