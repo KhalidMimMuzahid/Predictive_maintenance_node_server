@@ -14,7 +14,7 @@ export const createMachineValidationSchema = z.object({
   category: z.enum(['washing-machine', 'general-machine']),
   name: z.string().min(1),
   // address: createAddressValidationSchema.optional(),
-  usedFor: createCompanyValidationSchema,
+  usedFor: createCompanyValidationSchema.optional(),
   generalMachine: z
     .object({
       homeName: z.string(),

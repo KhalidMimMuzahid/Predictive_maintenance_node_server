@@ -14,6 +14,7 @@ import {
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { TSortType } from '../marketplace/product/product.interface';
+import { TAuth } from '../../interface/error';
 
 const getServiceProviderCompanyForAdmin = async (
   _id: mongoose.Types.ObjectId,
@@ -29,10 +30,12 @@ const editServiceProviderCompany = async ({
   user,
   serviceProviderCompany,
   serviceProviderCompanyData,
+  auth,
 }: {
   user: mongoose.Types.ObjectId;
   serviceProviderCompany: string;
   serviceProviderCompanyData: Partial<TServiceProviderCompany>;
+  auth: TAuth;
 }) => {
   //
 
@@ -49,7 +52,8 @@ const editServiceProviderCompany = async ({
 
   if (
     existingServiceProviderCompany?.serviceProviderAdmin?.toHexString() !==
-    user.toString()
+      user.toString() &&
+    auth?.role !== 'showaAdmin'
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -92,6 +96,54 @@ const editServiceProviderCompany = async ({
     existingServiceProviderCompany.invoiceRegistrationNo =
       serviceProviderCompanyData?.invoiceRegistrationNo;
   }
+
+  if (serviceProviderCompanyData?.services?.length > 0) {
+    existingServiceProviderCompany.services =
+      serviceProviderCompanyData?.services;
+  }
+  if (serviceProviderCompanyData?.registrationDocument?.length > 0) {
+    existingServiceProviderCompany.registrationDocument =
+      serviceProviderCompanyData?.registrationDocument;
+  }
+  if (serviceProviderCompanyData?.capital) {
+    existingServiceProviderCompany.capital =
+      serviceProviderCompanyData?.capital;
+  }
+  if (serviceProviderCompanyData?.bank) {
+    // const BankUpdateValidationSchema = z.object({
+    //   bankName: z.string().optional(),
+    //   branchName: z.string().optional(),
+    //   accountNo: z.number().optional(),
+    //   postalCode: z.string().optional(),
+    //   // address: createAddressValidationSchema.optional(),
+    //   departmentInCharge: z.string().optional(),
+    //   personInChargeName: z.string().optional(),
+    //   // card: createCardValidationSchema,
+    // });
+    const newBank = { ...existingServiceProviderCompany?.bank };
+    if (serviceProviderCompanyData?.bank?.bankName) {
+      newBank.bankName = serviceProviderCompanyData?.bank?.bankName;
+    }
+    if (serviceProviderCompanyData?.bank?.branchName) {
+      newBank.branchName = serviceProviderCompanyData?.bank?.branchName;
+    }
+    if (serviceProviderCompanyData?.bank?.accountNo) {
+      newBank.accountNo = serviceProviderCompanyData?.bank?.accountNo;
+    }
+    if (serviceProviderCompanyData?.bank?.postalCode) {
+      newBank.postalCode = serviceProviderCompanyData?.bank?.postalCode;
+    }
+    if (serviceProviderCompanyData?.bank?.departmentInCharge) {
+      newBank.departmentInCharge =
+        serviceProviderCompanyData?.bank?.departmentInCharge;
+    }
+    if (serviceProviderCompanyData?.bank?.personInChargeName) {
+      newBank.personInChargeName =
+        serviceProviderCompanyData?.bank?.personInChargeName;
+    }
+    existingServiceProviderCompany.bank = newBank;
+  }
+
   if (serviceProviderCompanyData?.emergencyContact) {
     const emergencyContact = serviceProviderCompanyData?.emergencyContact;
     if (emergencyContact?.departmentInCharge) {

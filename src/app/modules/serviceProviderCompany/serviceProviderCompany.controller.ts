@@ -34,7 +34,10 @@ const getServiceProviderCompanyForAdmin: RequestHandler = catchAsync(
 const editServiceProviderCompany: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin', 'showaAdmin'],
+    });
     const serviceProviderCompany = req?.query?.serviceProviderCompany as string;
 
     if (!serviceProviderCompany) {
@@ -50,6 +53,7 @@ const editServiceProviderCompany: RequestHandler = catchAsync(
         user: auth?._id,
         serviceProviderCompany,
         serviceProviderCompanyData,
+        auth,
       });
     // send response
 

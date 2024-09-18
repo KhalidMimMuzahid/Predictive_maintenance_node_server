@@ -18,10 +18,20 @@ const BankCreateValidationSchema = z.object({
   branchName: z.string(),
   accountNo: z.number(),
   postalCode: z.string(),
-  address: createAddressValidationSchema,
+  address: createAddressValidationSchema.optional(),
   departmentInCharge: z.string(),
   personInChargeName: z.string(),
   card: createCardValidationSchema,
+});
+const BankUpdateValidationSchema = z.object({
+  bankName: z.string().optional(),
+  branchName: z.string().optional(),
+  accountNo: z.number().optional(),
+  postalCode: z.string().optional(),
+  // address: createAddressValidationSchema.optional(),
+  departmentInCharge: z.string().optional(),
+  personInChargeName: z.string().optional(),
+  // card: createCardValidationSchema,
 });
 const serviceProviderCompanyCreateValidationSchema = z.object({
   //   status: z.enum(['pending', 'success', 'blocked']),
@@ -60,8 +70,6 @@ const serviceProviderCompanyCreateValidationSchema = z.object({
   //   branches: z.array(z.string()).optional(),
 });
 
-
-
 const serviceProviderCompanyUpdateValidationSchema = z.object({
   //   status: z.enum(['pending', 'success', 'blocked']),
   companyName: z.string().optional(),
@@ -83,10 +91,9 @@ const serviceProviderCompanyUpdateValidationSchema = z.object({
     ])
     .optional(),
 
-  // capital: z.number().positive(),
   invoiceRegistrationNo: z.string().optional(),
-  // services: z.array(z.string()),
-  // bank: BankCreateValidationSchema,
+
+  bank: BankUpdateValidationSchema?.optional(),
   //   wallet: z.string().optional(), // Adjust the type as needed
   emergencyContact: z
     .object({
@@ -96,12 +103,17 @@ const serviceProviderCompanyUpdateValidationSchema = z.object({
       email: z.string().email().optional(),
     })
     .optional(),
-  // registrationDocument: z.array(
-  //   z.object({
-  //     photoUrl: z.string(),
-  //     title: z.string(),
-  //   }),
-  // ),
+
+  services: z.array(z.string()).optional(),
+  registrationDocument: z
+    .array(
+      z.object({
+        photoUrl: z.string(),
+        title: z.string(),
+      }),
+    )
+    .optional(),
+  capital: z.number().positive().optional(),
   //   branches: z.array(z.string()).optional(),
 });
 
