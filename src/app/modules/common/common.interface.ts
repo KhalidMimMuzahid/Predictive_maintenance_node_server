@@ -41,3 +41,5 @@ export type TIsDeleted = {
   value: boolean;
   deletedBy?: Types.ObjectId; // objectId of user; who delete this machine
 };
+
+export type TSearchType = 'posts' | 'people' | 'maintenance';

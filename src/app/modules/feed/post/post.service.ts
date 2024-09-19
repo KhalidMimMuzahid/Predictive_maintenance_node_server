@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
+import { TSearchType } from '../../common/common.interface';
+import { ServiceProviderCompany } from '../../serviceProviderCompany/serviceProviderCompany.model';
 import { User } from '../../user/user.model';
 import { TPost, TReplay, TSharingStatus } from './post.interface';
 import Post from './post.model';
@@ -849,7 +851,6 @@ const deletePost = async ({
   }
 
   const user = await User.findById(auth._id);
-  console.log(user);
 
   if (!user) {
     throw new AppError(httpStatus.UNAUTHORIZED, 'User not authenticated');
@@ -877,8 +878,6 @@ const getPostsByUser = async ({
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid userId provided');
   }
-
-  console.log(userId);
 
   const userPost = isMyPost
     ? { user: new mongoose.Types.ObjectId(userId) }
@@ -1082,6 +1081,205 @@ const getPostsByUser = async ({
   return postsData;
 };
 
+const getSearch = async ({
+  searchQuery,
+  action,
+}: {
+  searchQuery: string;
+  action: TSearchType;
+}) => {
+  if (searchQuery.length < 2) {
+    throw new Error('Search query must contain at least 2 characters');
+  }
+
+  let result = [];
+
+  switch (action) {
+    case 'posts':
+      result = await Post.aggregate([
+        {
+          $match: {
+            $or: [
+              { 'userPost.title': { $regex: searchQuery, $options: 'i' } },
+              { 'advertisement.title': { $regex: searchQuery, $options: 'i' } },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        {
+          $unwind: '$user',
+        },
+        {
+          $lookup: {
+            from: 'showausers',
+            localField: 'user.showaUser',
+            foreignField: '_id',
+            as: 'user.showaUser',
+          },
+        },
+        {
+          $lookup: {
+            from: 'showaadmins',
+            localField: 'user.showaAdmin',
+            foreignField: '_id',
+            as: 'user.showaAdmin',
+          },
+        },
+        {
+          $lookup: {
+            from: 'showasubadmins',
+            localField: 'user.showaSubAdmin',
+            foreignField: '_id',
+            as: 'user.showaSubAdmin',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceprovideradmins',
+            localField: 'user.serviceProviderAdmin',
+            foreignField: '_id',
+            as: 'user.serviceProviderAdmin',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceprovidersubadmins',
+            localField: 'user.serviceProviderSubAdmin',
+            foreignField: '_id',
+            as: 'user.serviceProviderSubAdmin',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceproviderengineers',
+            localField: 'user.serviceProviderEngineer',
+            foreignField: '_id',
+            as: 'user.serviceProviderEngineer',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceproviderbranchmanagers',
+            localField: 'user.serviceProviderBranchManager',
+            foreignField: '_id',
+            as: 'user.serviceProviderBranchManager',
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        {
+          $project: {
+            _id: 1,
+            'user._id': 1,
+            'user.role': 1,
+            'user.showaUser.photoUrl': 1,
+            'user.showaUser.name': 1,
+            'user.showaAdmin.photoUrl': 1,
+            'user.showaAdmin.name': 1,
+            'user.showaSubAdmin.photoUrl': 1,
+            'user.showaSubAdmin.name': 1,
+            'user.serviceProviderAdmin.photoUrl': 1,
+            'user.serviceProviderAdmin.name': 1,
+            'user.serviceProviderSubAdmin': 1,
+            'user.serviceProviderEngineer.photoUrl': 1,
+            'user.serviceProviderEngineer.name': 1,
+            'user.serviceProviderBranchManager.photoUrl': 1,
+            'user.serviceProviderBranchManager.name': 1,
+            location: 1,
+            viewPrivacy: 1,
+            commentPrivacy: 1,
+            sharingStatus: 1,
+            isSponsored: 1,
+            type: 1,
+            userPost: 1,
+            advertisement: 1,
+            createdAt: 1,
+            likeObject: {
+              likesCount: { $size: '$likes' },
+              likes: { $slice: ['$likes', -3] },
+            },
+            commentObject: {
+              commentsCount: { $size: '$comments' },
+              comments: { $slice: ['$comments', -2] },
+            },
+            shareObject: {
+              sharesCount: { $size: '$shares' },
+              shares: { $slice: ['$shares', -2] },
+            },
+            seenByObject: {
+              seenByCount: { $size: '$seenBy' },
+              seenBy: { $slice: ['$seenBy', -3] },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            user: {
+              _id: '$user._id',
+              role: '$user.role',
+              serviceProviderAdmin: {
+                $arrayElemAt: ['$user.serviceProviderAdmin', 0],
+              },
+              showaUser: { $arrayElemAt: ['$user.showaUser', 0] },
+              showaAdmin: { $arrayElemAt: ['$user.showaAdmin', 0] },
+              showaSubAdmin: { $arrayElemAt: ['$user.showaSubAdmin', 0] },
+              serviceProviderSubAdmin: {
+                $arrayElemAt: ['$user.serviceProviderSubAdmin', 0],
+              },
+              serviceProviderEngineer: {
+                $arrayElemAt: ['$user.serviceProviderEngineer', 0],
+              },
+              serviceProviderBranchManager: {
+                $arrayElemAt: ['$user.serviceProviderBranchManager', 0],
+              },
+            },
+            createdAt: 1,
+            location: 1,
+            viewPrivacy: 1,
+            commentPrivacy: 1,
+            sharingStatus: 1,
+            isSponsored: 1,
+            type: 1,
+            userPost: 1,
+            advertisement: 1,
+            likeObject: 1,
+            commentObject: 1,
+            shareObject: 1,
+            seenByObject: 1,
+          },
+        },
+      ]);
+      break;
+
+    case 'maintenance':
+      result = await ServiceProviderCompany.find({
+        companyName: { $regex: searchQuery, $options: 'i' },
+      })
+        .populate({
+          path: 'serviceProviderAdmin',
+          select: 'name photoUrl', // Adjust fields if needed
+        })
+        .populate({
+          path: 'bank',
+          select:
+            'bankName branchName accountNo postalCode address departmentInCharge personInChargeName card', // Adjust fields if needed
+        });
+      break;
+
+    default:
+      throw new Error('Invalid search action');
+  }
+
+  return result;
+};
+
 export const postServices = {
   createPost,
   sharePost,
@@ -1099,4 +1297,5 @@ export const postServices = {
   getPostByPostId,
   deletePost,
   getPostsByUser,
+  getSearch,
 };

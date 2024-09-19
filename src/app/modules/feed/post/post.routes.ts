@@ -38,5 +38,6 @@ router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
 router.get('/get-post-by-postId', postController.getPostByPostId);
 router.delete('/delete-post', postController.deletePost);
 router.get('/get-post-by-user', postController.getPostsByUser);
+router.get('/get-search', postController.getSearch);
 
 export const postRoutes = router;

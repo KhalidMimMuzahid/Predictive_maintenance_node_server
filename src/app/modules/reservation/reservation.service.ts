@@ -1,4 +1,5 @@
 import S3 from 'aws-sdk/clients/s3';
+// import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../errors/AppError';
@@ -838,6 +839,190 @@ const getCompletedReservationRequestForServiceProviderCompany = async ({
   };
 };
 
+// const getChartAnalyzing = async (
+//   adminUserId: mongoose.Types.ObjectId,
+//   year: number,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserId,
+//   });
+
+//   const currentDate = new Date();
+//   const currentYear = currentDate.getFullYear();
+//   const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based, so we add 1
+
+//   // Adjust the number of months to retrieve based on whether we're in the current year
+//   const monthsToRetrieve = year === currentYear ? currentMonth : 12;
+
+//   // Create an array for the months to retrieve
+//   const months = Array.from({ length: monthsToRetrieve }, (_, i) => {
+//     const month = i + 1;
+
+//     const startDateOfMonth = new Date(year, month - 1, 1); // Start date for each month
+//     const endDateOfMonth = new Date(year, month, 0); // End date for each month
+
+//     const previousMonthEndDate =
+//       month === 1
+//         ? new Date(year - 1, 11, 31) // End date for December of the previous year
+//         : new Date(year, month - 1, 0); // End date for the previous month
+
+//     const monthName = startDateOfMonth.toLocaleString('en-US', {
+//       month: 'short',
+//     });
+//     const formattedMonth = `${monthName} ${year}`;
+
+//     return {
+//       month: formattedMonth,
+//       startDateOfMonth,
+//       endDateOfMonth,
+//       previousMonthEndDate,
+//     };
+//   });
+
+//   // Fetch the reservation request count for each month
+//   const requests = await Promise.all(
+//     months.map(async (month) => {
+//       const count = await ReservationRequest.countDocuments({
+//         serviceProviderCompany,
+//         createdAt: {
+//           $gte: month.startDateOfMonth,
+//           $lt: new Date(month.endDateOfMonth.getTime() + 24 * 60 * 60 * 1000), // Add one day to the end date
+//         },
+//       });
+
+//       return {
+//         month: month.month,
+//         count,
+//       };
+//     }),
+//   );
+
+//   return requests;
+// };
+
+// const getChartAnalyzing = async (
+//   adminUserId: mongoose.Types.ObjectId,
+//   targetYear: number,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: adminUserId,
+//   });
+
+//   const currentYear = new Date().getFullYear();
+//   const currentMonth = new Date().getMonth() + 1; // Get the current month (1-12)
+
+//   let months;
+
+//   if (targetYear === currentYear) {
+//     // If it's the current year, get the last 12 months including months from the previous year
+//     months = Array.from({ length: 12 }, (_, i) => {
+//       const monthOffset = currentMonth - 1 - i; // Going backwards from current month
+//       const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+//       const month = ((monthOffset + 12) % 12) + 1;
+
+//       const startDateOfMonth = new Date(year, month - 1, 1);
+//       const endDateOfMonth = new Date(year, month, 0); // Last day of the month
+
+//       const monthName = startDateOfMonth.toLocaleString('en-US', {
+//         month: 'short',
+//       });
+//       const formattedMonth = `${monthName} ${year}`;
+
+//       return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+//     }).reverse(); // Reverse the order to have oldest to newest
+//   } else {
+//     // If it's a previous year, get all 12 months of that year
+//     months = Array.from({ length: 12 }, (_, i) => {
+//       const startDateOfMonth = new Date(targetYear, i, 1);
+//       const endDateOfMonth = new Date(targetYear, i + 1, 0);
+
+//       const monthName = startDateOfMonth.toLocaleString('en-US', {
+//         month: 'short',
+//       });
+//       const formattedMonth = `${monthName} ${targetYear}`;
+
+//       return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+//     });
+//   }
+
+//   const requests = await Promise.all(
+//     months.map(async (month) => {
+//       const count = await ReservationRequest.countDocuments({
+//         serviceProviderCompany,
+//         createdAt: {
+//           $gte: month.startDateOfMonth,
+//           $lt: new Date(month.endDateOfMonth.getTime() + 24 * 60 * 60 * 1000),
+//         },
+//       });
+
+//       return { month: month.month, count };
+//     }),
+//   );
+
+//   return requests;
+// };
+
+const getChartAnalyzing = async (
+  adminUserId: mongoose.Types.ObjectId,
+  targetYear?: number,
+) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserId,
+  });
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1; // Get the current month (1-12)
+
+  let months;
+
+  if (!targetYear || targetYear === currentYear) {
+    months = Array.from({ length: 12 }, (_, i) => {
+      const monthOffset = currentMonth - 1 - i; // Going backwards from the current month
+      const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+      const month = ((monthOffset + 12) % 12) + 1;
+
+      const startDateOfMonth = new Date(year, month - 1, 1);
+      const endDateOfMonth = new Date(year, month, 0); // Last day of the month
+
+      const monthName = startDateOfMonth.toLocaleString('en-US', {
+        month: 'short',
+      });
+      const formattedMonth = `${monthName} ${year}`;
+
+      return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+    }).reverse();
+  } else {
+    months = Array.from({ length: 12 }, (_, i) => {
+      const startDateOfMonth = new Date(targetYear, i, 1);
+      const endDateOfMonth = new Date(targetYear, i + 1, 0);
+
+      const monthName = startDateOfMonth.toLocaleString('en-US', {
+        month: 'short',
+      });
+      const formattedMonth = `${monthName} ${targetYear}`;
+
+      return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+    });
+  }
+  console.log(months);
+
+  const requests = await Promise.all(
+    months.map(async (month) => {
+      const count = await ReservationRequest.countDocuments({
+        serviceProviderCompany,
+        createdAt: {
+          $gte: month.startDateOfMonth,
+          $lte: month.endDateOfMonth,
+        },
+      });
+
+      return { month: month.month, count };
+    }),
+  );
+
+  return requests;
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   setReservationAsInvalid,
@@ -856,4 +1041,5 @@ export const reservationServices = {
   getReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
   getCompletedReservationRequestForServiceProviderCompany,
+  getChartAnalyzing,
 };
