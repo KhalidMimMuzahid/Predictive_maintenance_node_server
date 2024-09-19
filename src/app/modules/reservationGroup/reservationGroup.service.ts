@@ -785,7 +785,12 @@ const getAllOnDemandResGroupByCompany = async ({
 const getAllOnDemandUnassignedToCompanyResGroups = async () => {
   const result = await ReservationRequestGroup.find({
     isOnDemand: true,
-    'postBiddingProcess.serviceProviderCompany': { $exists: false },
+    $and: [
+      {
+        'postBiddingProcess.serviceProviderCompany': { $exists: false },
+        'postBiddingProcess.serviceProviderBranch': { $exists: false },
+      },
+    ],
   }).populate([
     {
       path: 'reservationRequests',

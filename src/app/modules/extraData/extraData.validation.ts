@@ -14,7 +14,12 @@ const addFeedbackValidationSchema = z.object({
 const inviteMemberValidationSchema = z.object({
   data: z
     .object({
-      type: z.enum(['serviceProviderAdmin', 'showaUser']),
+      type: z.enum([
+        'serviceProviderAdmin',
+        'showaUser',
+        'serviceProviderEngineer',
+        'serviceProviderBranchManager',
+      ]),
       serviceProviderAdmin: z
         .object({
           email: z.string(),
@@ -24,6 +29,22 @@ const inviteMemberValidationSchema = z.object({
         .optional(),
       showaUser: z
         .object({
+          email: z.string(),
+          phone: z.string(),
+          name: z.object({ firstName: z.string(), lastName: z.string() }),
+        })
+        .optional(),
+      serviceProviderEngineer: z
+        .object({
+          serviceProviderBranch: z.string().optional(),
+          email: z.string(),
+          phone: z.string(),
+          name: z.object({ firstName: z.string(), lastName: z.string() }),
+        })
+        .optional(),
+      serviceProviderBranchManager: z
+        .object({
+          serviceProviderCompany: z.string().optional(),
           email: z.string(),
           phone: z.string(),
           name: z.object({ firstName: z.string(), lastName: z.string() }),
@@ -41,10 +62,21 @@ const inviteMemberValidationSchema = z.object({
           if (type === 'serviceProviderAdmin' && !data?.serviceProviderAdmin) {
             return false;
           }
+          if (
+            type === 'serviceProviderEngineer' &&
+            !data?.serviceProviderEngineer
+          ) {
+            return false;
+          }
+          if (
+            type === 'serviceProviderBranchManager' &&
+            !data?.serviceProviderBranchManager
+          ) {
+            return false;
+          }
 
           return true;
         } else {
-
           return false;
         }
       },

@@ -7,6 +7,7 @@ import {
   TFeedback,
   TInviteMember,
   TServiceProviderAdmin,
+  TServiceProviderEngineer,
   TShowaUser,
 } from './extraData.interface';
 export const DeleteUserSchema = new Schema<TDeleteUser>({
@@ -33,7 +34,7 @@ const FeedbackSchema = new Schema<TFeedback>({
 const InviteMemberSchema = new Schema<TInviteMember>({
   type: {
     type: String,
-    enum: ['serviceProviderAdmin', 'showaUser'],
+    enum: ['serviceProviderAdmin', 'showaUser', 'serviceProviderEngineer'],
     required: true,
   },
   serviceProviderAdmin: {
@@ -55,6 +56,27 @@ const InviteMemberSchema = new Schema<TInviteMember>({
   },
   showaUser: {
     type: new Schema<TShowaUser>({
+      email: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: { firstName: { type: String }, lastName: { type: String } },
+        required: true,
+      },
+    }),
+    required: false,
+  },
+  serviceProviderEngineer: {
+    type: new Schema<TServiceProviderEngineer>({
+      serviceProviderBranch: {
+        type: String,
+        required: false,
+      },
       email: {
         type: String,
         required: true,

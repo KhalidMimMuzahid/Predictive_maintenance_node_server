@@ -53,10 +53,27 @@ const inviteMember: RequestHandler = catchAsync(async (req, res) => {
   });
   const inviteMember = req?.body?.data as Partial<TInviteMember>;
 
-  if (inviteMember?.type === 'showaUser')
+  if (inviteMember?.type === 'showaUser') {
     delete inviteMember.serviceProviderAdmin;
-  if (inviteMember?.type === 'serviceProviderAdmin')
+    delete inviteMember.serviceProviderEngineer;
+    delete inviteMember.serviceProviderBranchManager;
+  }
+  if (inviteMember?.type === 'serviceProviderAdmin') {
     delete inviteMember.showaUser;
+    delete inviteMember.serviceProviderEngineer;
+    delete inviteMember.serviceProviderBranchManager;
+  }
+  if (inviteMember?.type === 'serviceProviderEngineer') {
+    delete inviteMember.showaUser;
+    delete inviteMember.serviceProviderAdmin;
+    delete inviteMember.serviceProviderBranchManager;
+  }
+  if (inviteMember?.type === 'serviceProviderBranchManager') {
+    delete inviteMember.showaUser;
+    delete inviteMember.serviceProviderAdmin;
+    delete inviteMember.serviceProviderEngineer;
+  }
+    
   const result = await extraDataServices.inviteMember({
     inviteMember,
   });

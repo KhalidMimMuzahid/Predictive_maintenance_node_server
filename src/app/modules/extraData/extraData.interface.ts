@@ -24,10 +24,34 @@ export type TShowaUser = {
   phone: string;
   name: { firstName: string; lastName: string };
 };
+export type TServiceProviderEngineer = {
+  serviceProviderBranch?: string; // objectId of serviceProviderBranch
+  email: string;
+  phone: string;
+  name: { firstName: string; lastName: string };
+};
+
+export type TServiceProviderBranchManager = {
+  serviceProviderCompany?: string; // objectId of serviceProviderCompany
+  email: string;
+  phone: string;
+  name: { firstName: string; lastName: string };
+};
+
+// => add engineers
+// => add branch manager
+// => add sub-admin
 export type TInviteMember = {
-  type: 'serviceProviderAdmin' | 'showaUser';
+  type:
+    | 'serviceProviderAdmin'
+    | 'showaUser'
+    | 'serviceProviderEngineer'
+    | 'serviceProviderBranchManager';
+  // | 'serviceProviderSubAdmin';
   serviceProviderAdmin?: TServiceProviderAdmin;
   showaUser?: TShowaUser;
+  serviceProviderEngineer?: TServiceProviderEngineer;
+  serviceProviderBranchManager?: TServiceProviderBranchManager;
 };
 export type TExtraData = {
   type: 'deleteUser' | 'feedback' | 'inviteMember' | 'more';
