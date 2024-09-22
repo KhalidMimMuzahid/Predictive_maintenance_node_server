@@ -11,7 +11,7 @@ export type TReservationGroupType =
   | 'canceled';
 
 export type TPostBiddingProcess = {
-  biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation
+  biddingUser: Types.ObjectId; // ObjectId of User model; who actually bidding this reservation;  But in onDemand request its a branch manager or service provider admin who accept this request
   serviceProviderCompany: Types.ObjectId; // objectId  of { ServiceProviderCompany or ServiceProviderBranch } or what ?
   serviceProviderBranch: Types.ObjectId; // when we assign this reservation group to a specific branch
   invoiceGroup?: Types.ObjectId; // objectId of InvoiceGroup model; when we assign this to a engineers team

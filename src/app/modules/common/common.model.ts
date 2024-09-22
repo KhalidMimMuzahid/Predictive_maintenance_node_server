@@ -4,11 +4,25 @@ import {
   TCard,
   TCompany,
   TIsDeleted,
+  TLocation,
   TPayment,
 } from './common.interface';
 
 export const AddressSchema: Schema = new Schema<TAddress>({
   googleString: { type: String, required: false },
+  location: {
+    type: new Schema<TLocation>({
+      latitude: {
+        type: String,
+        required: true,
+      },
+      longitude: {
+        type: String,
+        required: true,
+      },
+    }),
+    required: false,
+  },
   street: { type: String, required: false },
   city: { type: String, required: false },
   prefecture: { type: String, required: false },

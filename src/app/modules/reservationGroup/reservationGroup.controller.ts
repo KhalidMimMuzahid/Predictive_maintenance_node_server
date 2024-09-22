@@ -368,14 +368,14 @@ const getAllOnDemandUnassignedToCompanyResGroups: RequestHandler = catchAsync(
     });
   },
 );
-const acceptOnDemandResGroupByCompany: RequestHandler = catchAsync(
+const acceptOnDemandResGroupByBranch: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
     // we are checking the permission of this api
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderAdmin'],
+      accessUsers: ['serviceProviderAdmin', 'serviceProviderBranchManager'],
     });
     const reservationGroup = req?.query?.reservationRequestGroup as string;
     if (!reservationGroup) {
@@ -384,16 +384,19 @@ const acceptOnDemandResGroupByCompany: RequestHandler = catchAsync(
         'reservation Group is required accept on-demand request',
       );
     }
+    const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+
     const results =
       await reservationGroupServices.acceptOnDemandResGroupByCompany({
-        user: auth?._id,
+        auth,
         reservationGroup,
+        serviceProviderBranch_id: serviceProviderBranch,
       });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'accepted on-demand res-group by company successfully',
+      message: 'accepted on-demand res-group successfully',
       data: results,
     });
   },
@@ -482,7 +485,7 @@ export const reservationGroupController = {
   getAllUnAssignedResGroupToBranchByCompany,
   getAllOnDemandResGroupByCompany,
   getAllOnDemandUnassignedToCompanyResGroups,
-  acceptOnDemandResGroupByCompany,
+  acceptOnDemandResGroupByBranch,
   updateBid,
   deleteBid,
 };

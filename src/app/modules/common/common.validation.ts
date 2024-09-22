@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 // Define validation schema for TAddress
 export const createAddressValidationSchema = z.object({
+  location: z
+    .object({
+      latitude: z.string(),
+      longitude: z.string(),
+    })
+    .optional(),
   googleString: z.string().optional(),
   street: z.string().optional(),
   city: z.string().optional(),

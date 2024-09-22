@@ -42,9 +42,13 @@ router.patch(
   '/send-reservation-group-to-branch',
   reservationGroupController.sendReservationGroupToBranch,
 );
+
+
+
+
 router.patch(
-  '/accept-on-demand-res-group-by-company',
-  reservationGroupController.acceptOnDemandResGroupByCompany,
+  '/accept-on-demand-res-group-by-branch',
+  reservationGroupController.acceptOnDemandResGroupByBranch,
 );
 
 router.post(

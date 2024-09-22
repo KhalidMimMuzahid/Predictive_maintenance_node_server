@@ -15,6 +15,8 @@ import {
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { ReservationRequestGroup } from './reservationGroup.model';
+import { TAuth } from '../../interface/error';
+import { ServiceProviderBranchManager } from '../user/usersModule/branchManager/branchManager.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
@@ -805,11 +807,13 @@ const getAllOnDemandUnassignedToCompanyResGroups = async () => {
   return result;
 };
 const acceptOnDemandResGroupByCompany = async ({
-  user,
+  auth,
   reservationGroup,
+  serviceProviderBranch_id,
 }: {
-  user: mongoose.Types.ObjectId;
+  auth: TAuth;
   reservationGroup: string;
+  serviceProviderBranch_id: string;
 }) => {
   const reservationGroupData =
     await ReservationRequestGroup.findById(reservationGroup);
@@ -828,22 +832,60 @@ const acceptOnDemandResGroupByCompany = async ({
     );
   }
 
-  if (reservationGroupData?.postBiddingProcess?.serviceProviderCompany) {
+  if (reservationGroupData?.postBiddingProcess?.serviceProviderBranch) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'This reservation group is already assigned to a company',
+      'This reservation group has already accepted by the branch',
     );
   }
 
-  const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
-    user,
-  }).select('serviceProviderCompany');
+  // console.log(serviceProviderCompany._id.toString());
+  // console.log('break');
+  // console.log(resGroup?.postBiddingProcess?.serviceProviderCompany?.toString());
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let serviceProviderBranch: any;
+  if (auth?.role === 'serviceProviderBranchManager') {
+    //
+    const serviceProviderBranchManager =
+      await ServiceProviderBranchManager.findOne({
+        user: auth?._id,
+      });
+
+    if (!serviceProviderBranchManager) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'You are not a manager of any branch',
+      );
+    }
+
+    serviceProviderBranch = await ServiceProviderBranch.findById(
+      serviceProviderBranchManager?.currentState?.serviceProviderBranch?.toString(),
+    );
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'there have no any service provider branch found for serviceProviderBranch_id',
+      );
+    }
+  } else if (auth?.role === 'serviceProviderAdmin') {
+    serviceProviderBranch = await ServiceProviderBranch.findById(
+      new mongoose.Types.ObjectId(serviceProviderBranch_id),
+    );
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'there have no any service provider branch found for serviceProviderBranch_id',
+      );
+    }
+  }
   const postBiddingProcess: Partial<TPostBiddingProcess> = {};
 
   postBiddingProcess.serviceProviderCompany =
-    serviceProviderAdmin?.serviceProviderCompany;
-  postBiddingProcess.biddingUser = user;
+    serviceProviderBranch?.serviceProviderCompany;
+
+  postBiddingProcess.serviceProviderBranch = serviceProviderBranch?._id;
+  postBiddingProcess.biddingUser = auth?._id;
 
   const updatedReservationRequestGroup =
     await ReservationRequestGroup.findByIdAndUpdate(
@@ -860,6 +902,24 @@ const acceptOnDemandResGroupByCompany = async ({
   }
 
   return updatedReservationRequestGroup;
+
+  // console.log(serviceProviderBranch?.serviceProviderCompany?.toString());
+  // console.log('break');
+  // console.log(serviceProviderCompany.toString());
+
+  // resGroup.postBiddingProcess.serviceProviderBranch =
+  //   serviceProviderBranch?._id;
+  // const updatedReservationRequestGroup = await resGroup.save();
+
+  // if (
+  //   !updatedReservationRequestGroup?.postBiddingProcess?.serviceProviderBranch
+  // ) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'Something went wrong, please try again',
+  //   );
+  // }
+  // return updatedReservationRequestGroup;
 };
 const updateBid = async ({
   user,

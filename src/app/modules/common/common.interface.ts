@@ -1,7 +1,11 @@
 import { Types } from 'mongoose';
-
+export type TLocation = {
+  latitude: string;
+  longitude: string;
+};
 export type TAddress = {
   googleString?: string; // google map string
+  location?: TLocation;
   street?: string;
   city?: string;
   prefecture?: string;
