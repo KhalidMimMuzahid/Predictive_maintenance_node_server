@@ -244,6 +244,29 @@ const setReservationRequestNearestLocation: RequestHandler = catchAsync(
   },
 );
 
+const getReservationRequestNearestLocation: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin'],
+    });
+
+    const result =
+      await predefinedValueServices.getReservationRequestNearestLocation();
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'reservation request nearest location have retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 const addReservationRequestArea: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -380,6 +403,7 @@ export const predefinedValueController = {
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
   setReservationRequestNearestLocation,
+  getReservationRequestNearestLocation,
   addReservationRequestArea,
   addReservationRequestIssue,
 

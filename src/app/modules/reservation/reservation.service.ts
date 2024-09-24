@@ -23,6 +23,7 @@ import {
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
+import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 
 const createReservationRequestIntoDB = async ({
   user,
@@ -208,6 +209,11 @@ const createReservationRequestIntoDB = async ({
       }
 
       // TODO:
+      const nearestLocation =
+        await predefinedValueServices.getReservationRequestNearestLocation();
+      console.log(nearestLocation);
+
+      throw new AppError(httpStatus.BAD_REQUEST, 'custom error for testing');
       await session.commitTransaction();
       await session.endSession();
       return updatedReservationRequest;

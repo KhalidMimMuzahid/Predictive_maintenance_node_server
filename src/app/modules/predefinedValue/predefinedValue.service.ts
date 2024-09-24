@@ -424,7 +424,16 @@ const setReservationRequestNearestLocation = async (radius: number) => {
     }
   }
 };
+const getReservationRequestNearestLocation = async () => {
+  const preDefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'reservationRequest',
+    },
+    { 'reservationRequest.nearestLocations': 1 },
+  );
 
+  return preDefinedValue?.reservationRequest?.nearestLocations;
+};
 const addReservationRequestArea = async (area: string) => {
   const previousArea = await PredefinedValue.findOne(
     {
@@ -584,6 +593,7 @@ export const predefinedValueServices = {
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
   setReservationRequestNearestLocation,
+  getReservationRequestNearestLocation,
   addReservationRequestArea,
   addReservationRequestIssue,
 

@@ -50,6 +50,10 @@ router.post(
   '/add-reservation-request-nearest-location',
   predefinedValueController.addReservationRequestNearestLocation,
 );
+router.get(
+  '/get-reservation-request-nearest-location',
+  predefinedValueController.getReservationRequestNearestLocation,
+);
 router.post(
   '/set-reservation-request-nearest-location',
   predefinedValueController.setReservationRequestNearestLocation,
