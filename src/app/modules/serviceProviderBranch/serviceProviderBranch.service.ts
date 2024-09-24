@@ -105,7 +105,14 @@ const updateAddress = async ({
   return result;
 };
 
+const getServiceProviderBranchById = async (serviceProviderBranch: string) => {
+  const result = await ServiceProviderBranch.findById(serviceProviderBranch);
+
+  return result;
+};
+
 export const serviceProviderBranchServices = {
   createServiceProviderBranchInToDB,
   updateAddress,
+  getServiceProviderBranchById,
 };

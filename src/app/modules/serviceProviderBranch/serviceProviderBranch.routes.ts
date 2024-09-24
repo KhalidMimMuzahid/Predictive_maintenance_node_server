@@ -17,5 +17,9 @@ router.patch(
   validateRequest(updateAddressValidationSchema),
   serviceProviderBranchController.updateAddress,
 );
+router.get(
+  '/get-service-provider-branch-by-id',
+  serviceProviderBranchController.getServiceProviderBranchById,
+);
 
 export const serviceProviderBranchRoutes = router;
