@@ -207,6 +207,7 @@ const createReservationRequestIntoDB = async ({
         }
       }
 
+      // TODO:
       await session.commitTransaction();
       await session.endSession();
       return updatedReservationRequest;
@@ -790,7 +791,6 @@ const getCompletedReservationRequestForServiceProviderCompany = async ({
 
   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
 
-  console.log(matchQuery);
 
   const totalRequests = await Invoice.countDocuments(matchQuery);
 

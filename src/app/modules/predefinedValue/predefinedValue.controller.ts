@@ -194,22 +194,51 @@ const addReservationRequestNearestLocation: RequestHandler = catchAsync(
 
     // we are checking the permission of this api
     checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
-    const nearestLocation: string = req?.query?.nearestLocation as string;
-    if (!nearestLocation) {
+    const radiusString: string = req?.query?.radius as string;
+    const radius: number = parseInt(radiusString);
+    if (!radius) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'nearestLocation is required to add reservation request nearestLocation',
+        'radius is required to add reservation request  nearestLocation',
       );
     }
     const result =
       await predefinedValueServices.addReservationRequestNearestLocation(
-        nearestLocation,
+        radius,
       );
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: 'reservation request nearestLocation has added successfully',
+      data: result,
+    });
+  },
+);
+
+const setReservationRequestNearestLocation: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const radiusString: string = req?.query?.radius as string;
+    const radius: number = parseInt(radiusString);
+    if (!radius) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'radius is required to set reservation request  nearestLocation',
+      );
+    }
+    const result =
+      await predefinedValueServices.setReservationRequestNearestLocation(
+        radius,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'reservation request nearestLocation has set successfully',
       data: result,
     });
   },
@@ -350,6 +379,7 @@ export const predefinedValueController = {
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
+  setReservationRequestNearestLocation,
   addReservationRequestArea,
   addReservationRequestIssue,
 

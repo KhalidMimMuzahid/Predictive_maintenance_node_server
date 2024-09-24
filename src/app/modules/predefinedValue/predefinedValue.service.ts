@@ -308,7 +308,10 @@ const addReservationRequestStatus = async (status: string) => {
         statuses: [status],
         areas: [],
         issues: [],
-        nearestLocations: [],
+        nearestLocations: {
+          // selectedRadius: null,
+          radiuses: [],
+        },
       },
     };
 
@@ -324,9 +327,7 @@ const addReservationRequestStatus = async (status: string) => {
   }
 };
 
-const addReservationRequestNearestLocation = async (
-  nearestLocation: string,
-) => {
+const addReservationRequestNearestLocation = async (radius: number) => {
   const previousNearestLocation = await PredefinedValue.findOne(
     {
       type: 'reservationRequest',
@@ -335,10 +336,11 @@ const addReservationRequestNearestLocation = async (
   );
 
   if (previousNearestLocation) {
-    previousNearestLocation?.reservationRequest?.nearestLocations?.push(
-      nearestLocation,
+    previousNearestLocation?.reservationRequest?.nearestLocations?.radiuses?.push(
+      radius,
     );
-
+    previousNearestLocation.reservationRequest.nearestLocations.selectedRadius =
+      radius;
     const updatedNearestLocation = await previousNearestLocation.save();
 
     if (!updatedNearestLocation) {
@@ -353,7 +355,57 @@ const addReservationRequestNearestLocation = async (
     const newNearestLocation: TPredefinedValue = {
       type: 'reservationRequest',
       reservationRequest: {
-        nearestLocations: [nearestLocation],
+        nearestLocations: {
+          radiuses: [radius],
+          selectedRadius: radius,
+        },
+        areas: [],
+        issues: [],
+        statuses: [],
+      },
+    };
+
+    const createdNearestLocation =
+      await PredefinedValue.create(newNearestLocation);
+    if (!createdNearestLocation) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+const setReservationRequestNearestLocation = async (radius: number) => {
+  const previousNearestLocation = await PredefinedValue.findOne(
+    {
+      type: 'reservationRequest',
+    },
+    { 'reservationRequest.nearestLocations': 1 },
+  );
+
+  if (previousNearestLocation) {
+    previousNearestLocation.reservationRequest.nearestLocations.selectedRadius =
+      radius;
+    const updatedNearestLocation = await previousNearestLocation.save();
+
+    if (!updatedNearestLocation) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newNearestLocation: TPredefinedValue = {
+      type: 'reservationRequest',
+      reservationRequest: {
+        nearestLocations: {
+          radiuses: [],
+          selectedRadius: radius,
+        },
         areas: [],
         issues: [],
         statuses: [],
@@ -398,7 +450,10 @@ const addReservationRequestArea = async (area: string) => {
     const newArea: TPredefinedValue = {
       type: 'reservationRequest',
       reservationRequest: {
-        nearestLocations: [],
+        nearestLocations: {
+          // selectedRadius: null,
+          radiuses: [],
+        },
         areas: [area],
         issues: [],
         statuses: [],
@@ -442,7 +497,10 @@ const addReservationRequestIssue = async (issue: string) => {
     const newIssue: TPredefinedValue = {
       type: 'reservationRequest',
       reservationRequest: {
-        nearestLocations: [],
+        nearestLocations: {
+          // selectedRadius: null,
+          radiuses: [],
+        },
         areas: [],
         issues: [issue],
         statuses: [],
@@ -513,7 +571,7 @@ const getMachineBrands = async () => {
   return machineBrands?.machine?.brands
     ? { brands: machineBrands?.machine?.brands, _id: machineBrands?._id }
     : null;
-  
+
   // return productCategories;
 };
 export const predefinedValueServices = {
@@ -525,6 +583,7 @@ export const predefinedValueServices = {
   addMachineModelName,
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
+  setReservationRequestNearestLocation,
   addReservationRequestArea,
   addReservationRequestIssue,
 

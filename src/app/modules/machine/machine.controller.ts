@@ -10,6 +10,7 @@ import mongoose, { Types } from 'mongoose';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import { TBiddingDate } from '../reservationGroup/reservationGroup.interface';
+import { TAddress } from '../common/common.interface';
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
@@ -150,6 +151,28 @@ const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
     });
   },
 );
+const updateAddress: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const document_id = req.query?.document_id as string;
+
+  if (!document_id) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'document_id must be provided to update address',
+    );
+  }
+
+  const address = req?.body as TAddress;
+  const result = await machineServices.updateAddress({ document_id, address });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'address updated successfully',
+    data: result,
+  });
+});
 
 const updateMachinePackageStatus: RequestHandler = catchAsync(
   async (req, res) => {
@@ -414,6 +437,7 @@ export const machineController = {
   addSensorConnectedMachine,
   addSensorModuleInToMachine,
   addSensorAttachedModuleInToMachine,
+  updateAddress,
   updateMachinePackageStatus,
   getMyWashingMachine,
   getMyGeneralMachine,

@@ -17,6 +17,7 @@ import { ReservationRequest } from '../reservation/reservation.model';
 import { AI } from '../ai/ai.model';
 import { timeDifference } from '../../utils/timeDifference';
 import { Request } from 'express';
+import { TAddress } from '../common/common.interface';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -530,6 +531,63 @@ const addSensorAttachedModuleInToMachineIntoDB = async (
   }
 };
 
+const updateAddress = async ({
+  document_id,
+  address,
+}: {
+  document_id: string;
+  address: TAddress;
+}) => {
+  const previousMachine = await Machine.findById(document_id);
+
+  const updateDocument: Partial<TAddress> =
+    previousMachine?.usedFor?.address || {};
+  if (address?.buildingName) {
+    updateDocument['buildingName'] = address?.buildingName;
+  }
+  if (address?.city) {
+    updateDocument['city'] = address?.city;
+  }
+  if (address?.country) {
+    updateDocument['country'] = address?.country;
+  }
+
+  if (address?.details) {
+    updateDocument['details'] = address?.details;
+  }
+  if (address?.googleString) {
+    updateDocument['googleString'] = address?.googleString;
+  }
+  if (address?.location) {
+    updateDocument['location'] = address?.location;
+  }
+  if (address?.postalCode) {
+    updateDocument['postalCode'] = address?.postalCode;
+  }
+  if (address?.prefecture) {
+    updateDocument['prefecture'] = address?.prefecture;
+  }
+  if (address?.roomNumber) {
+    updateDocument['roomNumber'] = address?.roomNumber;
+  }
+  if (address?.state) {
+    updateDocument['state'] = address?.state;
+  }
+  if (address?.street) {
+    updateDocument['street'] = address?.street;
+  }
+  // previousMachine.usedFor.address = updateDocument;
+  const result = await Machine.findByIdAndUpdate(
+    document_id,
+    {
+      'usedFor.address': updateDocument,
+    },
+    { new: true },
+  );
+
+  return result;
+};
+
 const updateMachinePackageStatus = async (
   machine_id: Types.ObjectId,
   packageStatus: string,
@@ -808,8 +866,11 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
   };
 };
 const getMachineBy_id = async (machine: string) => {
-  const machineData = await Machine.findById(machine);
-
+  console.log(machine);
+  const machineData = await Machine.findById({
+    _id: new mongoose.Types.ObjectId(machine),
+  });
+  console.log({ machineData });
   return machineData;
 };
 
@@ -870,8 +931,6 @@ const machineHealthStatus = async ({
 
   machineData.issues = newIssues;
   await machineData.save();
-
- 
 
   Promise.all(
     machineHealthData?.healthStatuses?.map((each) => {
@@ -1245,6 +1304,7 @@ export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
   addSensorAttachedModuleInToMachineIntoDB,
+  updateAddress,
   updateMachinePackageStatus,
   getMyWashingMachineService,
   getUserConnectedMachineService,
@@ -1268,3 +1328,10 @@ export const machineServices = {
 //   }
 // 66c723fa286f19782bb2ae97
 // 66b5febeb66123d7db67bba1
+
+
+
+
+
+
+

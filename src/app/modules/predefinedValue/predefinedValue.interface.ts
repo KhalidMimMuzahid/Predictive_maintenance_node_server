@@ -21,9 +21,13 @@ export type TSensorModuleAttached = {
 export type TCustomer = {
   occupation?: string[];
 };
+
 export type TReservationRequest = {
   statuses?: string[];
-  nearestLocations?: string[];
+  nearestLocations?: {
+    selectedRadius?: number;
+    radiuses: number[];
+  };
   areas?: string[];
   issues?: string[];
 };

@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 export type TLocation = {
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
 };
 export type TAddress = {
   googleString?: string; // google map string

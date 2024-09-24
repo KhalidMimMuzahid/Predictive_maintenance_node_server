@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import { machineController } from './machine.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { machineValidation } from './machine.validation';
+import { updateAddressValidationSchema } from '../common/common.validation';
 
 const router: Router = express.Router();
 
@@ -19,6 +20,12 @@ router.post(
 router.patch(
   '/add-sensor-module-to-machine',
   machineController.addSensorModuleInToMachine,
+);
+
+router.patch(
+  '/update-address',
+  validateRequest(updateAddressValidationSchema),
+  machineController.updateAddress,
 );
 
 router.patch(

@@ -11,16 +11,21 @@ import {
 export const AddressSchema: Schema = new Schema<TAddress>({
   googleString: { type: String, required: false },
   location: {
-    type: new Schema<TLocation>({
-      latitude: {
-        type: String,
-        required: true,
+    type: new Schema<TLocation>(
+      {
+        latitude: {
+          type: Number,
+          required: true,
+        },
+        longitude: {
+          type: Number,
+          required: true,
+        },
       },
-      longitude: {
-        type: String,
-        required: true,
+      {
+        _id: false,
       },
-    }),
+    ),
     required: false,
   },
   street: { type: String, required: false },

@@ -43,7 +43,15 @@ const customerSchema = new Schema<TCustomer>({
 
 const ReservationRequestSchema = new Schema<TReservationRequest>({
   statuses: [String],
-  nearestLocations: [String],
+  nearestLocations: {
+    type: new Schema({
+      selectedRadius: {
+        type: Number,
+        required: false,
+      },
+      radiuses: [Number],
+    }),
+  },
   areas: [String],
   issues: [String],
 });

@@ -20,6 +20,25 @@ export const createAddressValidationSchema = z.object({
   details: z.string().optional(),
 });
 
+export const updateAddressValidationSchema = z.object({
+  location: z
+    .object({
+      latitude: z.number(),
+      longitude: z.number(),
+    })
+    .optional(),
+  googleString: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  prefecture: z.string().optional(),
+  postalCode: z.string().optional(),
+  country: z.string().optional(),
+  buildingName: z.string().optional(),
+  roomNumber: z.string().optional(),
+  state: z.string().optional(),
+  details: z.string().optional(),
+});
+
 
 export const createCardValidationSchema = z.object({
   cardType: z.enum(['debit', 'credit']),
