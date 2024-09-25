@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { TSubscription } from '../subscription/subscription.interface';
 
+
+
 export type TShowaUserForUses = {
   machines?: mongoose.Types.ObjectId[];
   IOTs?: mongoose.Types.ObjectId[]; // IOT mean sensor modules attached
@@ -8,6 +10,7 @@ export type TShowaUserForUses = {
   totalAvailableIOT?: number;
   totalAvailableShowaMB?: number;
 };
+
 export type TUsage = {
   showaUser?: TShowaUserForUses;
   // serviceProviderAdmin?: { engineers: mongoose.Types.ObjectId[] };

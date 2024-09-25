@@ -11,9 +11,101 @@ const orderSchema = new Schema<TOrder>(
     shop: { type: Schema.Types.ObjectId, ref: 'Shop', required: true },
     status: {
       type: String,
-      enum: ['pending', 'in-progress', 'delivered'],
+      enum: ['pending', 'in-progress', 'shipped', 'delivered', 'canceled'],
       required: true,
     },
+    pending: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+    inprogress: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+    shipped: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+
+    delivered: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+    canceled: {
+      type: new Schema(
+        {
+          isActivated: {
+            type: Boolean,
+            required: true,
+          },
+          customDate: {
+            type: Date,
+            required: false,
+          },
+        },
+        {
+          timestamps: true,
+        },
+      ),
+      required: false,
+    },
+
     paymentType: {
       type: String,
       enum: paymentTypesArray,

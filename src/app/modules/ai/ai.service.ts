@@ -4,6 +4,7 @@ import { predefinedValueServices } from '../predefinedValue/predefinedValue.serv
 import { TThreshold } from './ai.interface';
 import { AI } from './ai.model';
 import { ReservationRequest } from '../reservation/reservation.model';
+import { addDays } from '../../utils/addDays';
 
 const addThreshold = async ({
   thresholdData,
@@ -63,17 +64,53 @@ const addThreshold = async ({
 };
 
 const getThresholds = async () => {
-  const thresholdData = await AI.find({
-    type: 'threshold',
-  });
-  const processedData = thresholdData?.map((each) => {
-    return {
-      sectionName: each?.threshold?.sectionName,
-      temperature: each?.threshold?.temperature,
-      vibrations: each?.threshold?.vibrations,
-    };
-  });
+  const sections = await predefinedValueServices.getIotSectionNames();
+  // console.log(sections);
+
+  const processedData = await Promise.all(
+    sections?.map(async (sectionName) => {
+      const thresholdData = await AI.findOne({
+        type: 'threshold',
+        'threshold.sectionName': sectionName,
+      });
+
+      return {
+        sectionName: sectionName,
+        temperature: thresholdData?.threshold?.temperature || null,
+        vibrations: thresholdData?.threshold?.vibrations || null,
+      };
+    }),
+  );
+
   return processedData;
+};
+const getAiData = async () => {
+  const startDate = addDays(-7);
+  const thresholdData = await AI.aggregate([
+    {
+      $match: {
+        type: 'aiData',
+        $and: [{ createdAt: { $gte: startDate } }],
+      },
+    },
+    {
+      $unwind: '$aiData',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$aiData',
+      },
+    },
+    {
+      $project: {
+        sectionName: 1,
+        healthStatus: 1,
+        sensorData: 1,
+      },
+    },
+  ]);
+  return thresholdData;
 };
 
 const aiPerformance = async () => {
@@ -90,5 +127,6 @@ const aiPerformance = async () => {
 export const aiServices = {
   addThreshold,
   getThresholds,
+  getAiData,
   aiPerformance,
 };

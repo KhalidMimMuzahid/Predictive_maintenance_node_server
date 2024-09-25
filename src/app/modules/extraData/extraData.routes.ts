@@ -11,11 +11,12 @@ router.post(
   validateRequest(extraDataValidation.addFeedbackValidationSchema),
   extraDataController.addFeedback,
 );
-router.patch(
-  '/review-feedback',
-
-  extraDataController.reviewFeedback,
+router.post(
+  '/invite-member',
+  validateRequest(extraDataValidation.inviteMemberValidationSchema),
+  extraDataController.inviteMember,
 );
+router.patch('/review-feedback', extraDataController.reviewFeedback);
 
 router.post('/upload-photo', extraDataController.uploadPhoto);
 

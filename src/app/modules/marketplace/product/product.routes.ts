@@ -11,6 +11,11 @@ router.post(
   productController.createProduct,
 );
 router.post(
+  '/edit',
+  validateRequest(productValidation.editProductValidationSchema),
+  productController.editProduct,
+);
+router.post(
   '/add-review',
   validateRequest(productValidation.reviewValidationSchema),
   productController.addReview,
@@ -20,6 +25,11 @@ router.get(
   '/get-all-products-count-category-wise',
   productController.getAllProductsCategoryWise,
 );
+router.get(
+  '/get-all-products-by-shop-dashboard',
+  productController.getAllProductsByShopDashboard,
+);
+router.get('/get-all-products-by-shop', productController.getAllProductsByShop);
 
 router.get(
   '/get-product-by-product_id',

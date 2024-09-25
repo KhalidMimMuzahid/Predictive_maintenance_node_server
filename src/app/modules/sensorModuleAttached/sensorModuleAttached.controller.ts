@@ -7,9 +7,11 @@ import httpStatus from 'http-status';
 import {
   TModule,
   TSensorModuleAttached,
+  TSensorType,
 } from './sensorModuleAttached.interface';
 import AppError from '../../errors/AppError';
 import { Types } from 'mongoose';
+import { sensorTypeArray } from './sensorModuleAttached.const';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -137,15 +139,39 @@ const getSensorData: RequestHandler = catchAsync(async (req, res) => {
       'Page and limit cannot be less than 1',
     );
   }
+
   const macAddress: string = req?.query?.macAddress as string;
   if (!macAddress) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'macAddress is required to to get sensor data',
+      'macAddress is required to to add sensor data',
+    );
+  }
+
+  const sensorType = req?.query?.sensorType as TSensorType;
+
+  if (!sensorTypeArray.some((each) => each === sensorType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `sensor type must be any of ${sensorTypeArray.reduce((total, current) => {
+        total = total + `${current}, `;
+        return total;
+      }, '')}`,
+    );
+  }
+  const sensorPositionString = req?.query?.sensorPosition as string;
+  const sensorPosition = parseInt(sensorPositionString);
+
+  if (!sensorPosition && sensorPosition !== 0) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'sensorPosition is required to to get sensor data',
     );
   }
   const result = await sensorAttachedModuleServices.getSensorDataFromDB({
     macAddress,
+    sensorType,
+    sensorPosition,
     page,
     limit,
   });

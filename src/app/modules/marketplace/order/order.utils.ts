@@ -50,6 +50,9 @@ export const orderProducts = async ({
   }
   order.product = productData?._id;
   order.status = 'pending';
+  order.pending = {
+    isActivated: true,
+  };
   order.paymentType = paymentType;
   order.cost = {
     price: productData?.salePrice,
@@ -75,6 +78,9 @@ export const orderProducts = async ({
   const createdOrder = createdOrderArray[0];
 
   productData.stockManagement.availableStock -= quantity;
+  productData.stockManagement.soldCount = productData.stockManagement.soldCount
+    ? productData.stockManagement.soldCount + quantity
+    : quantity;
   const updatedProduct = await productData.save({ session });
 
   if (!updatedProduct) {

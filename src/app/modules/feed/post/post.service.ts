@@ -850,12 +850,6 @@ const deletePost = async ({
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
   }
 
-  const user = await User.findById(auth._id);
-
-  if (!user) {
-    throw new AppError(httpStatus.UNAUTHORIZED, 'User not authenticated');
-  }
-
   if (post.user.toString() !== auth._id.toString()) {
     throw new AppError(
       httpStatus.FORBIDDEN,

@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { machineController } from './machine.controller';
 import validateRequest from '../../middlewares/validateRequest';
+import { machineController } from './machine.controller';
 import { machineValidation } from './machine.validation';
 
 const router: Router = express.Router();
@@ -42,13 +42,17 @@ router.get(
   machineController.getUserConnectedMachine,
 );
 router.get('/getAllMachineBy_id', machineController.getAllMachineBy_id);
+router.get(
+  '/get-all-sensor-section-wise-by-machine',
+  machineController.getAllSensorSectionWiseByMachine,
+);
 router.get('/getMachineBy_id', machineController.getMachineBy_id);
 router.delete('/', machineController.deleteMachine);
 
 // this endpoint is not used in this server
 // -relocated-to-another-server
 router.patch(
-  '/machine-health-status',
+  '/machine-health-status-relocated-to-another-server',
   validateRequest(machineValidation.machineHealthStatusSchema),
   machineController.machineHealthStatus,
 );
@@ -68,12 +72,13 @@ router.get(
   machineController.machinePerformanceBrandWise,
 );
 
-
-
 router.get(
   '/machine-performance-model-wise',
   machineController.machinePerformanceModelWise,
 );
+
+router.patch('/edit-machine', machineController.editMachine);
+
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);
 export const machineRoutes = router;

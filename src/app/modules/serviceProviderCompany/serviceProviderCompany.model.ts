@@ -6,7 +6,7 @@ const BankSchema = new Schema({
   branchName: String,
   accountNo: Number,
   postalCode: String,
-  address: { type: AddressSchema, required: true },
+  address: { type: AddressSchema, required: false },
   departmentInCharge: String,
   personInChargeName: String,
   card: CardSchema,

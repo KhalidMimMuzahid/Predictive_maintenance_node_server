@@ -2,13 +2,12 @@
 // brand  :{brandName, brandLogo}
 import { Types } from 'mongoose';
 
-
+export type TSortedBy = 'time' | 'top-sold' | 'low-stock' | 'price';
+export type TSortType = 'asc' | 'desc';
 export type TReviewObject = {
   rate: number;
   review: string;
 };
-
-
 
 export type TProductFilter = {
   productName: string;
@@ -52,6 +51,7 @@ export type TProduct = {
   stockManagement: {
     // stockKeepingUnit: number;
     availableStock: number; // stockKeepingUnit
+    soldCount?: number;
     // stockStatus: 'available' | 'not-available'; // "Available" or "Not Available"
     // individualSold: boolean; //
     trackStockQuantity: boolean; // if it is on then , it the stocks reaches to 5 or less than that, then send notification to seller

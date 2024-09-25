@@ -11,6 +11,7 @@ router.post(
   aiController.addThreshold,
 );
 router.get('/ai-performance', aiController.aiPerformance);
+router.get('/get-ai-data', aiController.getAiData);
 
 
 

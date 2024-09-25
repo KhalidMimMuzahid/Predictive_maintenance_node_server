@@ -4,6 +4,7 @@ import { SensorModule } from '../sensorModule/sensorModule.model';
 import {
   TModule,
   TSensorModuleAttached,
+  TSensorType,
 } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
 import {
@@ -222,8 +223,19 @@ const addSensorDataInToDB = async ({
     { $push: { sensorData: sensorData } },
     { new: false },
   );
-
-  req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
+  sensorData?.temperature?.forEach((each, index) => {
+    req.io.emit(
+      `macAddress=${macAddress}&sensorType=temperature&sensorPosition=${index}`,
+      { value: each, createdAt: now },
+    );
+  });
+  sensorData?.vibration?.forEach((each, index) => {
+    req.io.emit(
+      `macAddress=${macAddress}&sensorType=vibration&sensorPosition=${index}`,
+      { value: each, createdAt: now },
+    );
+  });
+  // req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
 
   return null;
 };
@@ -233,7 +245,7 @@ const getAttachedSensorModulesByuser = async (
 ) => {
   const sensors = await SensorModuleAttached.find({ user: userId })
     .select(
-      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType',
+      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType createdAt',
     )
     .populate('machine');
   return sensors;
@@ -260,10 +272,14 @@ const getAllAttachedSensorModulesByMachine = async (
 
 const getSensorDataFromDB = async ({
   macAddress,
+  sensorType,
+  sensorPosition,
   page,
   limit,
 }: {
   macAddress: string;
+  sensorType: TSensorType;
+  sensorPosition: number;
   page: number;
   limit: number;
 }) => {
@@ -341,6 +357,25 @@ const getSensorDataFromDB = async ({
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sensorData =
+    sensorModuleAttached?.sensorData?.length > 0
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sensorModuleAttached?.sensorData?.map((each: any) => {
+          const value = each[sensorType][sensorPosition];
+
+          if (!value && value !== 0) {
+            throw new AppError(
+              httpStatus.BAD_REQUEST,
+              `No sensor data for position of ${sensorPosition}`,
+            );
+          }
+          return {
+            value,
+            createdAt: each?.createdAt,
+          };
+        })
+      : [];
   const sensor = {
     prevPage:
       limitTemp <= 0
@@ -349,19 +384,20 @@ const getSensorDataFromDB = async ({
           ? false
           : page - 1,
     nextPage: page == Math.ceil(dataCount / limit) ? false : page + 1,
-    sensorData: sensorModuleAttached?.sensorData || [],
-    finished: true,
-    sensorModule_id: sensorModuleAttached.sensorModule,
-
+    sensorData,
+    // finished: true,
+    // sensorModuleAttached: sensorModuleAttached.sensorModule,
+    sensorType,
+    sensorPosition,
     macAddress,
     // price: iot.price,
     // status: iot.status,
     // uid: iot.uid,
-    purpose: sensorModuleAttached.purpose,
-    sectionName: sensorModuleAttached.sectionName,
-    isSwitchedOn: sensorModuleAttached.isSwitchedOn,
-    moduleType: sensorModuleAttached.moduleType,
-    machine_id: sensorModuleAttached.machine,
+    // purpose: sensorModuleAttached.purpose,
+    // sectionName: sensorModuleAttached.sectionName,
+    // isSwitchedOn: sensorModuleAttached.isSwitchedOn,
+    // moduleType: sensorModuleAttached.moduleType,
+    // machine_id: sensorModuleAttached.machine,
   };
 
   return { totalData: sensor?.sensorData?.length || 0, ...sensor };

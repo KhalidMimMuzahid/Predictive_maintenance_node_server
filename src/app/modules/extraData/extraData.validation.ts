@@ -11,7 +11,84 @@ const addFeedbackValidationSchema = z.object({
     )
     .optional(),
 });
+const inviteMemberValidationSchema = z.object({
+  data: z
+    .object({
+      type: z.enum([
+        'serviceProviderAdmin',
+        'showaUser',
+        'serviceProviderEngineer',
+        'serviceProviderBranchManager',
+      ]),
+      serviceProviderAdmin: z
+        .object({
+          email: z.string(),
+          phone: z.string(),
+          companyName: z.string(),
+        })
+        .optional(),
+      showaUser: z
+        .object({
+          email: z.string(),
+          phone: z.string(),
+          name: z.object({ firstName: z.string(), lastName: z.string() }),
+        })
+        .optional(),
+      serviceProviderEngineer: z
+        .object({
+          serviceProviderBranch: z.string().optional(),
+          email: z.string(),
+          phone: z.string(),
+          name: z.object({ firstName: z.string(), lastName: z.string() }),
+        })
+        .optional(),
+      serviceProviderBranchManager: z
+        .object({
+          serviceProviderCompany: z.string().optional(),
+          email: z.string(),
+          phone: z.string(),
+          name: z.object({ firstName: z.string(), lastName: z.string() }),
+        })
+        .optional(),
+    })
+    .refine(
+      (data) => {
+        if (data) {
+          const { type } = data;
+
+          if (type === 'showaUser' && !data?.showaUser) {
+            return false;
+          }
+          if (type === 'serviceProviderAdmin' && !data?.serviceProviderAdmin) {
+            return false;
+          }
+          if (
+            type === 'serviceProviderEngineer' &&
+            !data?.serviceProviderEngineer
+          ) {
+            return false;
+          }
+          if (
+            type === 'serviceProviderBranchManager' &&
+            !data?.serviceProviderBranchManager
+          ) {
+            return false;
+          }
+
+          return true;
+        } else {
+          return false;
+        }
+      },
+
+      {
+        message: 'you must provide data according to the type',
+        path: ['type'],
+      },
+    ),
+});
 
 export const extraDataValidation = {
   addFeedbackValidationSchema,
+  inviteMemberValidationSchema,
 };

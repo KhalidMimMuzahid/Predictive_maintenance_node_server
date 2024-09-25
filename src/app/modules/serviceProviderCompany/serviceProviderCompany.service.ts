@@ -7,6 +7,14 @@ import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import Shop from '../marketplace/shop/shop.model';
 import { userServices } from '../user/user.service';
+import {
+  TCompanyStatus,
+  TServiceProviderCompany,
+} from './serviceProviderCompany.interface';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
+import { TSortType } from '../marketplace/product/product.interface';
+import { TAuth } from '../../interface/error';
 
 const getServiceProviderCompanyForAdmin = async (
   _id: mongoose.Types.ObjectId,
@@ -16,6 +24,155 @@ const getServiceProviderCompanyForAdmin = async (
   });
 
   return serviceProviderCompany;
+};
+
+const editServiceProviderCompany = async ({
+  user,
+  serviceProviderCompany,
+  serviceProviderCompanyData,
+  auth,
+}: {
+  user: mongoose.Types.ObjectId;
+  serviceProviderCompany: string;
+  serviceProviderCompanyData: Partial<TServiceProviderCompany>;
+  auth: TAuth;
+}) => {
+  //
+
+  const existingServiceProviderCompany = await ServiceProviderCompany.findById(
+    serviceProviderCompany,
+  );
+
+  if (!existingServiceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'serviceProviderCompany is not found with this serviceProviderCompany ID',
+    );
+  }
+
+  if (
+    existingServiceProviderCompany?.serviceProviderAdmin?.toHexString() !==
+      user.toString() &&
+    auth?.role !== 'showaAdmin'
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you are not the admin this serviceProviderCompany',
+    );
+  }
+
+  if (serviceProviderCompanyData?.companyName) {
+    existingServiceProviderCompany.companyName =
+      serviceProviderCompanyData?.companyName;
+  }
+
+  if (serviceProviderCompanyData?.photoUrl) {
+    existingServiceProviderCompany.photoUrl =
+      serviceProviderCompanyData?.photoUrl;
+  }
+  if (serviceProviderCompanyData?.address) {
+    existingServiceProviderCompany.address =
+      serviceProviderCompanyData?.address;
+  }
+  if (serviceProviderCompanyData?.representativeName) {
+    existingServiceProviderCompany.representativeName =
+      serviceProviderCompanyData?.representativeName;
+  }
+  if (serviceProviderCompanyData?.fax) {
+    existingServiceProviderCompany.fax = serviceProviderCompanyData?.fax;
+  }
+  if (serviceProviderCompanyData?.corporateNo) {
+    existingServiceProviderCompany.corporateNo =
+      serviceProviderCompanyData?.corporateNo;
+  }
+  if (serviceProviderCompanyData?.phone) {
+    existingServiceProviderCompany.phone = serviceProviderCompanyData?.phone;
+  }
+  if (serviceProviderCompanyData?.currency) {
+    existingServiceProviderCompany.currency =
+      serviceProviderCompanyData?.currency;
+  }
+  if (serviceProviderCompanyData?.invoiceRegistrationNo) {
+    existingServiceProviderCompany.invoiceRegistrationNo =
+      serviceProviderCompanyData?.invoiceRegistrationNo;
+  }
+
+  if (serviceProviderCompanyData?.services?.length > 0) {
+    existingServiceProviderCompany.services =
+      serviceProviderCompanyData?.services;
+  }
+  if (serviceProviderCompanyData?.registrationDocument?.length > 0) {
+    existingServiceProviderCompany.registrationDocument =
+      serviceProviderCompanyData?.registrationDocument;
+  }
+  if (serviceProviderCompanyData?.capital) {
+    existingServiceProviderCompany.capital =
+      serviceProviderCompanyData?.capital;
+  }
+  if (serviceProviderCompanyData?.bank) {
+    // const BankUpdateValidationSchema = z.object({
+    //   bankName: z.string().optional(),
+    //   branchName: z.string().optional(),
+    //   accountNo: z.number().optional(),
+    //   postalCode: z.string().optional(),
+    //   // address: createAddressValidationSchema.optional(),
+    //   departmentInCharge: z.string().optional(),
+    //   personInChargeName: z.string().optional(),
+    //   // card: createCardValidationSchema,
+    // });
+    const newBank = { ...existingServiceProviderCompany?.bank };
+    if (serviceProviderCompanyData?.bank?.bankName) {
+      newBank.bankName = serviceProviderCompanyData?.bank?.bankName;
+    }
+    if (serviceProviderCompanyData?.bank?.branchName) {
+      newBank.branchName = serviceProviderCompanyData?.bank?.branchName;
+    }
+    if (serviceProviderCompanyData?.bank?.accountNo) {
+      newBank.accountNo = serviceProviderCompanyData?.bank?.accountNo;
+    }
+    if (serviceProviderCompanyData?.bank?.postalCode) {
+      newBank.postalCode = serviceProviderCompanyData?.bank?.postalCode;
+    }
+    if (serviceProviderCompanyData?.bank?.departmentInCharge) {
+      newBank.departmentInCharge =
+        serviceProviderCompanyData?.bank?.departmentInCharge;
+    }
+    if (serviceProviderCompanyData?.bank?.personInChargeName) {
+      newBank.personInChargeName =
+        serviceProviderCompanyData?.bank?.personInChargeName;
+    }
+    existingServiceProviderCompany.bank = newBank;
+  }
+
+  if (serviceProviderCompanyData?.emergencyContact) {
+    const emergencyContact = serviceProviderCompanyData?.emergencyContact;
+    if (emergencyContact?.departmentInCharge) {
+      serviceProviderCompanyData.emergencyContact.departmentInCharge =
+        emergencyContact?.departmentInCharge;
+    }
+    if (emergencyContact?.personInChargeName) {
+      serviceProviderCompanyData.emergencyContact.personInChargeName =
+        emergencyContact?.personInChargeName;
+    }
+    if (emergencyContact?.contactNo) {
+      serviceProviderCompanyData.emergencyContact.contactNo =
+        emergencyContact?.contactNo;
+    }
+    if (emergencyContact?.email) {
+      serviceProviderCompanyData.emergencyContact.email =
+        emergencyContact?.email;
+    }
+  }
+  const updatedServiceProviderCompany =
+    await existingServiceProviderCompany.save();
+
+  if (!updatedServiceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Something went wrong, please try again',
+    );
+  }
+  return updatedServiceProviderCompany;
 };
 const getAllProfileByServiceProviderCompany = async (
   _id: mongoose.Types.ObjectId,
@@ -83,9 +240,28 @@ const getServiceProviderCompanyBy_id = async (
 
   return serviceProviderCompanyData;
 };
-const getAllServiceProviderCompanies = async () => {
-  const serviceProviderCompanies = await ServiceProviderCompany.find().populate(
-    [
+const getAllServiceProviderCompanies = async ({
+  area,
+  sortType,
+  status,
+}: {
+  area: string;
+  sortType: TSortType;
+  status: TCompanyStatus;
+}) => {
+  const query = {};
+  if (area) {
+    query['address.city'] = area;
+  }
+
+  if (status) {
+    query['status'] = status;
+  }
+  const serviceProviderCompanies = await ServiceProviderCompany.find(query)
+    .sort({
+      createdAt: sortType === 'desc' ? -1 : 1,
+    })
+    .populate([
       {
         path: 'serviceProviderAdmin',
 
@@ -94,8 +270,7 @@ const getAllServiceProviderCompanies = async () => {
           options: { strictPopulate: false },
         },
       },
-    ],
-  );
+    ]);
 
   return serviceProviderCompanies;
 };
@@ -158,6 +333,7 @@ const getAllMembersForServiceProviderCompany = async (
 
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
+  editServiceProviderCompany,
   getAllProfileByServiceProviderCompany,
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,

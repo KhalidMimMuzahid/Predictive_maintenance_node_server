@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { serviceProviderEngineerControllers } from './serviceProviderEngineer.controller';
 import validateRequest from '../../../../middlewares/validateRequest';
+import { serviceProviderEngineerControllers } from './serviceProviderEngineer.controller';
 import { serviceProviderEngineerValidation } from './serviceProviderEngineer.validation';
 
 const router: Router = express.Router();
@@ -12,5 +12,10 @@ router.post(
 router.patch(
   '/approve-and-assign-into-branch',
   serviceProviderEngineerControllers.approveAndAssignEngineerInToBranch,
+);
+
+router.patch(
+  '/edit-service-provider-engineer',
+  serviceProviderEngineerControllers.editServiceProviderEngineer,
 );
 export const serviceProviderEngineerRoutes = router;

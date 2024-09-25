@@ -1,21 +1,22 @@
 import { TIssue, TMachine, TMachineHealthStatus } from './machine.interface';
 import { Machine } from './machine.model';
 
-import { checkMachineData } from './machine.utils';
-import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
-import mongoose, { Types } from 'mongoose';
-import { SensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.model';
-import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
-import { SensorModule } from '../sensorModule/sensorModule.model';
-import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
-import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
+import mongoose, { Types } from 'mongoose';
+import AppError from '../../errors/AppError';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
+import { SensorModule } from '../sensorModule/sensorModule.model';
+import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
+import { SensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.model';
+import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
+import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
+import { checkMachineData } from './machine.utils';
 
-import { ReservationRequest } from '../reservation/reservation.model';
-import { AI } from '../ai/ai.model';
+import { Request } from 'express';
 import { timeDifference } from '../../utils/timeDifference';
+import { AI } from '../ai/ai.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -591,15 +592,84 @@ const deleteMachineService = async (
       'There is no machine with this id!',
     );
   }
+  machine.sensorModulesAttached = [];
+  machine.subscriptionPurchased = undefined;
   machine.isDeleted = {
     value: true,
     deletedBy: userId,
   };
-  const deletedMachine = await machine.save();
-  if (!deletedMachine) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Machine could not be deleted');
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const deletedMachine = await machine.save({ session });
+    if (!deletedMachine) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Machine could not be deleted',
+      );
+    }
+
+    if (machine?.subscriptionPurchased?.toString()) {
+      const updatedSubscriptionPurchased =
+        await SubscriptionPurchased.findByIdAndUpdate(
+          machine?.subscriptionPurchased?.toString(),
+          {
+            $pull: {
+              'usage.showaUser.machines': machineId,
+            },
+            $inc: {
+              'usage.showaUser.totalAvailableMachine': 1,
+            },
+          },
+          {
+            session,
+          },
+        );
+
+      if (!updatedSubscriptionPurchased) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Machine could not be deleted',
+        );
+      }
+    }
+
+    const deTouchedIOTs = await Promise.all(
+      machine?.sensorModulesAttached?.map(async (each) => {
+        const deTouchedIOT = await SensorModuleAttached.findByIdAndUpdate(
+          each?.toString(),
+          {
+            isAttached: false,
+            $unset: {
+              machine: '',
+            },
+          },
+          {
+            session,
+          },
+        );
+        return deTouchedIOT;
+      }),
+    );
+
+    if (deTouchedIOTs?.length !== machine?.sensorModulesAttached?.length) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Machine could not be deleted',
+      );
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return null;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
-  return deletedMachine;
+
+  return 'deletedMachine';
 };
 
 const getAllMachineBy_id = async (user_id: string) => {
@@ -608,6 +678,134 @@ const getAllMachineBy_id = async (user_id: string) => {
   });
 
   return machine;
+};
+const getAllSensorSectionWiseByMachine = async (machine: string) => {
+  // const machineData = await Machine.findById(machine);
+  // TODO:  "machine="
+  // {
+  //   machine: "machine_id",
+  //   sensorModuleAttached: "sensorModuleAttached_id",
+  //   sensorType: "temperature" or "vibration",
+  //   sensorId: "index no of this sensor"
+  // }
+
+  const sensorModuleAttachedData = await Machine.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(machine),
+      },
+    },
+    {
+      $lookup: {
+        from: 'sensormoduleattacheds',
+        localField: 'sensorModulesAttached',
+        foreignField: '_id',
+        as: 'sensorModulesAttached',
+      },
+    },
+    {
+      $unwind: '$sensorModulesAttached',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$sensorModulesAttached',
+      },
+    },
+
+    // 66de94702cb33950bc34853c
+    {
+      $project: {
+        _id: 1,
+        // sensorModulesAttached: 1,
+        macAddress: 1,
+        sectionName: 1,
+        moduleType: 1,
+      },
+    },
+  ]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reFactoringData: any = {};
+  // console.log(sensorModuleAttachedData);
+  sensorModuleAttachedData?.forEach((currentValue) => {
+    // console.log(currentValue);
+
+    currentValue?.sectionName?.vibration?.forEach(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any, index: number) => {
+        reFactoringData[item] = reFactoringData[item]
+          ? [
+              ...reFactoringData[item],
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'vibration',
+                sensorPosition: index,
+              },
+            ]
+          : (reFactoringData[item] = [
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'vibration',
+                sensorPosition: index,
+              },
+            ]);
+      },
+    );
+    currentValue?.sectionName?.temperature?.forEach(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any, index: number) => {
+        reFactoringData[item] = reFactoringData[item]
+          ? [
+              ...reFactoringData[item],
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'temperature',
+                sensorPosition: index,
+              },
+            ]
+          : (reFactoringData[item] = [
+              {
+                machine,
+                sensorModuleAttached: currentValue?._id,
+                macAddress: currentValue?.macAddress,
+                sensorType: 'temperature',
+                sensorPosition: index,
+              },
+            ]);
+      },
+    );
+  });
+  // return sensorModuleAttachedData;
+  const result = await Promise.all(
+    Object.keys(reFactoringData)?.map(async (sectionName) => {
+      const aiData = await AI.findOne({
+        type: 'aiData',
+        'aiData.machine': new mongoose.Types.ObjectId(machine),
+        'aiData.sectionName': sectionName,
+      }).sort({
+        createdAt: -1,
+      });
+
+      return {
+        [sectionName]: {
+          sensors: reFactoringData[sectionName],
+          healthStatus: aiData?.aiData?.healthStatus,
+        },
+      };
+    }),
+  );
+  return {
+    // sensorModuleAttachedData,
+    // reFactoringData,
+    result,
+  };
 };
 const getMachineBy_id = async (machine: string) => {
   const machineData = await Machine.findById(machine);
@@ -619,9 +817,11 @@ const machineHealthStatus = async ({
   machine,
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   machineHealthData,
+  req,
 }: {
   machine: Types.ObjectId;
   machineHealthData: Partial<TMachineHealthStatus>;
+  req: Request;
 }) => {
   const machineData = await Machine.findById(machine, {
     healthStatus: 1,
@@ -634,6 +834,9 @@ const machineHealthStatus = async ({
       'no machine has found with this machine',
     );
   }
+
+  const now = new Date(Date.now());
+
   // console.log({
   //   machine,
   //   machineHealthData,
@@ -642,6 +845,10 @@ const machineHealthStatus = async ({
     machineData.healthStatus = {
       health: machineHealthData?.healthStatus,
     };
+    req.io.emit(`machine=${machine?.toString()}`, {
+      healthStatus: machineHealthData?.healthStatus,
+      createdAt: now,
+    });
   }
 
   // machineData.issues = machineHealthData?.issues;
@@ -663,6 +870,7 @@ const machineHealthStatus = async ({
 
   machineData.issues = newIssues;
   await machineData.save();
+
   Promise.all(
     machineHealthData?.healthStatuses?.map((each) => {
       // And now save all the sensor data and its health status
@@ -676,6 +884,11 @@ const machineHealthStatus = async ({
           sensorData: each?.sensorData,
         },
       });
+
+      req.io.emit(
+        `machine=${machine?.toString()}&sectionName=${each?.sectionName}`,
+        { healthStatus: each?.healthStatus, createdAt: now },
+      );
     }),
   );
 
@@ -1026,6 +1239,37 @@ const machinePerformanceModelWise = async () => {
   return machineModelNamePerformanceArray;
 };
 
+const editMachine = async (
+  machineId: Types.ObjectId,
+  updatedData: Partial<TMachine>,
+) => {
+  const editableFields = [
+    'name',
+    'brand',
+    'model',
+    'washingMachine',
+    'usedFor',
+  ];
+
+  const updates = {};
+
+  editableFields.forEach((field) => {
+    if (updatedData[field] !== undefined) {
+      updates[field] = updatedData[field];
+    }
+  });
+
+  const result = await Machine.findByIdAndUpdate(machineId, updates, {
+    new: true,
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Machine not found');
+  }
+
+  return result;
+};
+
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
@@ -1036,6 +1280,7 @@ export const machineServices = {
   getMyGeneralMachineService,
   getUserNonConnectedGeneralMachineService,
   getAllMachineBy_id,
+  getAllSensorSectionWiseByMachine,
   getMachineBy_id,
   deleteMachineService,
   addModuleToMachineInToDB,
@@ -1045,8 +1290,11 @@ export const machineServices = {
   machinePerformanceModelWise,
   // changeStatusService,
   // addSensorService,
+  editMachine,
 };
 
 // {
 //   _id: new ObjectId('666297956c7f2e81f8c4f2cc')
 //   }
+// 66c723fa286f19782bb2ae97
+// 66b5febeb66123d7db67bba1

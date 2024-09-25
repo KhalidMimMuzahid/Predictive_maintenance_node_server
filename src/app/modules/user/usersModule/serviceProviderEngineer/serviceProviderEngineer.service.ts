@@ -1,18 +1,18 @@
 import httpStatus from 'http-status';
+import mongoose, { Types } from 'mongoose';
 import AppError from '../../../../errors/AppError';
+import { TAuth } from '../../../../interface/error';
+import { jwtFunc } from '../../../../utils/jwtFunction';
+import { ServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.model';
+import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceProviderCompany.model';
+import { Wallet } from '../../../wallet/wallet.model';
 import { TUser } from '../../user.interface';
 import { User } from '../../user.model';
 import {
   TCurrentStateForEngineer,
   TServiceProviderEngineer,
 } from './serviceProviderEngineer.interface';
-import mongoose, { Types } from 'mongoose';
-import { jwtFunc } from '../../../../utils/jwtFunction';
-import { Wallet } from '../../../wallet/wallet.model';
-import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceProviderCompany.model';
 import { ServiceProviderEngineer } from './serviceProviderEngineer.model';
-import { TAuth } from '../../../../interface/error';
-import { ServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.model';
 
 const createServiceProviderEngineerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
@@ -268,7 +268,65 @@ const approveServiceProviderEngineerIntoDB = async (
   return updatedServiceProviderEngineerData;
 };
 
+const editServiceProviderEngineer = async (
+  auth: TAuth,
+  serviceProviderEngineerId: string,
+  updateData: Partial<TServiceProviderEngineer>,
+) => {
+  let serviceProviderEngineer_id: Types.ObjectId;
+  try {
+    serviceProviderEngineer_id = new Types.ObjectId(serviceProviderEngineerId);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of serviceProviderEngineer you provided is invalid',
+    );
+  }
+
+  const serviceProviderEngineerData = await ServiceProviderEngineer.findById(
+    serviceProviderEngineer_id,
+  );
+
+  if (!serviceProviderEngineerData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'No Engineer found with the provided ID',
+    );
+  }
+
+  //Check if the user is authorized to edit this engineer
+  const companyInfo = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: auth._id,
+  });
+
+  if (!companyInfo) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not authorized to edit any company data',
+    );
+  }
+
+  // Check if the engineer belongs to the same company as the admin
+  if (
+    serviceProviderEngineerData?.currentState?.serviceProviderCompany?.toString() !==
+    companyInfo?._id?.toString()
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not authorized to edit this engineer’s data',
+    );
+  }
+
+  Object.assign(serviceProviderEngineerData, updateData);
+
+  const updatedServiceProviderEngineer =
+    await serviceProviderEngineerData.save();
+
+  return updatedServiceProviderEngineer;
+};
+
 export const serviceProviderEngineerServices = {
   createServiceProviderEngineerIntoDB,
   approveServiceProviderEngineerIntoDB,
+  editServiceProviderEngineer,
 };

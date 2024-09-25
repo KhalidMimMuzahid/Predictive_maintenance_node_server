@@ -1,15 +1,15 @@
-import httpStatus from 'http-status';
-import sendResponse from '../../utils/sendResponse';
 import { RequestHandler } from 'express';
-import catchAsync from '../../utils/catchAsync';
-import { machineServices } from './machine.service';
-import { TMachine, TMachineHealthStatus } from './machine.interface';
-import { TAuth } from '../../interface/error';
-import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
-import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
+import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
+import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import sendResponse from '../../utils/sendResponse';
 import { TBiddingDate } from '../reservationGroup/reservationGroup.interface';
+import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
+import { TMachine, TMachineHealthStatus } from './machine.interface';
+import { machineServices } from './machine.service';
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
   async (req, res) => {
@@ -287,7 +287,27 @@ const getAllMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
+const getAllSensorSectionWiseByMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    const machine: string = req.query?.machine as string;
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    if (!machine) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'machine is required to get all sensor section wise',
+      );
+    }
+    const result =
+      await machineServices.getAllSensorSectionWiseByMachine(machine);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensors section wise have retrieved successfully',
+      data: result,
+    });
+  },
+);
 const getMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
   const machine: string = req.query?.machine as string;
   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -316,6 +336,7 @@ const machineHealthStatus: RequestHandler = catchAsync(async (req, res) => {
   const result = await machineServices.machineHealthStatus({
     machine: new mongoose.Types.ObjectId(machine),
     machineHealthData,
+    req,
   });
   // send response
   sendResponse(res, {
@@ -388,6 +409,33 @@ const machinePerformanceModelWise: RequestHandler = catchAsync(
     });
   },
 );
+
+const editMachine: RequestHandler = catchAsync(async (req, res) => {
+  const { machine_id } = req.query;
+  const updatedMachineData: Partial<TMachine> = req.body;
+
+  // Ensure machine_id is provided
+  if (!machine_id) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'machine_id must be provided to edit machine',
+    );
+  }
+
+  const result = await machineServices.editMachine(
+    new Types.ObjectId(machine_id as string),
+    updatedMachineData,
+  );
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Machine updated successfully',
+    data: result,
+  });
+});
+
 export const machineController = {
   addSensorNonConnectedMachine,
   addSensorConnectedMachine,
@@ -399,7 +447,9 @@ export const machineController = {
   getUserConnectedMachine,
   getUserNonConnectedGeneralMachine,
   getAllMachineBy_id, // its user_id
+  getAllSensorSectionWiseByMachine,
   getMachineBy_id,
+
   deleteMachine,
   machineHealthStatus,
   machineReport,
@@ -407,4 +457,5 @@ export const machineController = {
   machinePerformanceModelWise,
   // changeStatus,
   // addSensor,
+  editMachine,
 };

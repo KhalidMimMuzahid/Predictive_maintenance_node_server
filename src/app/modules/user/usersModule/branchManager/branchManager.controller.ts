@@ -1,11 +1,11 @@
 import { RequestHandler } from 'express';
-import catchAsync from '../../../../utils/catchAsync';
-import AppError from '../../../../errors/AppError';
 import httpStatus from 'http-status';
-import { serviceProviderBranchManagerServices } from './branchManager.service';
-import sendResponse from '../../../../utils/sendResponse';
+import AppError from '../../../../errors/AppError';
 import { TAuth } from '../../../../interface/error';
+import catchAsync from '../../../../utils/catchAsync';
 import { checkUserAccessApi } from '../../../../utils/checkUserAccessApi';
+import sendResponse from '../../../../utils/sendResponse';
+import { serviceProviderBranchManagerServices } from './branchManager.service';
 
 const createServiceProviderBranchManager: RequestHandler = catchAsync(
   async (req, res) => {
@@ -65,7 +65,125 @@ const approveAndAssignBranchManagerInToBranch: RequestHandler = catchAsync(
     });
   },
 );
+
+// const editServiceProviderBranchManager: RequestHandler = catchAsync(
+//   async (req, res) => {
+//     const auth: TAuth = req.headers.auth as unknown as TAuth;
+
+//     // Ensure only serviceProviderAdmin can access this API
+//     checkUserAccessApi({
+//       auth,
+//       accessUsers: ['serviceProviderAdmin'],
+//     });
+
+//     const { serviceProviderBranchManagerId } = req.params;
+//     const updateData = req.body;
+//     const serviceProviderBranch = req.query.serviceProviderBranch as string;
+
+//     if (!serviceProviderBranchManagerId) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Branch Manager ID is required',
+//       );
+//     }
+//     console.log(serviceProviderBranchManagerId);
+
+//     const result =
+//       await serviceProviderBranchManagerServices.editServiceProviderBranchManager(
+//         auth,
+//         serviceProviderBranchManagerId,
+//         updateData,
+//         serviceProviderBranch,
+//       );
+//     // Send response
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Branch Manager updated successfully',
+//       data: result,
+//     });
+//   },
+// );
+
+// const editServiceProviderBranchManager: RequestHandler = catchAsync(
+//   async (req, res) => {
+//     const auth: TAuth = req.headers.auth as unknown as TAuth;
+
+//     // Ensure only serviceProviderAdmin can access this API
+//     checkUserAccessApi({
+//       auth,
+//       accessUsers: ['serviceProviderAdmin'],
+//     });
+
+//     const serviceProviderBranchManagerId = req.query
+//       .serviceProviderBranchManagerId as string;
+//     const updateData = req.body;
+//     const serviceProviderBranch = req.query.serviceProviderBranch as string;
+
+//     if (!serviceProviderBranchManagerId) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Branch Manager ID is required',
+//       );
+//     }
+
+//     const result =
+//       await serviceProviderBranchManagerServices.editServiceProviderBranchManager(
+//         auth,
+//         serviceProviderBranchManagerId,
+//         updateData,
+//         serviceProviderBranch,
+//       );
+
+//     // Send response
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: 'Branch Manager updated successfully',
+//       data: result,
+//     });
+//   },
+// );
+
+const editServiceProviderBranchManager: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req.headers.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin'],
+    });
+
+    const serviceProviderBranchManagerId = req.query
+      .serviceProviderBranchManagerId as string;
+    const updateData = req.body;
+
+    if (!serviceProviderBranchManagerId) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Branch Manager ID is required',
+      );
+    }
+
+    const result =
+      await serviceProviderBranchManagerServices.editServiceProviderBranchManager(
+        auth,
+        serviceProviderBranchManagerId,
+        updateData,
+      );
+
+    // Send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Branch Manager updated successfully',
+      data: result,
+    });
+  },
+);
+
 export const serviceProviderBranchManagerControllers = {
   createServiceProviderBranchManager,
   approveAndAssignBranchManagerInToBranch,
+  editServiceProviderBranchManager,
 };

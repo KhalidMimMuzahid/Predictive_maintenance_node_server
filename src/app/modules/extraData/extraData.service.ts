@@ -4,7 +4,8 @@ import { User } from '../user/user.model';
 import { ExtraData } from './extraData.model';
 import { uploadFileToAWS } from '../../utils/uploadFileToAWS';
 import mongoose from 'mongoose';
-import { TFeedback } from './extraData.interface';
+import { TFeedback, TInviteMember } from './extraData.interface';
+import { sendMail } from '../../utils/sendMail';
 
 const deleteMyAccount = async (emailOrPhone: string) => {
   const isExistsUser = await User.findOne({
@@ -51,6 +52,43 @@ const addFeedback = async ({
   }
   return createdFeedback;
 };
+const inviteMember = async ({
+  inviteMember,
+}: {
+  inviteMember: Partial<TInviteMember>;
+}) => {
+  const extraData = await ExtraData.create({
+    type: 'inviteMember',
+    inviteMember,
+  });
+  if (!extraData?._id) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'something went wrong, please try again',
+    );
+  }
+
+  const htmlBody = `<div>
+            <h2 style="color: #333; margin-bottom: 20px;">You're invited to sign-up as a ${inviteMember?.type}.</h2>
+            <a href=${
+              'https://admin.showaapp.com?extraData=' +
+              extraData?._id?.toString()
+            } target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
+                Click here to sign-up
+            </a>
+            <div style="margin-top: 20px;">
+                <h3 style="color: #333; margin: 5px 0;">Best regards</h3>
+                <h4 style="color: #333; margin: 5px 0;">Admin: Showa</h4>
+            </div>
+        </div>`;
+
+  const result = await sendMail({
+    receiverEmail: inviteMember[inviteMember?.type]?.email,
+    subjectLine: 'You are invited to join us',
+    htmlBody,
+  });
+  return result;
+};
 
 const reviewFeedback = async (feedback: string) => {
   const updatedFeedback = await ExtraData.findOneAndUpdate(
@@ -91,6 +129,7 @@ const uploadPhoto = async ({
 export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
+  inviteMember,
   reviewFeedback,
   uploadPhoto,
 };

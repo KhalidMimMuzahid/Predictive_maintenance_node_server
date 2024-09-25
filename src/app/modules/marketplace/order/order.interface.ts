@@ -1,15 +1,35 @@
 import { Types } from 'mongoose';
 
 export type TPaymentType = 'cash-on-delivery' | 'showa-balance';
-
+export type TActionType = 'cancel' | 'accept';
+export type TActionTypeForChangesStatus = 'inprogress' | 'shipped';
 export type TOrder = {
   //
   orderId: string;
   user: Types.ObjectId; //
   product: Types.ObjectId;
   shop: Types.ObjectId; // work on that
-  status: 'pending' | 'in-progress' | 'delivered'; // shipped  and canceled
-
+  status: 'pending' | 'inprogress' | 'shipped' | 'delivered' | 'canceled'; // shipped  and canceled
+  pending?: {
+    isActivated: boolean;
+    customDate?: Date; // if custom is present then its a real date otherwise updatedAt date will be the real date
+  };
+  inprogress?: {
+    isActivated: boolean;
+    customDate?: Date;
+  };
+  shipped?: {
+    isActivated: boolean;
+    customDate?: Date;
+  };
+  delivered?: {
+    isActivated: boolean;
+    customDate?: Date;
+  };
+  canceled?: {
+    isActivated: boolean;
+    customDate?: Date;
+  };
   paymentType: TPaymentType;
   cost: {
     price: number;

@@ -353,7 +353,7 @@ const getAllOnDemandUnassignedToCompanyResGroups: RequestHandler = catchAsync(
     // we are checking the permission of this api
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderAdmin'],
+      accessUsers: ['serviceProviderAdmin', 'serviceProviderBranchManager'],
     });
 
     const results =

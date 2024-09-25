@@ -187,64 +187,218 @@ const getShopDashboard = async ({ shopId }: { shopId: string }) => {
   };
 };
 
+// const getProductSalesForGraph = async ({ shopId }: { shopId: string }) => {
+//   const shopObjectId = new mongoose.Types.ObjectId(shopId);
+
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
+
+//   const todayEnd = new Date(today);
+//   todayEnd.setHours(23, 59, 59, 999);
+
+//   const sevenDaysAgoStart = new Date(today);
+//   sevenDaysAgoStart.setDate(today.getDate() - 7);
+
+//   const productSalesLastSevenDays = await Order.aggregate([
+//     {
+//       $match: {
+//         shop: shopObjectId,
+//         paidStatus: { isPaid: true },
+//         createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
+//       },
+//     },
+//     {
+//       $group: {
+//         _id: {
+//           day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+//         },
+//         totalSales: { $sum: '$cost.totalAmount' },
+//       },
+//     },
+//     {
+//       $sort: {
+//         '_id.day': 1,
+//       },
+//     },
+//     {
+//       $project: {
+//         //day: { $dateToString: { format: '%A', date: '$_id.day' } }, // %A gives the full name of the day
+//         day: '$_id.day',
+//         totalSales: 1,
+//         _id: 0,
+//       },
+//     },
+//   ]);
+
+//   const salesByDay = Array.from({ length: 7 }, (_, index) => {
+//     const date = new Date(sevenDaysAgoStart);
+//     date.setDate(date.getDate() + index);
+//     const dayString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+//     const daySales = productSalesLastSevenDays.find(
+//       (sale) => sale.day === dayString,
+//     );
+//     return {
+//       day: dayString,
+//       totalSales: daySales ? daySales.totalSales : 0,
+//     };
+//   });
+
+//   return {
+//     productSalesLastSevenDays: salesByDay,
+//   };
+// };
+
+// const getProductSalesForGraph = async ({ shopId }: { shopId: string }) => {
+//   try {
+//     const shopObjectId = new mongoose.Types.ObjectId(shopId);
+
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+//     console.log({ today });
+//     const todayEnd = new Date();
+//     todayEnd.setHours(23, 59, 59, 999);
+//     console.log({ todayEnd });
+//     const sevenDaysAgoStart = new Date();
+//     sevenDaysAgoStart.setDate(today.getDate() - 6);
+//     console.log({ sevenDaysAgoStart });
+//     sevenDaysAgoStart.setHours(0, 0, 0, 1);
+//     console.log({ sevenDaysAgoStart });
+
+//     const productSalesLastSevenDays = await Order.aggregate([
+//       {
+//         $match: {
+//           shop: shopObjectId,
+//           paidStatus: { isPaid: true },
+//           createdAt: { $gte: sevenDaysAgoStart, $lte: todayEnd },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: {
+//             day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, // Use date string format for grouping
+//           },
+//           totalSales: { $sum: '$cost.totalAmount' },
+//         },
+//       },
+//       {
+//         $sort: {
+//           '_id.day': 1,
+//         },
+//       },
+//       {
+//         $project: {
+//           day: '$_id.day', // Use the date string for further processing
+//           totalSales: 1,
+//           _id: 0,
+//         },
+//       },
+//     ]);
+
+//     const salesByDay = Array.from({ length: 7 }, (_, index) => {
+//       const date = new Date(sevenDaysAgoStart);
+//       date.setDate(date.getDate() + index);
+
+//       // Convert the date to the full day name
+//       const dayString = date.toLocaleDateString('en-US', { weekday: 'long' }); // Get day name
+//       const daySales = productSalesLastSevenDays.find(
+//         (sale) => sale.day === date.toISOString().split('T')[0],
+//       );
+
+//       return {
+//         day: dayString, // Use day name instead of date
+//         totalSales: daySales ? daySales.totalSales : 0,
+//       };
+//     });
+
+//     return {
+//       productSalesLastSevenDays: salesByDay,
+//     };
+//   } catch (error) {
+//     console.error('Error in getProductSalesForGraph:', error);
+//     throw new Error('Failed to retrieve product sales');
+//   }
+// };
+
 const getProductSalesForGraph = async ({ shopId }: { shopId: string }) => {
-  const shopObjectId = new mongoose.Types.ObjectId(shopId);
+  try {
+    const shopObjectId = new mongoose.Types.ObjectId(shopId);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
 
-  const todayEnd = new Date(today);
-  todayEnd.setHours(23, 59, 59, 999);
+    const todayEnd = new Date(today);
+    todayEnd.setUTCHours(23, 59, 59, 999);
 
-  const sevenDaysAgoStart = new Date(today);
-  sevenDaysAgoStart.setDate(today.getDate() - 7);
+    const sevenDaysAgoStart = new Date(today);
+    sevenDaysAgoStart.setUTCDate(today.getUTCDate() - 6);
+    console.log('Date Range:', {
+      sevenDaysAgoStart,
+      todayEnd,
+    });
 
-  const productSalesLastSevenDays = await Order.aggregate([
-    {
-      $match: {
-        shop: shopObjectId,
-        paidStatus: { isPaid: true },
-        createdAt: { $gte: sevenDaysAgoStart, $lt: todayEnd },
-      },
-    },
-    {
-      $group: {
-        _id: {
-          day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+    const productSalesLastSevenDays = await Order.aggregate([
+      {
+        $match: {
+          shop: shopObjectId,
+          paidStatus: { isPaid: true },
+          createdAt: { $gte: sevenDaysAgoStart, $lte: todayEnd },
         },
-        totalSales: { $sum: '$cost.totalAmount' },
       },
-    },
-    {
-      $sort: {
-        '_id.day': 1,
+      {
+        $group: {
+          _id: {
+            day: {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$createdAt',
+                timezone: 'UTC',
+              },
+            },
+          },
+          totalSales: { $sum: '$cost.totalAmount' },
+        },
       },
-    },
-    {
-      $project: {
-        day: '$_id.day',
-        totalSales: 1,
-        _id: 0,
+      {
+        $sort: { '_id.day': 1 },
       },
-    },
-  ]);
+      {
+        $project: {
+          day: '$_id.day',
+          totalSales: 1,
+          _id: 0,
+        },
+      },
+    ]);
 
-  const salesByDay = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(sevenDaysAgoStart);
-    date.setDate(date.getDate() + index);
-    const dayString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-    const daySales = productSalesLastSevenDays.find(
-      (sale) => sale.day === dayString,
-    );
+    console.log(productSalesLastSevenDays);
+
+    const salesByDay = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(today);
+      date.setUTCDate(date.getUTCDate() - index);
+
+      const formattedDate = date.toISOString().split('T')[0]; // Get date in YYYY-MM-DD format
+      const dayString = date.toLocaleDateString('en-US', { weekday: 'long' }); // Get day name
+      const daySales = productSalesLastSevenDays.find(
+        (sale) => sale.day === formattedDate,
+      );
+
+      return {
+        day: dayString,
+        totalSales: daySales ? daySales.totalSales : 0,
+      };
+    });
+
     return {
-      day: dayString,
-      totalSales: daySales ? daySales.totalSales : 0,
+      success: true,
+      message: 'Get product sales for graph',
+      data: {
+        productSalesLastSevenDays: salesByDay.reverse(),
+      },
     };
-  });
-
-  return {
-    productSalesLastSevenDays: salesByDay,
-  };
+  } catch (error) {
+    console.error('Error in getProductSalesForGraph:', error);
+    throw new Error('Failed to retrieve product sales');
+  }
 };
 
 export const shopServices = {

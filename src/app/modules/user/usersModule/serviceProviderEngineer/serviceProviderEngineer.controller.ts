@@ -1,11 +1,11 @@
 import { RequestHandler } from 'express';
-import catchAsync from '../../../../utils/catchAsync';
-import sendResponse from '../../../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../../../errors/AppError';
-import { serviceProviderEngineerServices } from './serviceProviderEngineer.service';
 import { TAuth } from '../../../../interface/error';
+import catchAsync from '../../../../utils/catchAsync';
 import { checkUserAccessApi } from '../../../../utils/checkUserAccessApi';
+import sendResponse from '../../../../utils/sendResponse';
+import { serviceProviderEngineerServices } from './serviceProviderEngineer.service';
 const createServiceProviderEngineer: RequestHandler = catchAsync(
   async (req, res) => {
     const { rootUser, serviceProviderEngineer } = req.body;
@@ -63,7 +63,43 @@ const approveAndAssignEngineerInToBranch: RequestHandler = catchAsync(
     });
   },
 );
+
+const editServiceProviderEngineer: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req.headers.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin'],
+    });
+
+    const serviceProviderEngineerId = req.query
+      .serviceProviderEngineerId as string;
+    const updateData = req.body;
+
+    if (!serviceProviderEngineerId) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Engineer ID is required');
+    }
+
+    const result =
+      await serviceProviderEngineerServices.editServiceProviderEngineer(
+        auth,
+        serviceProviderEngineerId,
+        updateData,
+      );
+
+    // Send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Engineer updated successfully',
+      data: result,
+    });
+  },
+);
+
 export const serviceProviderEngineerControllers = {
   createServiceProviderEngineer,
   approveAndAssignEngineerInToBranch,
+  editServiceProviderEngineer,
 };
