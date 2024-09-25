@@ -1,10 +1,12 @@
 import { RequestHandler } from 'express';
+import httpStatus from 'http-status';
+import { Types } from 'mongoose';
 import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
-import httpStatus from 'http-status';
+import { TCard } from '../common/common.interface';
 import { walletServices } from './wallet.service';
-import { Types } from 'mongoose';
 
 const addTransfer: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -74,7 +76,7 @@ const payWithCard: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'payed',
+    message: 'paid',
     data: results,
   });
 });
@@ -139,6 +141,48 @@ const getRecentMBTransfer: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const addCardToMyWallet: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req.headers.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const walletId: string = req?.query?.walletId as string;
+  const card: TCard = req.body;
+
+  const results = await walletServices.addCardToMyWallet({
+    userId: auth._id,
+    walletId: new Types.ObjectId(walletId),
+    card,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Card added to wallet successfully',
+    data: results,
+  });
+});
+
+const deleteCardFromMyWallet: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req.headers.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const walletId: string = req?.query?.walletId as string;
+  const cardId: string = req?.query?.cardId as string;
+
+  const results = await walletServices.deleteCardFromMyWallet({
+    userId: auth._id,
+    walletId: new Types.ObjectId(walletId),
+    cardId: new Types.ObjectId(cardId),
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Card deleted from wallet successfully',
+    data: results,
+  });
+});
+
 export const walletControllers = {
   addTransfer,
   fetchCustomerCards,
@@ -149,4 +193,6 @@ export const walletControllers = {
   mbTransfer,
   getMyMBTransaction,
   getRecentMBTransfer,
+  addCardToMyWallet,
+  deleteCardFromMyWallet,
 };

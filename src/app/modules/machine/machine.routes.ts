@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { machineController } from './machine.controller';
 import validateRequest from '../../middlewares/validateRequest';
+import { machineController } from './machine.controller';
 import { machineValidation } from './machine.validation';
 import { updateAddressValidationSchema } from '../common/common.validation';
 
@@ -79,12 +79,13 @@ router.get(
   machineController.machinePerformanceBrandWise,
 );
 
-
-
 router.get(
   '/machine-performance-model-wise',
   machineController.machinePerformanceModelWise,
 );
+
+router.patch('/edit-machine', machineController.editMachine);
+
 // router.put('/status', machineController.changeStatus);
 // router.put('/sensor', machineController.addSensor);
 export const machineRoutes = router;

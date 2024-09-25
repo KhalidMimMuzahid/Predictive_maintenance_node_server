@@ -1,18 +1,18 @@
 import httpStatus from 'http-status';
+import mongoose, { Types } from 'mongoose';
 import AppError from '../../../../errors/AppError';
+import { TAuth } from '../../../../interface/error';
+import { jwtFunc } from '../../../../utils/jwtFunction';
+import { ServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.model';
+import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceProviderCompany.model';
+import { Wallet } from '../../../wallet/wallet.model';
 import { TUser } from '../../user.interface';
 import { User } from '../../user.model';
 import {
   TCurrentStateForBranchManager,
   TServiceProviderBranchManager,
 } from './branchManager.interface';
-import mongoose, { Types } from 'mongoose';
-import { ServiceProviderCompany } from '../../../serviceProviderCompany/serviceProviderCompany.model';
-import { Wallet } from '../../../wallet/wallet.model';
 import { ServiceProviderBranchManager } from './branchManager.model';
-import { jwtFunc } from '../../../../utils/jwtFunction';
-import { TAuth } from '../../../../interface/error';
-import { ServiceProviderBranch } from '../../../serviceProviderBranch/serviceProviderBranch.model';
 
 const createServiceProviderBranchManagerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
@@ -285,7 +285,281 @@ const approveServiceProviderBranchManagerIntoDB = async (
   return updatedServiceProviderBranchManagerData;
 };
 
+// const editServiceProviderBranchManager = async (
+//   auth: TAuth,
+//   serviceProviderBranchManagerId: string,
+//   updateData: Partial<TServiceProviderBranchManager>,
+//   serviceProviderBranch?: string,
+// ) => {
+//   // Step 1: Validate serviceProviderBranchManagerId
+//   let serviceProviderBranchManager_id: Types.ObjectId;
+//   try {
+//     serviceProviderBranchManager_id = new Types.ObjectId(
+//       serviceProviderBranchManagerId,
+//     );
+//     console.log(serviceProviderBranchManagerId);
+//   } catch (error) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       '_id of serviceProviderBranchManager you provided is invalid',
+//     );
+//   }
+
+//   // Step 2: Find the ServiceProviderBranchManager by ID
+//   const serviceProviderBranchManagerData =
+//     await ServiceProviderBranchManager.findById(
+//       serviceProviderBranchManager_id,
+//     );
+
+//   if (!serviceProviderBranchManagerData) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'No Branch Manager found with the provided ID',
+//     );
+//   }
+
+//   // Step 3: Check if the user is authorized to edit this branch manager
+//   const companyInfo = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: auth._id,
+//   });
+
+//   if (!companyInfo) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'You are not authorized to edit any company data',
+//     );
+//   }
+
+//   // Check if the branch manager belongs to the same company as the admin
+//   if (
+//     serviceProviderBranchManagerData?.currentState?.serviceProviderCompany?.toString() !==
+//     companyInfo?._id?.toString()
+//   ) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'You are not authorized to edit this branch manager’s data',
+//     );
+//   }
+
+//   // Step 4: Handle branch reassignment (if provided)
+//   if (serviceProviderBranch) {
+//     let serviceProviderBranch_id: Types.ObjectId;
+//     try {
+//       serviceProviderBranch_id = new Types.ObjectId(serviceProviderBranch);
+//     } catch (error) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         '_id of serviceProviderBranch you provided is invalid',
+//       );
+//     }
+
+//     const serviceProviderBranchInfo = await ServiceProviderBranch.findById(
+//       serviceProviderBranch_id,
+//     );
+
+//     if (
+//       serviceProviderBranchInfo?.serviceProviderCompany?.toString() !==
+//       serviceProviderBranchManagerData?.currentState?.serviceProviderCompany?.toString()
+//     ) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'This branch does not belong to the same company',
+//       );
+//     }
+
+//     const isBranchManagerAssigned = await ServiceProviderBranchManager.findOne({
+//       'currentState.serviceProviderBranch': serviceProviderBranch_id,
+//     });
+
+//     if (isBranchManagerAssigned) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'This branch already has a manager assigned',
+//       );
+//     }
+
+//     // Update the serviceProviderBranchManager's branch
+//     serviceProviderBranchManagerData.currentState.serviceProviderBranch =
+//       serviceProviderBranch_id;
+//   }
+
+//   // Step 5: Update the branch manager's data
+//   Object.assign(serviceProviderBranchManagerData, updateData);
+
+//   // Step 6: Save the updated data
+//   const updatedServiceProviderBranchManager =
+//     await serviceProviderBranchManagerData.save();
+
+//   return updatedServiceProviderBranchManager;
+// };
+
+// const editServiceProviderBranchManager = async (
+//   auth: TAuth,
+//   serviceProviderBranchManagerId: string,
+//   updateData: Partial<TServiceProviderBranchManager>,
+//   serviceProviderBranch?: string,
+// ) => {
+//   // Step 1: Validate serviceProviderBranchManagerId
+//   let serviceProviderBranchManager_id: Types.ObjectId;
+//   try {
+//     serviceProviderBranchManager_id = new Types.ObjectId(
+//       serviceProviderBranchManagerId,
+//     );
+//   } catch (error) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       '_id of serviceProviderBranchManager you provided is invalid',
+//     );
+//   }
+
+//   // Step 2: Find the ServiceProviderBranchManager by ID
+//   const serviceProviderBranchManagerData =
+//     await ServiceProviderBranchManager.findById(
+//       serviceProviderBranchManager_id,
+//     );
+
+//   if (!serviceProviderBranchManagerData) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'No Branch Manager found with the provided ID',
+//     );
+//   }
+
+//   // Step 3: Check if the user is authorized to edit this branch manager
+//   const companyInfo = await ServiceProviderCompany.findOne({
+//     serviceProviderAdmin: auth._id,
+//   });
+
+//   if (!companyInfo) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'You are not authorized to edit any company data',
+//     );
+//   }
+
+//   // Check if the branch manager belongs to the same company as the admin
+//   if (
+//     serviceProviderBranchManagerData.currentState.serviceProviderCompany.toString() !==
+//     companyInfo._id.toString()
+//   ) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'You are not authorized to edit this branch manager’s data',
+//     );
+//   }
+
+//   // Step 4: Handle branch reassignment (if provided)
+//   if (serviceProviderBranch) {
+//     let serviceProviderBranch_id: Types.ObjectId;
+//     try {
+//       serviceProviderBranch_id = new Types.ObjectId(serviceProviderBranch);
+//     } catch (error) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         '_id of serviceProviderBranch you provided is invalid',
+//       );
+//     }
+
+//     const serviceProviderBranchInfo = await ServiceProviderBranch.findById(
+//       serviceProviderBranch_id,
+//     );
+
+//     if (
+//       serviceProviderBranchInfo.serviceProviderCompany.toString() !==
+//       serviceProviderBranchManagerData.currentState.serviceProviderCompany.toString()
+//     ) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'This branch does not belong to the same company',
+//       );
+//     }
+
+//     const isBranchManagerAssigned = await ServiceProviderBranchManager.findOne({
+//       'currentState.serviceProviderBranch': serviceProviderBranch_id,
+//     });
+
+//     if (isBranchManagerAssigned) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'This branch already has a manager assigned',
+//       );
+//     }
+
+//     // Update the serviceProviderBranchManager's branch
+//     serviceProviderBranchManagerData.currentState.serviceProviderBranch =
+//       serviceProviderBranch_id;
+//   }
+
+//   // Step 5: Update the branch manager's data
+//   Object.assign(serviceProviderBranchManagerData, updateData);
+
+//   // Step 6: Save the updated data
+//   const updatedServiceProviderBranchManager =
+//     await serviceProviderBranchManagerData.save();
+
+//   return updatedServiceProviderBranchManager;
+// };
+
+const editServiceProviderBranchManager = async (
+  auth: TAuth,
+  serviceProviderBranchManagerId: string,
+  updateData: Partial<TServiceProviderBranchManager>,
+) => {
+  let serviceProviderBranchManager_id: Types.ObjectId;
+  try {
+    serviceProviderBranchManager_id = new Types.ObjectId(
+      serviceProviderBranchManagerId,
+    );
+  } catch (error) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '_id of serviceProviderBranchManager you provided is invalid',
+    );
+  }
+
+  const serviceProviderBranchManagerData =
+    await ServiceProviderBranchManager.findById(
+      serviceProviderBranchManager_id,
+    );
+
+  if (!serviceProviderBranchManagerData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'No Branch Manager found with the provided ID',
+    );
+  }
+
+  const companyInfo = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: auth._id,
+  });
+
+  if (!companyInfo) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not authorized to edit any company data',
+    );
+  }
+
+  if (
+    serviceProviderBranchManagerData?.currentState?.serviceProviderCompany?.toString() !==
+    companyInfo?._id?.toString()
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not authorized to edit this branch manager’s data',
+    );
+  }
+
+  Object.assign(serviceProviderBranchManagerData, updateData);
+
+  const updatedServiceProviderBranchManager =
+    await serviceProviderBranchManagerData.save();
+
+  return updatedServiceProviderBranchManager;
+};
+
 export const serviceProviderBranchManagerServices = {
   createServiceProviderBranchManagerIntoDB,
   approveServiceProviderBranchManagerIntoDB,
+  editServiceProviderBranchManager,
 };

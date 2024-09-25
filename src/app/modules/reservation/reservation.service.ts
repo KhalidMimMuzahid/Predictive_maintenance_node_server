@@ -1,4 +1,5 @@
 import S3 from 'aws-sdk/clients/s3';
+// import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../errors/AppError';
@@ -879,6 +880,70 @@ const getCompletedReservationRequestForServiceProviderCompany = async ({
   };
 };
 
+const getChartAnalyzing = async (
+  adminUserId: mongoose.Types.ObjectId,
+  targetYear?: number,
+) => {
+  const serviceProviderCompany = await ServiceProviderCompany.findOne({
+    serviceProviderAdmin: adminUserId,
+  });
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
+  let months;
+
+  if (!targetYear || targetYear === currentYear) {
+    months = Array.from({ length: 12 }, (_, i) => {
+      const monthOffset = currentMonth - 1 - i;
+      const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+      const month = ((monthOffset + 12) % 12) + 1;
+
+      const startDateOfMonth = new Date(Date.UTC(year, month - 1, 1));
+      const endDateOfMonth = new Date(
+        Date.UTC(year, month, 0, 23, 59, 59, 999),
+      );
+
+      const monthName = startDateOfMonth.toLocaleString('en-US', {
+        month: 'short',
+      });
+      const formattedMonth = `${monthName} ${year}`;
+
+      return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+    }).reverse();
+  } else {
+    months = Array.from({ length: 12 }, (_, i) => {
+      const startDateOfMonth = new Date(Date.UTC(targetYear, i, 1));
+      const endDateOfMonth = new Date(
+        Date.UTC(targetYear, i + 1, 0, 23, 59, 59, 999),
+      );
+
+      const monthName = startDateOfMonth.toLocaleString('en-US', {
+        month: 'short',
+      });
+      const formattedMonth = `${monthName} ${targetYear}`;
+
+      return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+    });
+  }
+
+  const requests = await Promise.all(
+    months.map(async (month) => {
+      const count = await ReservationRequest.countDocuments({
+        serviceProviderCompany,
+        createdAt: {
+          $gte: month.startDateOfMonth,
+          $lte: month.endDateOfMonth,
+        },
+      });
+
+      return { month: month.month, count };
+    }),
+  );
+
+  return requests;
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   setReservationAsInvalid,
@@ -897,4 +962,5 @@ export const reservationServices = {
   getReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
   getCompletedReservationRequestForServiceProviderCompany,
+  getChartAnalyzing,
 };

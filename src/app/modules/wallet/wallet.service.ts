@@ -1,14 +1,15 @@
 import { Types } from 'mongoose';
 
-import { User } from '../user/user.model';
-import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-import { Wallet } from './wallet.model';
-import { Transaction } from '../transaction/transaction.model';
-import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
-import { TWallet } from './wallet.interface';
+import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
+import AppError from '../../errors/AppError';
+import { TCard } from '../common/common.interface';
+import { Transaction } from '../transaction/transaction.model';
+import { User } from '../user/user.model';
+import { TWallet } from './wallet.interface';
+import { Wallet } from './wallet.model';
 
 const stripe = new Stripe(config.stripeSecretKey);
 
@@ -279,6 +280,63 @@ const getRecentMBTransfer = async (userId: Types.ObjectId) => {
   return transactions;
 };
 
+const addCardToMyWallet = async ({
+  userId,
+  walletId,
+  card,
+}: {
+  userId: Types.ObjectId;
+  walletId: Types.ObjectId;
+  card: TCard;
+}) => {
+  const wallet = await Wallet.findById(walletId);
+
+  if (!wallet) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Wallet not found');
+  }
+
+  if (wallet.user._id.toString() !== userId.toString()) {
+    throw new AppError(httpStatus.FORBIDDEN, 'Cannot add card to this wallet');
+  }
+
+  wallet.cards.push({ card, isDeleted: false });
+
+  await wallet.save();
+
+  return wallet;
+};
+
+const deleteCardFromMyWallet = async ({
+  userId,
+  walletId,
+  cardId,
+}: {
+  userId: Types.ObjectId;
+  walletId: Types.ObjectId;
+  cardId: Types.ObjectId;
+}) => {
+  const updatedWallet = await Wallet.findOneAndUpdate(
+    {
+      _id: walletId,
+      user: userId,
+      'cards._id': cardId,
+    },
+    {
+      $pull: { cards: { _id: cardId } },
+    },
+    { new: true },
+  );
+
+  if (!updatedWallet) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Card not found in wallet or you do not have permission to modify this wallet',
+    );
+  }
+
+  return updatedWallet;
+};
+
 export const walletServices = {
   addTransfer,
   fetchCustomerCards,
@@ -289,4 +347,6 @@ export const walletServices = {
   mbTransfer,
   getMyMBTransaction,
   getRecentMBTransfer,
+  addCardToMyWallet,
+  deleteCardFromMyWallet,
 };

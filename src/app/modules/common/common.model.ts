@@ -55,10 +55,7 @@ export const PaymentSchema: Schema = new Schema<TPayment>({
     state: { type: String, required: true },
     zip: { type: String, required: true },
   },
-  // more fields can be defined here
 });
-
-
 
 export const CompanySchema: Schema = new Schema<TCompany>({
   category: {
@@ -74,4 +71,3 @@ export const IsDeletedSchema = new Schema<TIsDeleted>({
   value: { type: Boolean, default: false, required: true },
   deletedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 });
-

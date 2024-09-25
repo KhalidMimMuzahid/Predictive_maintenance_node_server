@@ -522,6 +522,52 @@ const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
     });
   });
 
+// const getChartAnalyzing: RequestHandler = catchAsync(async (req, res) => {
+//   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//   checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
+//   const adminUserId = auth?._id;
+
+//   // Extract year from query params, defaulting to the current year if not provided
+//   const year = req.query.year
+//     ? parseInt(req.query.year as string)
+//     : new Date().getFullYear();
+
+//   const requests = await reservationServices.getChartAnalyzing(
+//     adminUserId,
+//     year,
+//   );
+
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'Chart data retrieved successfully',
+//     data: requests,
+//   });
+// });
+
+const getChartAnalyzing: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
+  const adminUserId = auth?._id;
+  const { year } = req.query;
+  const currentYear = new Date().getFullYear();
+
+  const targetYear = parseInt(year as string, 10) || currentYear; // Use current year if no year is provided
+  const requests = await reservationServices.getChartAnalyzing(
+    adminUserId,
+    targetYear,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Chart data retrieved successfully',
+    data: requests,
+  });
+});
+
 export const reservationController = {
   createReservationRequest,
   setReservationAsInvalid,
@@ -540,4 +586,5 @@ export const reservationController = {
   getReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
   getCompletedReservationRequestForServiceProviderCompany,
+  getChartAnalyzing,
 };

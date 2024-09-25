@@ -35,7 +35,6 @@ export type TPayment = {
 
 // id registration
 
-
 export type TCompany = {
   category: 'home' | 'shop' | 'company' | 'others';
   name?: string;
@@ -46,3 +45,5 @@ export type TIsDeleted = {
   value: boolean;
   deletedBy?: Types.ObjectId; // objectId of user; who delete this machine
 };
+
+export type TSearchType = 'posts' | 'people' | 'maintenance';

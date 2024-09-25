@@ -65,4 +65,9 @@ router.get(
   reservationController.getCompletedReservationRequestForServiceProviderCompany,
 );
 
+router.get(
+  '/get-chart-for-reservation-by-service-provider-company',
+  reservationController.getChartAnalyzing,
+);
+
 export const reservationRoutes = router;

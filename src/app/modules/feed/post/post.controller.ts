@@ -5,6 +5,7 @@ import { TAuth } from '../../../interface/error';
 import catchAsync from '../../../utils/catchAsync';
 import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
 import sendResponse from '../../../utils/sendResponse';
+import { searchTypeArray } from '../../common/common.const';
 import { TPost, TReplay } from './post.interface';
 import { postServices } from './post.service';
 
@@ -436,7 +437,6 @@ const getPostByPostId: RequestHandler = catchAsync(async (req, res) => {
 const deletePost: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  // Checking the permission of this API
   checkUserAccessApi({
     auth,
     accessUsers: 'all',
@@ -473,7 +473,10 @@ const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'User ID is required');
   }
 
-  const postsData = await postServices.getPostsByUser(userId);
+  const postsData = await postServices.getPostsByUser({
+    userId,
+    isMyPost: auth._id?.toString() === userId,
+  });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -483,6 +486,37 @@ const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getSearch: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const { searchQuery, action } = req.query as {
+    searchQuery: string;
+
+    action: 'searchPosts' | 'searchPeople' | 'maintenance';
+  };
+
+  if (!searchTypeArray.some((each) => each === action)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `action must be any of ${searchTypeArray.reduce((total, current) => {
+        total = total + `${current}, `;
+        return total;
+      }, '')}`,
+    );
+  }
+
+  const combinedData = await postServices.getSearch({
+    searchQuery: searchQuery as string,
+    action: action as 'posts' | 'people' | 'maintenance',
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `${action} retrieved successfully`,
+    data: combinedData,
+  });
+});
 export const postController = {
   createPost,
   sharePost,
@@ -500,4 +534,5 @@ export const postController = {
   getPostByPostId,
   deletePost,
   getPostsByUser,
+  getSearch,
 };

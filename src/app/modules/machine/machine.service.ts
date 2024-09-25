@@ -1,23 +1,23 @@
 import { TIssue, TMachine, TMachineHealthStatus } from './machine.interface';
 import { Machine } from './machine.model';
 
-import { checkMachineData } from './machine.utils';
-import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
-import mongoose, { Types } from 'mongoose';
-import { SensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.model';
-import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
-import { SensorModule } from '../sensorModule/sensorModule.model';
-import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
-import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
+import mongoose, { Types } from 'mongoose';
+import AppError from '../../errors/AppError';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
+import { SensorModule } from '../sensorModule/sensorModule.model';
+import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
+import { SensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.model';
+import { validateSectionNamesData } from '../sensorModuleAttached/sensorModuleAttached.utils';
+import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
+import { checkMachineData } from './machine.utils';
 
-import { ReservationRequest } from '../reservation/reservation.model';
-import { AI } from '../ai/ai.model';
-import { timeDifference } from '../../utils/timeDifference';
 import { Request } from 'express';
 import { TAddress } from '../common/common.interface';
+import { timeDifference } from '../../utils/timeDifference';
+import { AI } from '../ai/ai.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -1300,6 +1300,37 @@ const machinePerformanceModelWise = async () => {
   return machineModelNamePerformanceArray;
 };
 
+const editMachine = async (
+  machineId: Types.ObjectId,
+  updatedData: Partial<TMachine>,
+) => {
+  const editableFields = [
+    'name',
+    'brand',
+    'model',
+    'washingMachine',
+    'usedFor',
+  ];
+
+  const updates = {};
+
+  editableFields.forEach((field) => {
+    if (updatedData[field] !== undefined) {
+      updates[field] = updatedData[field];
+    }
+  });
+
+  const result = await Machine.findByIdAndUpdate(machineId, updates, {
+    new: true,
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Machine not found');
+  }
+
+  return result;
+};
+
 export const machineServices = {
   addNonConnectedMachineInToDB,
   addSensorConnectedMachineInToDB,
@@ -1321,6 +1352,7 @@ export const machineServices = {
   machinePerformanceModelWise,
   // changeStatusService,
   // addSensorService,
+  editMachine,
 };
 
 // {
@@ -1328,10 +1360,3 @@ export const machineServices = {
 //   }
 // 66c723fa286f19782bb2ae97
 // 66b5febeb66123d7db67bba1
-
-
-
-
-
-
-

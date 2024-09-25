@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
-import { TWallet } from './wallet.interface';
 import { CardSchema } from '../common/common.model';
+import { TWallet } from './wallet.interface';
 
 export const WalletSchema = new Schema<TWallet>(
   {

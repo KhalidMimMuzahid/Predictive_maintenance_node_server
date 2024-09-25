@@ -1,12 +1,12 @@
 import { RequestHandler } from 'express';
 import httpStatus from 'http-status';
-import sendResponse from '../../utils/sendResponse';
-import catchAsync from '../../utils/catchAsync';
-import { TAuth } from '../../interface/error';
-import { TSubscription } from './subscription.interface';
-import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
-import { subscriptionServices } from './subscription.service';
 import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
+import catchAsync from '../../utils/catchAsync';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import sendResponse from '../../utils/sendResponse';
+import { TSubscription } from './subscription.interface';
+import { subscriptionServices } from './subscription.service';
 
 const createSubscription: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -55,6 +55,24 @@ const createSubscription: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllOfferedSubscriptionsForShowaUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+
+    const subscriptions =
+      await subscriptionServices.getAllOfferedSubscriptionsForShowaUser();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'All offered subscriptions retrieved successfully',
+      data: subscriptions,
+    });
+  },
+);
+
 export const subscriptionControllers = {
   createSubscription,
+  getAllOfferedSubscriptionsForShowaUser,
 };
