@@ -60,6 +60,7 @@ const createReservationRequest: RequestHandler = catchAsync(
       machine_id: machine,
       problem,
       schedule,
+      req,
     });
     // send response
     sendResponse(res, {

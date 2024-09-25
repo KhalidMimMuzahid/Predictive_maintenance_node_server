@@ -24,17 +24,22 @@ import {
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
+import { getLatLngBounds } from '../../utils/getLatLngBounds';
+import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
+import { Request } from 'express';
 
 const createReservationRequestIntoDB = async ({
   user,
   machine_id,
   problem,
   schedule,
+  req,
 }: {
   user: Types.ObjectId;
   machine_id: string;
   problem: TProblem;
   schedule: TSchedule;
+  req: Request;
 }) => {
   // let machine: Types.ObjectId;
   // try {
@@ -211,11 +216,41 @@ const createReservationRequestIntoDB = async ({
       // TODO:
       const nearestLocation =
         await predefinedValueServices.getReservationRequestNearestLocation();
-      console.log(nearestLocation);
 
-      throw new AppError(httpStatus.BAD_REQUEST, 'custom error for testing');
+      const radiusInKm = nearestLocation?.selectedRadius || 500; // if not set, then it will be applied
+
+      const location = machineData?.usedFor?.address?.location;
+
+      if (!location) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'this machine must have location',
+        );
+      }
+      // console.log(location);
+      // console.log({ ...location, radiusInKm });
+      const { latitude, longitude } = getLatLngBounds({
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+        radiusInKm,
+      });
+      // console.log({ latitude, longitude });
+      const serviceProviderBranches = await ServiceProviderBranch.find({
+        'address.location.latitude': { $lt: latitude?.max, $gt: latitude?.min },
+        'address.location.longitude': {
+          $lt: longitude.max,
+          $gt: longitude.min,
+        },
+      });
+
       await session.commitTransaction();
       await session.endSession();
+      serviceProviderBranches?.forEach((branch) => {
+        req.io.emit(branch?._id?.toString(), {
+          data: reservationGroup,
+          type: 'on-demand-raised',
+        });
+      });
       return updatedReservationRequest;
     } catch (error) {
       await session.abortTransaction();
