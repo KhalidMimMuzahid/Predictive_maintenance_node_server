@@ -16,6 +16,7 @@ router.post(
   validateRequest(extraDataValidation.inviteMemberValidationSchema),
   extraDataController.inviteMember,
 );
+router.get('/invited-member-by-id', extraDataController.invitedMemberById);
 router.patch('/review-feedback', extraDataController.reviewFeedback);
 
 router.post('/upload-photo', extraDataController.uploadPhoto);

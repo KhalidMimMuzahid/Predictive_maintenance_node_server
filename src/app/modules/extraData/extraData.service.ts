@@ -90,6 +90,15 @@ const inviteMember = async ({
   return result;
 };
 
+const invitedMemberById = async (invitedMember: string) => {
+  const extraData = await ExtraData.findOne({
+    _id: new mongoose.Types.ObjectId(invitedMember),
+    type: 'inviteMember',
+  });
+
+  return extraData?.inviteMember;
+};
+
 const reviewFeedback = async (feedback: string) => {
   const updatedFeedback = await ExtraData.findOneAndUpdate(
     {
@@ -130,6 +139,7 @@ export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
   inviteMember,
+  invitedMemberById,
   reviewFeedback,
   uploadPhoto,
 };

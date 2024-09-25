@@ -13,9 +13,16 @@ export type TServiceProviderBranchManager = {
 
   name: { firstName: string; lastName: string };
   photoUrl?: string;
+  nid?: {
+    frontPhotoUrl: string;
+    backPhotoUrl: string;
+  };
   currentState: TCurrentStateForBranchManager;
   isDeleted: TIsDeleted;
-
+  // nid: {
+  //   frontPhotoUrl: string;
+  //   backPhotoUrl: string;
+  // };
   // history: {
   //   designation: string;
   //   company: string; // objectId of the ServiceProviderCompany

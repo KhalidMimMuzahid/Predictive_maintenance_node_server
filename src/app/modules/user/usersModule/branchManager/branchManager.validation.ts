@@ -6,6 +6,13 @@ const serviceProviderBranchManagerCreateValidationSchema = z.object({
     firstName: z.string(),
     lastName: z.string(),
   }),
+  photoUrl: z.string().optional(),
+  nid: z
+    .object({
+      frontPhotoUrl: z.string(),
+      backPhotoUrl: z.string(),
+    })
+    .optional(),
 });
 
 const userCreateValidationSchema = z.object({
