@@ -111,8 +111,19 @@ const getServiceProviderBranchById = async (serviceProviderBranch: string) => {
   return result;
 };
 
+const getServiceProviderBranchesByServiceProviderCompany = async (
+  serviceProviderCompany: string,
+) => {
+  const result = await ServiceProviderBranch.find({
+    serviceProviderCompany: new mongoose.Types.ObjectId(serviceProviderCompany),
+  }).select('_id branchName');
+
+  return result;
+};
+
 export const serviceProviderBranchServices = {
   createServiceProviderBranchInToDB,
   updateAddress,
   getServiceProviderBranchById,
+  getServiceProviderBranchesByServiceProviderCompany,
 };

@@ -83,8 +83,37 @@ const getServiceProviderBranchById: RequestHandler = catchAsync(
     });
   },
 );
+
+const getServiceProviderBranchesByServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderAdmin', 'showaAdmin'],
+    });
+    const serviceProviderCompany = req.query?.serviceProviderCompany as string;
+
+    if (!serviceProviderCompany) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderCompany must be provided to get branches',
+      );
+    }
+    const result =
+      await serviceProviderBranchServices.getServiceProviderBranchesByServiceProviderCompany(
+        serviceProviderCompany,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'address updated successfully',
+      data: result,
+    });
+  });
 export const serviceProviderBranchController = {
   createServiceProviderBranch,
   updateAddress,
   getServiceProviderBranchById,
+  getServiceProviderBranchesByServiceProviderCompany,
 };

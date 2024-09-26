@@ -70,10 +70,14 @@ const inviteMember = async ({
 
   const htmlBody = `<div>
             <h2 style="color: #333; margin-bottom: 20px;">You're invited to sign-up as a ${inviteMember?.type}.</h2>
-            <a href=${
-              'https://admin.showaapp.com?extraData=' +
-              extraData?._id?.toString()
-            } target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
+           
+    <div style="margin-top: 20px;">
+                <h3 style="color: #555; margin: 5px 0;">Email: ${inviteMember[
+                  inviteMember?.type
+                ]?.email}</h3>
+            </div>
+
+            <a href=${'https://showa.page.link/registration'} target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
                 Click here to sign-up
             </a>
             <div style="margin-top: 20px;">
