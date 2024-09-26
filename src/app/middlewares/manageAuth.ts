@@ -18,6 +18,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
       pathname?.endsWith('upload-photo') ||
       pathname?.endsWith('upload-image') ||
       pathname?.endsWith('invited-member-by-id') ||
+      pathname?.endsWith('invited-member-by-email') ||
       pathname?.endsWith('machine-health-status') ||
       pathname?.endsWith('get-thresholds') ||
       pathname?.endsWith('get-ai-data') ||

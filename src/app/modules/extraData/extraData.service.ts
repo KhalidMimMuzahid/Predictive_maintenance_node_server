@@ -99,6 +99,19 @@ const invitedMemberById = async (invitedMember: string) => {
   return extraData?.inviteMember;
 };
 
+
+const invitedMemberByEmail = async (email: string) => {
+  const extraData = await ExtraData.findOne({
+    $or: [
+      { 'inviteMember.serviceProviderAdmin.email': email },
+      { 'inviteMember.showaUser.email': email },
+      { 'inviteMember.serviceProviderEngineer.email': email },
+      { 'inviteMember.serviceProviderBranchManager.email': email },
+    ],
+    type: 'inviteMember',
+  });
+  return extraData?.inviteMember;
+};
 const reviewFeedback = async (feedback: string) => {
   const updatedFeedback = await ExtraData.findOneAndUpdate(
     {
@@ -140,6 +153,7 @@ export const extraDataServices = {
   addFeedback,
   inviteMember,
   invitedMemberById,
+  invitedMemberByEmail,
   reviewFeedback,
   uploadPhoto,
 };

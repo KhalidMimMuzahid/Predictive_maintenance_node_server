@@ -17,6 +17,11 @@ router.post(
   extraDataController.inviteMember,
 );
 router.get('/invited-member-by-id', extraDataController.invitedMemberById);
+router.get(
+  '/invited-member-by-email',
+  extraDataController.invitedMemberByEmail,
+);
+
 router.patch('/review-feedback', extraDataController.reviewFeedback);
 
 router.post('/upload-photo', extraDataController.uploadPhoto);
