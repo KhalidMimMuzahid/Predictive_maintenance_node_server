@@ -19,6 +19,7 @@ export type TServiceProviderAdmin = {
   phone: string;
   companyName: string;
 };
+
 export type TShowaUser = {
   email: string;
   phone: string;

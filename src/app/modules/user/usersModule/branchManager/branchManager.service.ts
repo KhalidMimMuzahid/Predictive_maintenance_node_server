@@ -110,7 +110,12 @@ const createServiceProviderBranchManagerIntoDB = async ({
         _id: new mongoose.Types.ObjectId(invitedMember),
         type: 'inviteMember',
       });
-
+      if (!extraData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'invitedMember you provided has not found',
+        );
+      }
       inviteMemberData = extraData?.inviteMember;
       serviceProviderBranchManagerData = await ServiceProviderBranch.findById(
         inviteMemberData?.serviceProviderBranchManager?.serviceProviderBranch,
