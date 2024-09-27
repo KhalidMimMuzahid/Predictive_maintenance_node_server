@@ -114,7 +114,11 @@ const invitedMemberByEmail = async (email: string) => {
     ],
     type: 'inviteMember',
   });
-  return extraData?.inviteMember;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = extraData?.inviteMember as unknown as any;
+  data._id = extraData?._id;
+  return data;
 };
 const reviewFeedback = async (feedback: string) => {
   const updatedFeedback = await ExtraData.findOneAndUpdate(
