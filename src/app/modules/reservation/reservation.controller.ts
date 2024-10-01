@@ -406,7 +406,6 @@ const getReservationRequestForServiceProviderCompany: RequestHandler =
 
     const adminUserid = auth?._id;
     const resType: string = req?.query?.resType as string;
-    //
 
     if (!resTypeArrayForServiceProvider.some((each) => each === resType)) {
       throw new AppError(
@@ -522,33 +521,9 @@ const getCompletedReservationRequestForServiceProviderCompany: RequestHandler =
     });
   });
 
-// const getChartAnalyzing: RequestHandler = catchAsync(async (req, res) => {
-//   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-//   checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
-
-//   const adminUserId = auth?._id;
-
-//   // Extract year from query params, defaulting to the current year if not provided
-//   const year = req.query.year
-//     ? parseInt(req.query.year as string)
-//     : new Date().getFullYear();
-
-//   const requests = await reservationServices.getChartAnalyzing(
-//     adminUserId,
-//     year,
-//   );
-
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Chart data retrieved successfully',
-//     data: requests,
-//   });
-// });
-
 const getChartAnalyzing: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
 
   const adminUserId = auth?._id;
   const { year } = req.query;

@@ -43,9 +43,6 @@ router.patch(
   reservationGroupController.sendReservationGroupToBranch,
 );
 
-
-
-
 router.patch(
   '/accept-on-demand-res-group-by-branch',
   reservationGroupController.acceptOnDemandResGroupByBranch,
@@ -64,7 +61,7 @@ router.get(
   '/get-live-reservation-groups',
   reservationGroupController.getLiveReservationGroups,
 );
-
+//this api is already implemented on addBid api,now you may delete this api
 router.patch('/update-bid', reservationGroupController.updateBid);
 
 router.delete('/delete-bid', reservationGroupController.deleteBid);

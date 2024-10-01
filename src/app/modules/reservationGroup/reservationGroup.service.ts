@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { TMachineType } from '../reservation/reservation.interface';
 import { ReservationRequest } from '../reservation/reservation.model';
@@ -8,6 +9,7 @@ import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderB
 import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 import { TRole } from '../user/user.interface';
 import { userServices } from '../user/user.service';
+import { ServiceProviderBranchManager } from '../user/usersModule/branchManager/branchManager.model';
 import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
 import {
   TBiddingDate,
@@ -15,8 +17,6 @@ import {
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { ReservationRequestGroup } from './reservationGroup.model';
-import { TAuth } from '../../interface/error';
-import { ServiceProviderBranchManager } from '../user/usersModule/branchManager/branchManager.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
@@ -341,6 +341,94 @@ const allReservationsGroup = async ({
 
   return reservationGroups;
 };
+// const addBid = async ({
+//   reservationRequestGroup_id,
+//   biddingUser,
+//   biddingAmount,
+//   role,
+// }: {
+//   reservationRequestGroup_id: string;
+//   biddingUser: mongoose.Types.ObjectId;
+//   biddingAmount: number;
+//   role: TRole;
+// }) => {
+//   const resGroup = await ReservationRequestGroup.findById(
+//     new mongoose.Types.ObjectId(reservationRequestGroup_id),
+//   );
+//   if (!resGroup) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'No reservation request group with this id',
+//     );
+//   }
+//   if (resGroup?.isOnDemand === true) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'You can not bid a On-demand reservation request group',
+//     );
+//   }
+
+//   if (
+//     !resGroup?.biddingDate?.startDate ||
+//     new Date() < resGroup?.biddingDate?.startDate ||
+//     (resGroup?.biddingDate?.endDate
+//       ? new Date() > resGroup?.biddingDate?.endDate
+//       : false)
+//   ) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'You can not bid a now. It is not bidding time for this reservation group',
+//     );
+//   }
+
+//   let serviceProviderCompany;
+//   if (role === 'serviceProviderAdmin') {
+//     const serviceProviderAdmin = await ServiceProviderAdmin.findOne({
+//       user: biddingUser,
+//     });
+//     if (!serviceProviderAdmin?.serviceProviderCompany) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'You have not any information about service provider company',
+//       );
+//     }
+
+//     serviceProviderCompany = serviceProviderAdmin?.serviceProviderCompany;
+//   } else if (role === 'serviceProviderSubAdmin') {
+//     // find service provider company
+//   }
+//   const bid = { biddingUser, biddingAmount, serviceProviderCompany };
+//   {
+//     // resGroup.allBids.push(bid);
+//     // const updatedResGroup = await resGroup.save();
+//     // let indexOfThisCompanyBidding: number;
+//     // try {
+//     //   indexOfThisCompanyBidding = resGroup?.allBids?.findIndex(
+//     //     (eachBid) =>
+//     //       eachBid?.serviceProviderCompany?.toString() ===
+//     //       serviceProviderCompany?.toString(),
+//     //   ) as number;
+//     // } catch (error) {
+//     //   indexOfThisCompanyBidding = -1;
+//     // }
+//     // if (indexOfThisCompanyBidding === -1) {
+//     //   resGroup?.allBids?.push(bid);
+//     // } else {
+//     //   resGroup.allBids[indexOfThisCompanyBidding].biddingAmount = biddingAmount;
+//     //   resGroup.allBids[indexOfThisCompanyBidding].biddingUser = biddingUser;
+//     // }
+//     // console.log({ indexOfThisCompanyBidding });
+//     // resGroup.save();
+//   }
+//   const updatedReservationRequestGroup =
+//     await ReservationRequestGroup.findByIdAndUpdate(
+//       new mongoose.Types.ObjectId(reservationRequestGroup_id),
+//       { $push: { allBids: bid } },
+//       { new: true },
+//     );
+//   return updatedReservationRequestGroup;
+// };
+
 const addBid = async ({
   reservationRequestGroup_id,
   biddingUser,
@@ -361,10 +449,11 @@ const addBid = async ({
       'No reservation request group with this id',
     );
   }
+
   if (resGroup?.isOnDemand === true) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'You can not bid a On-demand reservation request group',
+      'You can not bid an On-demand reservation request group',
     );
   }
 
@@ -392,40 +481,67 @@ const addBid = async ({
         'You have not any information about service provider company',
       );
     }
-
     serviceProviderCompany = serviceProviderAdmin?.serviceProviderCompany;
   } else if (role === 'serviceProviderSubAdmin') {
     // find service provider company
   }
-  const bid = { biddingUser, biddingAmount, serviceProviderCompany };
-  {
-    // resGroup.allBids.push(bid);
-    // const updatedResGroup = await resGroup.save();
-    // let indexOfThisCompanyBidding: number;
-    // try {
-    //   indexOfThisCompanyBidding = resGroup?.allBids?.findIndex(
-    //     (eachBid) =>
-    //       eachBid?.serviceProviderCompany?.toString() ===
-    //       serviceProviderCompany?.toString(),
-    //   ) as number;
-    // } catch (error) {
-    //   indexOfThisCompanyBidding = -1;
-    // }
-    // if (indexOfThisCompanyBidding === -1) {
-    //   resGroup?.allBids?.push(bid);
-    // } else {
-    //   resGroup.allBids[indexOfThisCompanyBidding].biddingAmount = biddingAmount;
-    //   resGroup.allBids[indexOfThisCompanyBidding].biddingUser = biddingUser;
-    // }
-    // console.log({ indexOfThisCompanyBidding });
-    // resGroup.save();
+
+  const existingBidIndex = resGroup.allBids.findIndex(
+    (existingBid) =>
+      existingBid.serviceProviderCompany.toString() ===
+      serviceProviderCompany.toString(),
+  );
+
+  let updatedReservationRequestGroup;
+
+  if (existingBidIndex !== -1) {
+    // If a bid exists, update the bidding amount
+    updatedReservationRequestGroup =
+      await ReservationRequestGroup.findOneAndUpdate(
+        {
+          _id: resGroup._id,
+          'allBids.serviceProviderCompany': serviceProviderCompany,
+        },
+        {
+          $set: {
+            'allBids.$.biddingAmount': biddingAmount,
+            //'allBids.$.biddingUser': biddingUser,
+          },
+        },
+        { new: true },
+      );
+  } else {
+    const bid = { biddingUser, biddingAmount, serviceProviderCompany }; // If no existing bid is found, push a new bid to allBids
+    {
+      //     // resGroup.allBids.push(bid);
+      //     // const updatedResGroup = await resGroup.save();
+      //     // let indexOfThisCompanyBidding: number;
+      //     // try {
+      //     //   indexOfThisCompanyBidding = resGroup?.allBids?.findIndex(
+      //     //     (eachBid) =>
+      //     //       eachBid?.serviceProviderCompany?.toString() ===
+      //     //       serviceProviderCompany?.toString(),
+      //     //   ) as number;
+      //     // } catch (error) {
+      //     //   indexOfThisCompanyBidding = -1;
+      //     // }
+      //     // if (indexOfThisCompanyBidding === -1) {
+      //     //   resGroup?.allBids?.push(bid);
+      //     // } else {
+      //     //   resGroup.allBids[indexOfThisCompanyBidding].biddingAmount = biddingAmount;
+      //     //   resGroup.allBids[indexOfThisCompanyBidding].biddingUser = biddingUser;
+      //     // }
+      //     // console.log({ indexOfThisCompanyBidding });
+      //     // resGroup.save();
+    }
+    updatedReservationRequestGroup =
+      await ReservationRequestGroup.findByIdAndUpdate(
+        new mongoose.Types.ObjectId(reservationRequestGroup_id),
+        { $push: { allBids: bid } },
+        { new: true },
+      );
   }
-  const updatedReservationRequestGroup =
-    await ReservationRequestGroup.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(reservationRequestGroup_id),
-      { $push: { allBids: bid } },
-      { new: true },
-    );
+
   return updatedReservationRequestGroup;
 };
 
