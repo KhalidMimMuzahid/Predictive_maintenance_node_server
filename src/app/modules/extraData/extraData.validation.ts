@@ -44,10 +44,16 @@ const inviteMemberValidationSchema = z.object({
         .optional(),
       serviceProviderBranchManager: z
         .object({
-          serviceProviderCompany: z.string().optional(),
+          serviceProviderCompany: z.string(),
+          serviceProviderBranch: z.string(),
           email: z.string(),
           phone: z.string(),
           name: z.object({ firstName: z.string(), lastName: z.string() }),
+          photoUrl: z.string(),
+          nid: z.object({
+            frontPhotoUrl: z.string(),
+            backPhotoUrl: z.string(),
+          }),
         })
         .optional(),
     })

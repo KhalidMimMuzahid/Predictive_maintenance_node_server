@@ -70,10 +70,14 @@ const inviteMember = async ({
 
   const htmlBody = `<div>
             <h2 style="color: #333; margin-bottom: 20px;">You're invited to sign-up as a ${inviteMember?.type}.</h2>
-            <a href=${
-              'https://admin.showaapp.com?extraData=' +
-              extraData?._id?.toString()
-            } target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
+           
+    <div style="margin-top: 20px;">
+                <h3 style="color: #555; margin: 5px 0;">Email: ${inviteMember[
+                  inviteMember?.type
+                ]?.email}</h3>
+            </div>
+
+            <a href=${'https://showa.page.link/registration'} target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
                 Click here to sign-up
             </a>
             <div style="margin-top: 20px;">
@@ -90,6 +94,32 @@ const inviteMember = async ({
   return result;
 };
 
+const invitedMemberById = async (invitedMember: string) => {
+  const extraData = await ExtraData.findOne({
+    _id: new mongoose.Types.ObjectId(invitedMember),
+    type: 'inviteMember',
+  });
+
+  return extraData?.inviteMember;
+};
+
+
+const invitedMemberByEmail = async (email: string) => {
+  const extraData = await ExtraData.findOne({
+    $or: [
+      { 'inviteMember.serviceProviderAdmin.email': email },
+      { 'inviteMember.showaUser.email': email },
+      { 'inviteMember.serviceProviderEngineer.email': email },
+      { 'inviteMember.serviceProviderBranchManager.email': email },
+    ],
+    type: 'inviteMember',
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = extraData?.inviteMember as unknown as any;
+  data._id = extraData?._id;
+  return data;
+};
 const reviewFeedback = async (feedback: string) => {
   const updatedFeedback = await ExtraData.findOneAndUpdate(
     {
@@ -130,6 +160,8 @@ export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
   inviteMember,
+  invitedMemberById,
+  invitedMemberByEmail,
   reviewFeedback,
   uploadPhoto,
 };

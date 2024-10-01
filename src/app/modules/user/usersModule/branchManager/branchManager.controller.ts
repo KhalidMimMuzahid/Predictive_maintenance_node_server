@@ -19,9 +19,16 @@ const createServiceProviderBranchManager: RequestHandler = catchAsync(
       );
     }
 
+    const invitedMember: string = req?.query?.invitedMember as string;
+
     const result =
       await serviceProviderBranchManagerServices.createServiceProviderBranchManagerIntoDB(
-        { serviceProviderCompany, rootUser, serviceProviderBranchManager },
+        {
+          serviceProviderCompany,
+          rootUser,
+          serviceProviderBranchManager,
+          invitedMember,
+        },
       );
     // send response
     sendResponse(res, {

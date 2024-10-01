@@ -21,5 +21,9 @@ router.get(
   '/get-service-provider-branch-by-id',
   serviceProviderBranchController.getServiceProviderBranchById,
 );
+router.get(
+  '/get-serviceProvider-branches-by-service-provider-company',
+  serviceProviderBranchController.getServiceProviderBranchesByServiceProviderCompany,
+);
 
 export const serviceProviderBranchRoutes = router;

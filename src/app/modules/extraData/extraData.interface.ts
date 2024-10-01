@@ -19,6 +19,7 @@ export type TServiceProviderAdmin = {
   phone: string;
   companyName: string;
 };
+
 export type TShowaUser = {
   email: string;
   phone: string;
@@ -33,9 +34,15 @@ export type TServiceProviderEngineer = {
 
 export type TServiceProviderBranchManager = {
   serviceProviderCompany?: string; // objectId of serviceProviderCompany
+  serviceProviderBranch?: string; // objectId of serviceProviderBranch
   email: string;
   phone: string;
   name: { firstName: string; lastName: string };
+  photoUrl?: string;
+  nid: {
+    frontPhotoUrl: string;
+    backPhotoUrl: string;
+  };
 };
 
 // => add engineers

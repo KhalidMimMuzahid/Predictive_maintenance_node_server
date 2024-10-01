@@ -86,6 +86,30 @@ const inviteMember: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const invitedMemberById: RequestHandler = catchAsync(async (req, res) => {
+  const invitedMember: string = req?.query?.invitedMember as string;
+
+  const result = await extraDataServices.invitedMemberById(invitedMember);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'invited member has retrieved successfully',
+    data: result,
+  });
+});
+const invitedMemberByEmail: RequestHandler = catchAsync(async (req, res) => {
+  const email: string = req?.query?.email as string;
+
+  const result = await extraDataServices.invitedMemberByEmail(email);
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'invited member has retrieved successfully',
+    data: result,
+  });
+});
 const reviewFeedback: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -155,6 +179,8 @@ export const extraDataController = {
   deleteMyAccount,
   addFeedback,
   inviteMember,
+  invitedMemberById,
+  invitedMemberByEmail,
   reviewFeedback,
   sendIotDataAiServer,
   uploadPhoto,

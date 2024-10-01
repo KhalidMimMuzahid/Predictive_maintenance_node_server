@@ -13,15 +13,19 @@ import {
   TServiceProviderBranchManager,
 } from './branchManager.interface';
 import { ServiceProviderBranchManager } from './branchManager.model';
+import { ExtraData } from '../../../extraData/extraData.model';
+import { TInviteMember } from '../../../extraData/extraData.interface';
 
 const createServiceProviderBranchManagerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
   rootUser,
   serviceProviderBranchManager,
+  invitedMember,
 }: {
   serviceProviderCompany: string;
   rootUser: Partial<TUser>;
   serviceProviderBranchManager: TServiceProviderBranchManager;
+  invitedMember: string;
 }) => {
   //create a user object
   rootUser.role = 'serviceProviderBranchManager';
@@ -97,11 +101,45 @@ const createServiceProviderBranchManagerIntoDB = async ({
     const createdWalletForUser = createdWalletArrayForUser[0];
 
     serviceProviderBranchManager.user = createdUser?._id;
+    let inviteMemberData: TInviteMember;
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    let serviceProviderBranchManagerData: any;
+
+    if (invitedMember) {
+      const extraData = await ExtraData.findOne({
+        _id: new mongoose.Types.ObjectId(invitedMember),
+        type: 'inviteMember',
+      });
+      if (!extraData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'invitedMember you provided has not found',
+        );
+      }
+      inviteMemberData = extraData?.inviteMember;
+      serviceProviderBranchManagerData = await ServiceProviderBranch.findById(
+        inviteMemberData?.serviceProviderBranchManager?.serviceProviderBranch,
+      );
+
+      if (!serviceProviderBranchManagerData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+    }
 
     const currentState: TCurrentStateForBranchManager = {
-      status: 'in-progress',
+      status: inviteMemberData?.serviceProviderBranchManager
+        ?.serviceProviderBranch
+        ? 'approved'
+        : 'in-progress',
       designation: 'Branch Manager',
       serviceProviderCompany: serviceProviderCompany_id,
+      serviceProviderBranch: inviteMemberData?.serviceProviderBranchManager
+        ?.serviceProviderBranch
+        ? serviceProviderBranchManagerData?._id
+        : undefined,
       // joiningDate: ""
     };
     serviceProviderBranchManager.currentState = currentState;
@@ -128,6 +166,7 @@ const createServiceProviderBranchManagerIntoDB = async ({
       },
       { new: true, session: session },
     );
+
     if (!updatedUser) {
       throw new AppError(httpStatus.BAD_REQUEST, 'failed to create user');
     }
@@ -282,8 +321,10 @@ const approveServiceProviderBranchManagerIntoDB = async (
 
   const updatedServiceProviderBranchManagerData =
     await serviceProviderBranchManagerData.save();
+
   return updatedServiceProviderBranchManagerData;
 };
+
 
 // const editServiceProviderBranchManager = async (
 //   auth: TAuth,

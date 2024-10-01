@@ -14,6 +14,19 @@ export const ServiceProviderBranchManagerSchema: Schema =
         required: true,
       },
       photoUrl: { type: String },
+      nid: {
+        type: new Schema({
+          frontPhotoUrl: {
+            type: String,
+            required: true,
+          },
+          backPhotoUrl: {
+            type: String,
+            required: true,
+          },
+        }),
+        required: false,
+      },
       currentState: {
         status: {
           type: String,

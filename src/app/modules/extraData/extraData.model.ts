@@ -7,6 +7,7 @@ import {
   TFeedback,
   TInviteMember,
   TServiceProviderAdmin,
+  TServiceProviderBranchManager,
   TServiceProviderEngineer,
   TShowaUser,
 } from './extraData.interface';
@@ -34,7 +35,12 @@ const FeedbackSchema = new Schema<TFeedback>({
 const InviteMemberSchema = new Schema<TInviteMember>({
   type: {
     type: String,
-    enum: ['serviceProviderAdmin', 'showaUser', 'serviceProviderEngineer'],
+    enum: [
+      'serviceProviderAdmin',
+      'showaUser',
+      'serviceProviderEngineer',
+      'serviceProviderBranchManager',
+    ],
     required: true,
   },
   serviceProviderAdmin: {
@@ -87,6 +93,48 @@ const InviteMemberSchema = new Schema<TInviteMember>({
       },
       name: {
         type: { firstName: { type: String }, lastName: { type: String } },
+        required: true,
+      },
+    }),
+    required: false,
+  },
+  serviceProviderBranchManager: {
+    type: new Schema<TServiceProviderBranchManager>({
+      serviceProviderCompany: {
+        type: String,
+        required: true,
+      },
+      serviceProviderBranch: {
+        type: String,
+        required: true,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: { firstName: { type: String }, lastName: { type: String } },
+        required: true,
+      },
+      photoUrl: {
+        type: String,
+        required: true,
+      },
+      nid: {
+        type: new Schema({
+          frontPhotoUrl: {
+            type: String,
+            required: true,
+          },
+          backPhotoUrl: {
+            type: String,
+            required: true,
+          },
+        }),
         required: true,
       },
     }),
