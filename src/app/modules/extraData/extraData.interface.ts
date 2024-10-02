@@ -60,12 +60,20 @@ export type TInviteMember = {
   serviceProviderEngineer?: TServiceProviderEngineer;
   serviceProviderBranchManager?: TServiceProviderBranchManager;
 };
+
+// export type TCoupon ={
+//   type: 'maintenance'
+//   maintenance: {
+//     couponId: number
+//   }
+// }
 export type TExtraData = {
-  type: 'deleteUser' | 'feedback' | 'inviteMember' | 'more';
+  type: 'deleteUser' | 'feedback' | 'inviteMember' | 'coupon' | 'more';
   deleteUser: TDeleteUser;
   //   more?: {
   //     //
   //   };
   feedback?: TFeedback;
   inviteMember?: TInviteMember;
+  // coupon?: TCoupon
 };

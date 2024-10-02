@@ -180,16 +180,14 @@ const addIotSectionName = async (sectionName: string) => {
 };
 
 const addMachineBrandName = async (brandName: string) => {
-
-
-  const machineBrands = await PredefinedValue.findOne(
+  const previousMachineBrands = await PredefinedValue.findOne(
     {
       type: 'machine',
     },
     { 'machine.brands': 1 },
   );
   const brandsList =
-    machineBrands?.machine?.brands?.map((each) => each?.brand) || [];
+    previousMachineBrands?.machine?.brands?.map((each) => each?.brand) || [];
 
   if (brandsList?.findIndex((each) => each === brandName) !== -1) {
     throw new AppError(
@@ -198,23 +196,23 @@ const addMachineBrandName = async (brandName: string) => {
     );
   }
 
-
-
-
-  const previousMachineBrandsNames = await PredefinedValue.findOne(
-    {
-      type: 'machine',
-    },
-    { 'machine.brands': 1 },
-  );
-  if (previousMachineBrandsNames) {
-    previousMachineBrandsNames.machine?.brands.push({
+  // const previousMachineBrandsNames = await PredefinedValue.findOne(
+  //   {
+  //     type: 'machine',
+  //   },
+  //   { 'machine.brands': 1 },
+  // );
+  if (previousMachineBrands) {
+    const previousMachineBrandsNames =
+      previousMachineBrands?.machine?.brands || [];
+    previousMachineBrandsNames.push({
       brand: brandName,
       models: [],
     });
+    previousMachineBrands.machine.brands = previousMachineBrandsNames;
 
     const updatedPreviousMachineBrandsNames =
-      await previousMachineBrandsNames.save();
+      await previousMachineBrands.save();
     if (!updatedPreviousMachineBrandsNames) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -233,6 +231,8 @@ const addMachineBrandName = async (brandName: string) => {
             models: [],
           },
         ],
+        issues: [],
+        types: [],
       },
     };
     const createdMachineBrandNames =
@@ -279,7 +279,88 @@ const addMachineModelName = async ({
 
   return null;
 };
+const addMachineIssue = async ({
+  brandName,
+  modelName,
+  issue,
+}: {
+  brandName: string;
+  modelName: string;
+  issue: string;
+}) => {
+  const previousMachineIssues = await PredefinedValue.findOne(
+    {
+      type: 'machine',
+    },
+    { 'machine.issues': 1 },
+  );
+  let isDifferentBrandAndModel = false;
+  if (previousMachineIssues) {
+    const issuesList =
+      previousMachineIssues?.machine?.issues?.map((each) => {
+        if (each?.brand === brandName && each.model === modelName) {
+          const issuesList = each?.issues?.map((each) => each) || [];
 
+          if (issuesList?.findIndex((each) => each === issue) !== -1) {
+            throw new AppError(
+              httpStatus.BAD_REQUEST,
+              `issue cannot be duplicated in a single model`,
+            );
+          } else {
+            each?.issues?.push(issue);
+            return each;
+          }
+        } else {
+          // that means its a different brand and model
+          isDifferentBrandAndModel = true;
+          return each;
+        }
+      }) || [];
+    if (isDifferentBrandAndModel || issuesList?.length === 0) {
+      issuesList?.push({
+        brand: brandName,
+        model: modelName,
+        issues: [issue],
+      });
+    }
+    previousMachineIssues.machine.issues = issuesList;
+    const updatedPreviousMachineIssuesList = await previousMachineIssues.save();
+    if (!updatedPreviousMachineIssuesList) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newMachineIssuesList: TPredefinedValue = {
+      type: 'machine',
+      machine: {
+        brands: [],
+        types: [],
+        issues: [
+          {
+            brand: brandName,
+            model: modelName,
+            issues: [issue],
+          },
+        ],
+      },
+    };
+    const createdMachineIssuesList =
+      await PredefinedValue.create(newMachineIssuesList);
+
+    if (!createdMachineIssuesList) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
 const addReservationRequestStatus = async (status: string) => {
   const previousStatus = await PredefinedValue.findOne(
     {
@@ -583,6 +664,39 @@ const getMachineBrands = async () => {
 
   // return productCategories;
 };
+
+const getAllMachineIssuesBrandAndModelWise = async ({
+  brandName,
+  modelName,
+}: {
+  brandName: string;
+  modelName: string;
+}) => {
+  const machineIssueList = await PredefinedValue.aggregate([
+    {
+      $match: {
+        type: 'machine',
+      },
+    },
+    {
+      $unwind: '$machine.issues',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$machine.issues',
+      },
+    },
+    {
+      $match: {
+        brand: brandName,
+        model: modelName,
+      },
+    },
+  ]);
+
+
+  return machineIssueList[0]?.issues || [];
+};
 export const predefinedValueServices = {
   addProductCategories,
   addProductSubCategories,
@@ -590,6 +704,7 @@ export const predefinedValueServices = {
   addIotSectionName,
   addMachineBrandName,
   addMachineModelName,
+  addMachineIssue,
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
   setReservationRequestNearestLocation,
@@ -601,6 +716,7 @@ export const predefinedValueServices = {
   getShopCategories,
   getIotSectionNames,
   getMachineBrands,
+  getAllMachineIssuesBrandAndModelWise,
 }; 
 
 
