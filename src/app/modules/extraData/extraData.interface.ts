@@ -61,19 +61,18 @@ export type TInviteMember = {
   serviceProviderBranchManager?: TServiceProviderBranchManager;
 };
 
-// export type TCoupon ={
-//   type: 'maintenance'
-//   maintenance: {
-//     couponId: number
-//   }
-// }
+export type TCoupon = {
+  couponFor: 'showaUser' | 'serviceProviderCompany';
+  subscription: Types.ObjectId; // _id of subscription model
+  expireIn: Date;
+};
 export type TExtraData = {
   type: 'deleteUser' | 'feedback' | 'inviteMember' | 'coupon' | 'more';
-  deleteUser: TDeleteUser;
+  deleteUser?: TDeleteUser;
   //   more?: {
   //     //
   //   };
   feedback?: TFeedback;
   inviteMember?: TInviteMember;
-  // coupon?: TCoupon
+  coupon?: TCoupon;
 };

@@ -187,7 +187,7 @@ const addMachineIssue: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'product sub-category has added successfully',
+    message: 'machine issue has added successfully',
     data: result,
   });
 });

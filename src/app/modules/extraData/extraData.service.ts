@@ -4,8 +4,9 @@ import { User } from '../user/user.model';
 import { ExtraData } from './extraData.model';
 import { uploadFileToAWS } from '../../utils/uploadFileToAWS';
 import mongoose from 'mongoose';
-import { TFeedback, TInviteMember } from './extraData.interface';
+import { TExtraData, TFeedback, TInviteMember } from './extraData.interface';
 import { sendMail } from '../../utils/sendMail';
+import { Subscription } from '../subscription/subscription.model';
 
 const deleteMyAccount = async (emailOrPhone: string) => {
   const isExistsUser = await User.findOne({
@@ -51,6 +52,50 @@ const addFeedback = async ({
     );
   }
   return createdFeedback;
+};
+const createCoupon = async ({
+  numberOfCoupon,
+  subscription,
+  expireIn,
+}: {
+  numberOfCoupon: number;
+  subscription: string;
+  expireIn: Date;
+}) => {
+  // return {
+  //   numberOfCoupon,
+  //   subscription,
+  //   expireIn,
+  // };
+  const subscriptionData = await Subscription.findById(subscription);
+  if (!subscriptionData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'subscription has not found with subscription id you provided',
+    );
+  }
+  const couponNumberArray = Array.from(
+    { length: numberOfCoupon },
+    (_, i) => i + 1,
+  );
+
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const coupons = couponNumberArray?.map((each) => {
+    const couponData: TExtraData = {
+      type: 'coupon',
+      coupon: {
+        couponFor: 'showaUser',
+        expireIn,
+        subscription: new mongoose.Types.ObjectId(subscription),
+      },
+    };
+    return couponData;
+  });
+
+  const couponsData = await ExtraData.create(coupons);
+
+  // now make a csv file and send it to the client
+  return couponsData;
 };
 const inviteMember = async ({
   inviteMember,
@@ -102,7 +147,6 @@ const invitedMemberById = async (invitedMember: string) => {
 
   return extraData?.inviteMember;
 };
-
 
 const invitedMemberByEmail = async (email: string) => {
   const extraData = await ExtraData.findOne({
@@ -159,6 +203,7 @@ const uploadPhoto = async ({
 export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
+  createCoupon,
   inviteMember,
   invitedMemberById,
   invitedMemberByEmail,

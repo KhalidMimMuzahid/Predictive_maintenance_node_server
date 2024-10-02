@@ -2,6 +2,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 import {
+  TCoupon,
   TDeleteUser,
   TExtraData,
   TFeedback,
@@ -141,11 +142,28 @@ const InviteMemberSchema = new Schema<TInviteMember>({
     required: false,
   },
 });
+
+const CouponSchema = new Schema<TCoupon>({
+  couponFor: {
+    type: String,
+    enum: ['showaUser', 'serviceProviderCompany'],
+    required: true,
+  },
+  subscription: {
+    type: Schema.Types.ObjectId,
+    ref: 'Subscription',
+    required: true,
+  },
+  expireIn: {
+    type: Date,
+    required: true,
+  },
+});
 export const ExtraDataSchema: Schema = new Schema<TExtraData>(
   {
     type: {
       type: String,
-      enum: ['deleteUser', 'feedback', 'inviteMember', 'more'],
+      enum: ['deleteUser', 'feedback', 'inviteMember', 'coupon', 'more'],
     },
     deleteUser: {
       type: DeleteUserSchema,
@@ -157,6 +175,10 @@ export const ExtraDataSchema: Schema = new Schema<TExtraData>(
     },
     inviteMember: {
       type: InviteMemberSchema,
+      required: false,
+    },
+    coupon: {
+      type: CouponSchema,
       required: false,
     },
   },

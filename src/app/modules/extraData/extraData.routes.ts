@@ -11,11 +11,7 @@ router.post(
   validateRequest(extraDataValidation.addFeedbackValidationSchema),
   extraDataController.addFeedback,
 );
-// router.post(
-//   '/add-feedback',
-//   // validateRequest(extraDataValidation.addFeedbackValidationSchema),
-//   extraDataController.addFeedback,
-// );
+router.post('/create-coupon', extraDataController.createCoupon);
 
 
 
