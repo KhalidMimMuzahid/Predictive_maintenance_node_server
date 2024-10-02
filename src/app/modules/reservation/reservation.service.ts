@@ -1,17 +1,21 @@
 import S3 from 'aws-sdk/clients/s3';
 // import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
+import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../errors/AppError';
 import { TAuth } from '../../interface/error';
 import { addDays } from '../../utils/addDays';
+import { getLatLngBounds } from '../../utils/getLatLngBounds';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
 import { sortByCreatedAtDescending } from '../../utils/sortByCreatedAtDescending';
 import { TInvoiceStatus } from '../invoice/invoice.interface';
 import { Invoice } from '../invoice/invoice.model';
 import { isEngineerBelongsToThisTeamByReservation } from '../invoice/invoice.utils';
 import { Machine } from '../machine/machine.model';
+import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
+import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
 import { ServiceProviderCompany } from '../serviceProviderCompany/serviceProviderCompany.model';
 import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
 import {
@@ -24,10 +28,6 @@ import {
   TSchedule,
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
-import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
-import { getLatLngBounds } from '../../utils/getLatLngBounds';
-import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
-import { Request } from 'express';
 
 const createReservationRequestIntoDB = async ({
   user,
@@ -833,7 +833,6 @@ const getCompletedReservationRequestForServiceProviderCompany = async ({
 
   matchQuery['createdAt'] = { $gte: startDate, $lte: endDate };
 
-
   const totalRequests = await Invoice.countDocuments(matchQuery);
 
   const totalPages = Math.ceil(totalRequests / limit);
@@ -867,7 +866,6 @@ const getCompletedReservationRequestForServiceProviderCompany = async ({
   ];
 
   const result = await Invoice.aggregate(aggArray);
-  console.log(result);
 
   return {
     requests: result,
@@ -884,9 +882,9 @@ const getChartAnalyzing = async (
   adminUserId: mongoose.Types.ObjectId,
   targetYear?: number,
 ) => {
-  const serviceProviderCompany = await ServiceProviderCompany.findOne({
-    serviceProviderAdmin: adminUserId,
-  });
+  // const serviceProviderCompany = await ServiceProviderCompany.findOne({
+  //   serviceProviderAdmin: adminUserId,
+  // });
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
@@ -930,7 +928,7 @@ const getChartAnalyzing = async (
   const requests = await Promise.all(
     months.map(async (month) => {
       const count = await ReservationRequest.countDocuments({
-        serviceProviderCompany,
+        //serviceProviderCompany,
         createdAt: {
           $gte: month.startDateOfMonth,
           $lte: month.endDateOfMonth,
