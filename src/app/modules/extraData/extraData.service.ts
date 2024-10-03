@@ -138,16 +138,19 @@ const createCoupon = async ({
       's/n': padNumberWithZeros(index + 1, 5),
       couponId: coupon.id, // _id of predefined value
       couponFor: 'showaUser',
-      expireIn: coupon[coupon?.type]?.expireIn?.toLocaleDateString('en-US', {
+      expireIn: `"${coupon[coupon?.type]?.expireIn?.toLocaleDateString(
+        'en-US',
+        {
+          year: 'numeric',
+          month: 'long', // e.g., October
+          day: 'numeric',
+        },
+      )}"`,
+      createdAt: `"${coupon['createdAt']?.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long', // e.g., October
         day: 'numeric',
-      }),
-      createdAt: coupon['createdAt']?.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long', // e.g., October
-        day: 'numeric',
-      }),
+      })}"`,
       validityFromActivate: subscriptionData?.validity,
       features: subscriptionData?.features?.reduce((total, current) => {
         total = total + `"${current}\n"`;
