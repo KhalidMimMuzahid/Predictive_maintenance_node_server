@@ -151,7 +151,7 @@ const createCoupon = async ({
         month: 'long', // e.g., October
         day: 'numeric',
       })}"`,
-      validityFromActivate: subscriptionData?.validity,
+      validityFromActivate: `${subscriptionData?.validity} days`,
       features: subscriptionData?.features?.reduce((total, current) => {
         total = total + `"${current}\n"`;
         return total;
