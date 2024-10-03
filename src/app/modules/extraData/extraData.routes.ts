@@ -12,6 +12,7 @@ router.post(
   extraDataController.addFeedback,
 );
 router.post('/create-coupon', extraDataController.createCoupon);
+router.patch('/activate-coupon', extraDataController.activateCoupon);
 
 
 

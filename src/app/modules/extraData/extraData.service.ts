@@ -7,7 +7,10 @@ import mongoose from 'mongoose';
 import { TExtraData, TFeedback, TInviteMember } from './extraData.interface';
 import { sendMail } from '../../utils/sendMail';
 import { Subscription } from '../subscription/subscription.model';
-
+import { fileHandle } from '../../utils/fileHandle';
+import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+import { TAuth } from '../../interface/error';
+import { subscriptionPurchasedServices } from '../subscriptionPurchased/subscriptionPurchased.service';
 const deleteMyAccount = async (emailOrPhone: string) => {
   const isExistsUser = await User.findOne({
     $or: [{ email: emailOrPhone }, { phone: emailOrPhone }],
@@ -84,7 +87,7 @@ const createCoupon = async ({
     const couponData: TExtraData = {
       type: 'coupon',
       coupon: {
-        couponFor: 'showaUser',
+        couponFor: subscriptionData?.package?.packageFor,
         expireIn,
         subscription: new mongoose.Types.ObjectId(subscription),
       },
@@ -93,9 +96,85 @@ const createCoupon = async ({
   });
 
   const couponsData = await ExtraData.create(coupons);
-
+  // https://stackoverflow.com/questions/10227107/write-to-a-csv-in-node-js
   // now make a csv file and send it to the client
-  return couponsData;
+
+  //   {
+  //     Writing a CSV is pretty easy and can be done without a library.
+
+  // import { writeFile } from 'fs/promises';
+  // // you can use just fs module too
+
+  // // Let's say you want to print a list of users to a CSV
+  // const users = [
+  //   { id: 1, name: 'John Doe0', age: 21 },
+  //   { id: 2, name: 'John Doe1', age: 22 },
+  //   { id: 3, name: 'John Doe2', age: 23 }
+  // ];
+
+  // // CSV is formatted in the following format
+  // /*
+  //   column1, column2, column3
+  //   value1, value2, value3
+  //   value1, value2, value
+  // */
+  // // which we can do easily by
+  // const dataCSV = users.reduce((acc, user) => {
+  //     acc += `${user.id}, ${user.name}, ${user.age}\n`;
+  //     return acc;
+  //   },
+  //   `id, name, age\n` // column names for csv
+  // );
+
+  // // finally, write csv content to a file using Node's fs module
+  // writeFile('mycsv.csv', dataCSV, 'utf8')
+  //   .then(() => // handle success)
+  //   .catch((error) => // handle error)
+
+  //   }
+
+  const structuredData = couponsData?.map((coupon, index) => {
+    return {
+      's/n': padNumberWithZeros(index + 1, 5),
+      couponId: coupon.id, // _id of predefined value
+      couponFor: 'showaUser',
+      expireIn: coupon[coupon?.type]?.expireIn,
+      createdAt: coupon['createdAt'],
+      validityFromActivate: subscriptionData?.validity,
+      features: subscriptionData?.features?.reduce((total, current) => {
+        total = total + `\n${current}, `;
+        return total;
+      }, ''),
+    };
+  });
+  const csvData = fileHandle.jsonToCsv(structuredData);
+  return csvData;
+};
+
+const activateCoupon = async ({
+  coupon,
+  auth,
+}: {
+  coupon: string;
+  auth: TAuth;
+}) => {
+  const predefinedValueForCouponData = await ExtraData.findOne({
+    _id: new mongoose.Types.ObjectId(coupon),
+    type: 'coupon',
+  });
+  if (!predefinedValueForCouponData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no coupon has found with the id you provided',
+    );
+  }
+  const couponData = predefinedValueForCouponData?.coupon;
+  const result = await subscriptionPurchasedServices.createSubscription({
+    subscription: couponData?.subscription?.toString(),
+    user: auth?._id,
+  });
+
+  return result;
 };
 const inviteMember = async ({
   inviteMember,
@@ -204,6 +283,7 @@ export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
   createCoupon,
+  activateCoupon,
   inviteMember,
   invitedMemberById,
   invitedMemberByEmail,

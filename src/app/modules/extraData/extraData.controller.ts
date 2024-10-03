@@ -85,6 +85,39 @@ const createCoupon: RequestHandler = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'coupon has created successfully',
+    data: null,
+    exceptional: {
+      type: 'sendingFile',
+      sendingFile: {
+        extension: 'csv',
+        file: result,
+      },
+    },
+  });
+});
+
+const activateCoupon: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const coupon = req?.query?.coupon as string;
+  if (!coupon) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'coupon is required to activate coupon',
+    );
+  }
+
+  const result = await extraDataServices.activateCoupon({
+    coupon,
+    auth,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'coupon has created successfully',
     data: result,
   });
 });
@@ -222,6 +255,7 @@ export const extraDataController = {
   deleteMyAccount,
   addFeedback,
   createCoupon,
+  activateCoupon,
   inviteMember,
   invitedMemberById,
   invitedMemberByEmail,
