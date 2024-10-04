@@ -44,7 +44,83 @@ const addFeedback: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const createCoupon: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const numberOfCouponString = req?.query?.numberOfCoupon as string;
+  const numberOfCoupon = parseInt(numberOfCouponString);
+
+  const subscription = req?.query?.subscription as string;
+  const expireInString = req?.query?.expireIn as string;
+  if (!numberOfCoupon || !subscription || !expireInString) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'numberOfCoupon, subscription and expireIn are required to create coupon',
+    );
+  }
+
+  const expireIn = new Date(expireInString);
+  if (!expireIn?.getTime()) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'expireIn must be a valid date string',
+    );
+  }
+  if (expireIn < new Date()) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'expireIn cannot be previous date',
+    );
+  }
+
+  const result = await extraDataServices.createCoupon({
+    numberOfCoupon,
+    subscription,
+    expireIn,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'coupon has created successfully',
+    data: null,
+    exceptional: {
+      type: 'sendingFile',
+      sendingFile: {
+        extension: 'csv',
+        file: result,
+      },
+    },
+  });
+});
+
+const activateCoupon: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const coupon = req?.query?.coupon as string;
+  if (!coupon) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'coupon is required to activate coupon',
+    );
+  }
+
+  const result = await extraDataServices.activateCoupon({
+    coupon,
+    auth,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'coupon has created successfully',
+    data: result,
+  });
+});
 const inviteMember: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   checkUserAccessApi({
@@ -73,7 +149,7 @@ const inviteMember: RequestHandler = catchAsync(async (req, res) => {
     delete inviteMember.serviceProviderAdmin;
     delete inviteMember.serviceProviderEngineer;
   }
-    
+
   const result = await extraDataServices.inviteMember({
     inviteMember,
   });
@@ -178,6 +254,8 @@ const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
 export const extraDataController = {
   deleteMyAccount,
   addFeedback,
+  createCoupon,
+  activateCoupon,
   inviteMember,
   invitedMemberById,
   invitedMemberByEmail,

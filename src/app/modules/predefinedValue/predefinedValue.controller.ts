@@ -162,7 +162,35 @@ const addMachineModelName: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const addMachineIssue: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const brandName: string = req?.query?.brandName as string;
+  const modelName: string = req?.query?.modelName as string;
+  const issue: string = req?.query?.issue as string;
+
+  if (!brandName || !modelName || !issue) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'brand, model and issue Name are required to add machine issue model wise',
+    );
+  }
+  const result = await predefinedValueServices.addMachineIssue({
+    brandName: brandName?.toLowerCase(),
+    modelName: modelName.toLowerCase(),
+    issue: issue?.toLowerCase(),
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'machine issue has added successfully',
+    data: result,
+  });
+});
 const addReservationRequestStatus: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -392,6 +420,39 @@ const getMachineBrands: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllMachineIssuesBrandAndModelWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: 'all',
+    });
+    const brandName: string = req?.query?.brandName as string;
+    const modelName: string = req?.query?.modelName as string;
+
+    if (!brandName || !modelName) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'brand and model  Name are required to get machine all issue model wise',
+      );
+    }
+    const result =
+      await predefinedValueServices.getAllMachineIssuesBrandAndModelWise({
+        brandName,
+        modelName,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'machine issues have retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const predefinedValueController = {
   addProductCategories,
   addProductSubCategories,
@@ -399,6 +460,7 @@ export const predefinedValueController = {
   addIotSectionName,
   addMachineBrandName,
   addMachineModelName,
+  addMachineIssue,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
@@ -411,4 +473,5 @@ export const predefinedValueController = {
   getShopCategories,
   getIotSectionNames,
   getMachineBrands,
+  getAllMachineIssuesBrandAndModelWise,
 };

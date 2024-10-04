@@ -77,10 +77,15 @@ router.post(
   '/add-machine-model-name',
   predefinedValueController.addMachineModelName,
 );
+router.post('/add-machine-issue', predefinedValueController.addMachineIssue);
 
 router.get(
   '/get-all-machine-brands',
   predefinedValueController.getMachineBrands,
+);
+router.get(
+  '/get-all-machine-issues-brand-and-model-wise',
+  predefinedValueController.getAllMachineIssuesBrandAndModelWise,
 );
 
 

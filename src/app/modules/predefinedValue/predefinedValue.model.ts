@@ -10,6 +10,7 @@ import {
   TSensorModuleAttached,
   TShop,
   TBrands,
+  TIssue,
 } from './predefinedValue.interface';
 const CategorySchema = new Schema<TCategory>({
   category: String,
@@ -61,6 +62,13 @@ const machineSchema = new Schema<TMachine>({
     new Schema<TBrands>({
       brand: String,
       models: [String],
+    }),
+  ],
+  issues: [
+    new Schema<TIssue>({
+      brand: String,
+      model: String,
+      issues: [String],
     }),
   ],
 });

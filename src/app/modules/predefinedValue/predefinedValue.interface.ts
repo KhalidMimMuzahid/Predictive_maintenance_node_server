@@ -35,9 +35,15 @@ export type TBrands = {
   brand: string;
   models?: string[];
 };
+export type TIssue = {
+  brand: string;
+  model: string;
+  issues: string[];
+};
 export type TMachine = {
   types?: string[]; // type of washing machine
   brands?: TBrands[];
+  issues?: TIssue[];
 };
 export type TPredefinedValue = {
   type:

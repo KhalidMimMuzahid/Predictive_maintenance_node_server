@@ -60,12 +60,19 @@ export type TInviteMember = {
   serviceProviderEngineer?: TServiceProviderEngineer;
   serviceProviderBranchManager?: TServiceProviderBranchManager;
 };
+
+export type TCoupon = {
+  couponFor: 'showaUser' | 'serviceProviderCompany';
+  subscription: Types.ObjectId; // _id of subscription model
+  expireIn: Date;
+};
 export type TExtraData = {
-  type: 'deleteUser' | 'feedback' | 'inviteMember' | 'more';
-  deleteUser: TDeleteUser;
+  type: 'deleteUser' | 'feedback' | 'inviteMember' | 'coupon' | 'more';
+  deleteUser?: TDeleteUser;
   //   more?: {
   //     //
   //   };
   feedback?: TFeedback;
   inviteMember?: TInviteMember;
+  coupon?: TCoupon;
 };

@@ -11,6 +11,12 @@ router.post(
   validateRequest(extraDataValidation.addFeedbackValidationSchema),
   extraDataController.addFeedback,
 );
+router.post('/create-coupon', extraDataController.createCoupon);
+router.patch('/activate-coupon', extraDataController.activateCoupon);
+
+
+
+
 router.post(
   '/invite-member',
   validateRequest(extraDataValidation.inviteMemberValidationSchema),
