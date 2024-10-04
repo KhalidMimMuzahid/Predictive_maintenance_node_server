@@ -31,7 +31,7 @@ export type TSchedule = {
   // date: Date;
   schedules: Date[]; // every schedule will be stored here , if you re schedule this request 5 times, this array will hold five different date
 };
-type TReservationStatus =
+export type TReservationStatus =
   | 'pending'
   | 'accepted'
   | 'ongoing'

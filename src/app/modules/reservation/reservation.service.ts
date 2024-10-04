@@ -24,6 +24,7 @@ import {
   TPeriod,
   TProblem,
   TReservationRequest,
+  TReservationStatus,
   TReservationType,
   TSchedule,
 } from './reservation.interface';
@@ -942,6 +943,592 @@ const getChartAnalyzing = async (
   return requests;
 };
 
+// const getTotalReservationForChart = async (
+//   period: TPeriod,
+//   kpiStatus1: TReservationStatus,
+//   kpiStatus2: TReservationStatus,
+// ) => {
+//   let timeFrame;
+
+//   // Logic for handling "monthly" period as the last 30/31 days from today
+//   if (period === 'monthly') {
+//     // Get today's date and calculate the date 30 days ago
+//     const today = new Date();
+//     const lastMonthStart = new Date();
+//     lastMonthStart.setDate(today.getDate() - 30); // Subtract 30 days to get the start of the last 30 days
+
+//     // Create the start and end dates with UTC time for the last 30 days
+//     const startDateOfLast30Days = new Date(
+//       Date.UTC(
+//         lastMonthStart.getFullYear(),
+//         lastMonthStart.getMonth(),
+//         lastMonthStart.getDate(),
+//       ),
+//     );
+
+//     const endDateOfLast30Days = new Date(
+//       Date.UTC(
+//         today.getFullYear(),
+//         today.getMonth(),
+//         today.getDate(),
+//         23,
+//         59,
+//         59,
+//         999, // Set the time to the end of the current day
+//       ),
+//     );
+
+//     // Log the start and end dates of the last 30 days to the console
+//     console.log('Start Date of Last 30 Days:', startDateOfLast30Days);
+//     console.log('End Date of Last 30 Days:', endDateOfLast30Days);
+
+//     // Set the time frame for the last 30 days
+//     timeFrame = [
+//       {
+//         month: `Last 1 month`,
+//         startDateOfMonth: startDateOfLast30Days,
+//         endDateOfMonth: endDateOfLast30Days,
+//       },
+//     ];
+//   } else if (period === 'weekly') {
+//     // Get the last 7 days (including today)
+//     const today = new Date();
+//     const last7Days = Array.from({ length: 7 }, (_, i) => {
+//       const day = new Date();
+//       day.setDate(today.getDate() - i);
+//       const formattedDate = day.toLocaleDateString('en-US', {
+//         weekday: 'short',
+//         month: 'short',
+//         day: 'numeric',
+//       });
+
+//       return {
+//         day: formattedDate,
+//         startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+//         endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+//       };
+//     }).reverse();
+
+//     timeFrame = last7Days.map((time) => ({
+//       week: time.day,
+//       startOfWeek: time.startOfDay,
+//       endOfWeek: time.endOfDay,
+//     }));
+//   } else if (period === 'yearly') {
+//     // Your existing yearly logic, kept as-is
+//     const currentYear = new Date().getFullYear();
+//     const currentMonth = new Date().getMonth() + 1;
+
+//     timeFrame = Array.from({ length: 12 }, (_, i) => {
+//       const monthOffset = currentMonth - 1 - i;
+//       const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+//       const month = ((monthOffset + 12) % 12) + 1;
+
+//       const startDateOfMonth = new Date(Date.UTC(year, month - 1, 1));
+//       const endDateOfMonth = new Date(
+//         Date.UTC(year, month, 0, 23, 59, 59, 999),
+//       );
+
+//       const monthName = startDateOfMonth.toLocaleString('en-US', {
+//         month: 'short',
+//       });
+//       const formattedMonth = `${monthName} ${year}`;
+
+//       return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+//     }).reverse();
+//   }
+
+//   // Count documents based on the selected period (weekly, monthly, yearly)
+//   const requests = await Promise.all(
+//     timeFrame.map(async (time) => {
+//       let status1Count = 0; // Count for kpiStatus1
+//       let status2Count = 0; // Count for kpiStatus2
+
+//       if (period === 'monthly') {
+//         status1Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus1,
+//         });
+//         status2Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus2,
+//         });
+
+//         return {
+//           period: time.month, // "Last 30 Days"
+//           [kpiStatus1]: status1Count,
+//           [kpiStatus2]: status2Count,
+//         };
+//       } else if (period === 'weekly') {
+//         status1Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startOfWeek,
+//             $lte: time.endOfWeek,
+//           },
+//           status: kpiStatus1,
+//         });
+//         status2Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startOfWeek,
+//             $lte: time.endOfWeek,
+//           },
+//           status: kpiStatus2,
+//         });
+
+//         return {
+//           period: time.week, // Week number or day number
+//           [kpiStatus1]: status1Count,
+//           [kpiStatus2]: status2Count,
+//         };
+//       } else if (period === 'yearly') {
+//         status1Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus1,
+//         });
+//         status2Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus2,
+//         });
+
+//         return {
+//           period: time.month, // Formatted month and year
+//           [kpiStatus1]: status1Count,
+//           [kpiStatus2]: status2Count,
+//         };
+//       }
+//     }),
+//   );
+
+//   // Filter out any undefined entries if they exist
+//   const filteredRequests = requests.filter((req) => req !== undefined);
+
+//   return {
+//     success: true,
+//     message: 'Completed reservation requests retrieved successfully',
+//     data: filteredRequests,
+//   };
+// };
+
+// const getTotalReservationForChart = async (
+//   period: TPeriod,
+//   kpiStatus1: TReservationStatus,
+//   kpiStatus2: TReservationStatus,
+// ) => {
+//   let timeFrame;
+
+//   if (period === 'monthly') {
+//     const today = new Date();
+//     const lastMonthStart = new Date();
+//     lastMonthStart.setDate(today.getDate() - 30);
+
+//     const startDateOfLast30Days = new Date(
+//       Date.UTC(
+//         lastMonthStart.getFullYear(),
+//         lastMonthStart.getMonth(),
+//         lastMonthStart.getDate(),
+//       ),
+//     );
+
+//     const endDateOfLast30Days = new Date(
+//       Date.UTC(
+//         today.getFullYear(),
+//         today.getMonth(),
+//         today.getDate(),
+//         23,
+//         59,
+//         59,
+//         999,
+//       ),
+//     );
+
+//     timeFrame = [
+//       {
+//         month: `Last 1 month`,
+//         startDateOfMonth: startDateOfLast30Days,
+//         endDateOfMonth: endDateOfLast30Days,
+//       },
+//     ];
+//   }
+
+//   // if (period === 'monthly') {
+//   //   const today = new Date();
+
+//   //   // Set to the first day of the current month
+//   //   const currentMonthStart = new Date(
+//   //     today.getFullYear(),
+//   //     today.getMonth(),
+//   //     1,
+//   //   );
+
+//   //   // Subtract one day from current month start to get the last day of the previous month
+//   //   const lastMonthEnd = new Date(currentMonthStart.getTime() - 1);
+
+//   //   // Get the first day of the previous month
+//   //   const lastMonthStart = new Date(
+//   //     lastMonthEnd.getFullYear(),
+//   //     lastMonthEnd.getMonth(),
+//   //     1,
+//   //   );
+
+//   //   const startDateOfLastMonth = new Date(
+//   //     Date.UTC(
+//   //       lastMonthStart.getFullYear(),
+//   //       lastMonthStart.getMonth(),
+//   //       lastMonthStart.getDate(),
+//   //     ),
+//   //   );
+
+//   //   const endDateOfLastMonth = new Date(
+//   //     Date.UTC(
+//   //       lastMonthEnd.getFullYear(),
+//   //       lastMonthEnd.getMonth(),
+//   //       lastMonthEnd.getDate(),
+//   //       23,
+//   //       59,
+//   //       59,
+//   //       999,
+//   //     ),
+//   //   );
+
+//   //   timeFrame = [
+//   //     {
+//   //       month: `Last full month`,
+//   //       startDateOfMonth: startDateOfLastMonth,
+//   //       endDateOfMonth: endDateOfLastMonth,
+//   //     },
+//   //   ];
+//   // }
+//   else if (period === 'weekly') {
+//     // Calculate the start date of the last 7 days (including today)
+//     const today = new Date();
+//     const lastWeekStart = new Date();
+//     lastWeekStart.setDate(today.getDate() - 6); // Subtract 6 to include today in the last 7 days
+
+//     const startDateOfLast7Days = new Date(
+//       Date.UTC(
+//         lastWeekStart.getFullYear(),
+//         lastWeekStart.getMonth(),
+//         lastWeekStart.getDate(),
+//       ),
+//     );
+
+//     const endDateOfLast7Days = new Date(
+//       Date.UTC(
+//         today.getFullYear(),
+//         today.getMonth(),
+//         today.getDate(),
+//         23,
+//         59,
+//         59,
+//         999,
+//       ),
+//     );
+
+//     // Set the time frame for the last 7 days
+//     timeFrame = [
+//       {
+//         week: `Last 7 days`,
+//         startDateOfWeek: startDateOfLast7Days,
+//         endDateOfWeek: endDateOfLast7Days,
+//       },
+//     ];
+//   } else if (period === 'yearly') {
+//     const currentYear = new Date().getFullYear();
+//     const currentMonth = new Date().getMonth() + 1;
+
+//     timeFrame = Array.from({ length: 12 }, (_, i) => {
+//       const monthOffset = currentMonth - 1 - i;
+//       const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+//       const month = ((monthOffset + 12) % 12) + 1;
+
+//       const startDateOfMonth = new Date(Date.UTC(year, month - 1, 1));
+//       const endDateOfMonth = new Date(
+//         Date.UTC(year, month, 0, 23, 59, 59, 999),
+//       );
+
+//       const monthName = startDateOfMonth.toLocaleString('en-US', {
+//         month: 'short',
+//       });
+//       const formattedMonth = `${monthName} ${year}`;
+
+//       return { month: formattedMonth, startDateOfMonth, endDateOfMonth };
+//     }).reverse();
+//   }
+
+//   // Count documents based on the selected period (weekly, monthly, yearly)
+//   const requests = await Promise.all(
+//     timeFrame.map(async (time) => {
+//       let status1Count = 0;
+//       let status2Count = 0;
+
+//       if (period === 'monthly') {
+//         status1Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus1,
+//         });
+//         status2Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus2,
+//         });
+
+//         return {
+//           period: time.month, // "Last 30 Days"
+//           [kpiStatus1]: status1Count,
+//           [kpiStatus2]: status2Count,
+//         };
+//       } else if (period === 'weekly') {
+//         status1Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfWeek,
+//             $lte: time.endDateOfWeek,
+//           },
+//           status: kpiStatus1,
+//         });
+//         status2Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfWeek,
+//             $lte: time.endDateOfWeek,
+//           },
+//           status: kpiStatus2,
+//         });
+
+//         return {
+//           period: time.week, // "Last 7 days"
+//           [kpiStatus1]: status1Count,
+//           [kpiStatus2]: status2Count,
+//         };
+//       } else if (period === 'yearly') {
+//         status1Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus1,
+//         });
+//         status2Count = await ReservationRequest.countDocuments({
+//           createdAt: {
+//             $gte: time.startDateOfMonth,
+//             $lte: time.endDateOfMonth,
+//           },
+//           status: kpiStatus2,
+//         });
+
+//         return {
+//           period: time.month, // Formatted month and year
+//           [kpiStatus1]: status1Count,
+//           [kpiStatus2]: status2Count,
+//         };
+//       }
+//     }),
+//   );
+
+//   return requests.filter((req) => req !== undefined);
+// };
+
+const getTotalReservationForChart = async (
+  period: TPeriod,
+  kpiStatus1: TReservationStatus,
+  kpiStatus2: TReservationStatus,
+) => {
+  let timeFrame;
+
+  if (period === 'monthly') {
+    const today = new Date();
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const day = new Date(today);
+      day.setDate(today.getDate() - i);
+      const formattedDate = day.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
+
+      return {
+        period: formattedDate,
+        startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+        endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+      };
+    }).reverse();
+
+    timeFrame = last30Days.map((time) => ({
+      period: time.period,
+      startOfDay: time.startOfDay,
+      endOfDay: time.endOfDay,
+    }));
+  } else if (period === 'weekly') {
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(today);
+      day.setDate(today.getDate() - i);
+      const formattedDate = day.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+
+      return {
+        period: formattedDate,
+        startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+        endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+      };
+    }).reverse();
+    timeFrame = last7Days;
+  } else if (period === 'yearly') {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    timeFrame = Array.from({ length: 12 }, (_, i) => {
+      const monthOffset = currentMonth - 1 - i;
+      const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+      const month = ((monthOffset + 12) % 12) + 1;
+
+      const startOfDay = new Date(Date.UTC(year, month - 1, 1));
+      const endOfDay = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+      const monthName = startOfDay.toLocaleString('en-US', { month: 'short' });
+      const formattedMonth = `${monthName} ${year}`;
+
+      return { period: formattedMonth, startOfDay, endOfDay };
+    }).reverse();
+  }
+
+  const requests = await Promise.all(
+    timeFrame.map(async (time) => {
+      const status1Count = await ReservationRequest.countDocuments({
+        createdAt: {
+          $gte: time.startOfDay,
+          $lte: time.endOfDay,
+        },
+        status: kpiStatus1,
+      });
+
+      const status2Count = await ReservationRequest.countDocuments({
+        createdAt: {
+          $gte: time.startOfDay,
+          $lte: time.endOfDay,
+        },
+        status: kpiStatus2,
+      });
+
+      return {
+        period: time.period,
+        [kpiStatus1]: status1Count,
+        [kpiStatus2]: status2Count,
+      };
+    }),
+  );
+
+  return requests.filter((req) => req !== undefined);
+};
+
+const generateProgressReservationInPercentage = async () => {
+  const today = new Date();
+  const last30DaysAgo = new Date();
+  last30DaysAgo.setDate(today.getDate() - 30);
+
+  console.log("Today's date:", today);
+  console.log('Date 30 days ago:', last30DaysAgo);
+
+  const totalReservations = await ReservationRequest.countDocuments({
+    createdAt: { $gte: last30DaysAgo, $lte: today },
+  });
+
+  const totalOnDemandReservations = await ReservationRequest.countDocuments({
+    'schedule.category': 'on-demand',
+    createdAt: { $gte: last30DaysAgo, $lte: today },
+  });
+
+  const totalAcceptedReservations = await ReservationRequest.countDocuments({
+    status: 'accepted',
+    createdAt: { $gte: last30DaysAgo, $lte: today },
+  });
+
+  const totalOngoingReservations = await ReservationRequest.countDocuments({
+    status: 'ongoing',
+    createdAt: { $gte: last30DaysAgo, $lte: today },
+  });
+
+  const totalCompletedReservations = await ReservationRequest.countDocuments({
+    status: 'completed',
+    createdAt: { $gte: last30DaysAgo, $lte: today },
+  });
+
+  const totalCanceledReservations = await ReservationRequest.countDocuments({
+    status: 'canceled',
+    createdAt: { $gte: last30DaysAgo, $lte: today },
+  });
+
+  const calculatePercentage = (partial: number, total: number): number => {
+    return total > 0 ? (partial / total) * 100 : 0;
+  };
+
+  const onDemandProgressPercentage = calculatePercentage(
+    totalOnDemandReservations,
+    totalReservations,
+  );
+
+  const acceptedProgressPercentage = calculatePercentage(
+    totalAcceptedReservations,
+    totalReservations,
+  );
+
+  const ongoingProgressPercentage = calculatePercentage(
+    totalOngoingReservations,
+    totalReservations,
+  );
+
+  const completedProgressPercentage = calculatePercentage(
+    totalCompletedReservations,
+    totalReservations,
+  );
+
+  const canceledProgressPercentage = calculatePercentage(
+    totalCanceledReservations,
+    totalReservations,
+  );
+
+  return {
+    totalReservations,
+    onDemand: {
+      total: totalOnDemandReservations,
+      progressPercentage: onDemandProgressPercentage,
+    },
+    accepted: {
+      total: totalAcceptedReservations,
+      progressPercentage: acceptedProgressPercentage,
+    },
+    ongoing: {
+      total: totalOngoingReservations,
+      progressPercentage: ongoingProgressPercentage,
+    },
+    completed: {
+      total: totalCompletedReservations,
+      progressPercentage: completedProgressPercentage,
+    },
+    canceled: {
+      total: totalCanceledReservations,
+      progressPercentage: canceledProgressPercentage,
+    },
+  };
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   setReservationAsInvalid,
@@ -961,4 +1548,6 @@ export const reservationServices = {
   getDashboardScreenAnalyzingForServiceProviderCompany,
   getCompletedReservationRequestForServiceProviderCompany,
   getChartAnalyzing,
+  getTotalReservationForChart,
+  generateProgressReservationInPercentage,
 };
