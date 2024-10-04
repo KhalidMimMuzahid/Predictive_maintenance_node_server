@@ -144,8 +144,8 @@ const createCoupon = async ({
         (total, current, index, array) => {
           total =
             total +
-            `${index === 0 && '"'}${current}\n${
-              index === array?.length - 1 && '"'
+            `${index === 0 ? '"' : ''}${current}\n${
+              index === array?.length - 1 ? '"' : ''
             }`;
           return total;
         },
@@ -162,8 +162,8 @@ const createCoupon = async ({
         (total, current, index, array) => {
           total =
             total +
-            `${index === 0 && '"'}${current}\n${
-              index === array?.length - 1 && '"'
+            `${index === 0 ? '"' : ''}${current}\n${
+              index === array?.length - 1 ? '"' : ''
             }`;
           return total;
         },
@@ -202,8 +202,8 @@ const createCoupon = async ({
         (total, current, index, array) => {
           total =
             total +
-            `${index === 0 && '"'}${current}\n${
-              index === array?.length - 1 && '"'
+            `${index === 0 ? '"' : ''}${current}\n${
+              index === array?.length - 1 ? '"' : ''
             }`;
           return total;
         },
