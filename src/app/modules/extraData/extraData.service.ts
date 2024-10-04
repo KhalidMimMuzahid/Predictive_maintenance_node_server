@@ -133,11 +133,49 @@ const createCoupon = async ({
 
   //   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const csvExtraData: any = {};
+
+  if (subscriptionData?.package?.packageFor === 'showaUser') {
+    const showaUser = subscriptionData?.package?.showaUser;
+    if (showaUser?.packageType === 'basic') {
+      const basic = showaUser?.basic;
+      csvExtraData['applicable module'] = basic?.applicableModules?.reduce(
+        (total, current) => {
+          total = total + `"${current}\n"`;
+          return total;
+        },
+        '',
+      );
+      csvExtraData['total IOT'] = basic?.totalIOT;
+      csvExtraData['showa MB'] = basic?.showaMB;
+    } else if (showaUser?.packageType === 'standard') {
+      const standard = showaUser?.standard;
+      csvExtraData['total machine'] = standard?.totalMachine;
+    } else if (showaUser?.packageType === 'premium') {
+      const premium = showaUser?.premium;
+      csvExtraData['applicable module'] = premium?.applicableModules?.reduce(
+        (total, current) => {
+          total = total + `"${current}\n"`;
+          return total;
+        },
+        '',
+      );
+      csvExtraData['total IOT'] = premium?.totalIOT;
+      csvExtraData['total machine'] = premium?.totalMachine;
+    }
+  } else if (
+    subscriptionData?.package?.packageFor === 'serviceProviderCompany'
+  ) {
+    //
+  }
   const structuredData = couponsData?.map((coupon, index) => {
     return {
       's/n': padNumberWithZeros(index + 1, 5),
       couponId: coupon.id, // _id of predefined value
       couponFor: 'showaUser',
+      ...csvExtraData,
+      // package: subscriptionData?.package?.packageFor,
       expireIn: `"${coupon[coupon?.type]?.expireIn?.toLocaleDateString(
         'en-US',
         {
@@ -151,7 +189,7 @@ const createCoupon = async ({
         month: 'long', // e.g., October
         day: 'numeric',
       })}"`,
-      validityFromActivate: `${subscriptionData?.validity} days`,
+      validityFromActivation: `${subscriptionData?.validity} days`,
       features: subscriptionData?.features?.reduce((total, current) => {
         total = total + `"${current}\n"`;
         return total;
