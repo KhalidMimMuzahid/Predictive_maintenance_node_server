@@ -1529,12 +1529,12 @@ const generateProgressReservationInPercentage = async () => {
   };
 };
 const getReservationRequestByReservationId = async (reservationId: string) => {
-  if (!Types.ObjectId.isValid(reservationId)) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid reservation ID.');
-  }
+
 
   const reservation = await ReservationRequest.findById(reservationId);
-
+  if (!reservation) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Reservation not found.');
+  }
   return reservation;
 };
 export const reservationServices = {
