@@ -176,10 +176,20 @@ const addSensorDataInToDB = async ({
   sensorData: TModule;
   req: Request;
 }) => {
-  const sensorModuleAttached = await SensorModuleAttached.findOne({
-    macAddress,
-  })
-    .select('subscriptionPurchased moduleType')
+  const sensorModuleAttached = await SensorModuleAttached.findOne(
+    {
+      macAddress,
+    },
+    {
+      sensorData: {
+        $slice: [
+          -1, //skip
+          1, // limitTemp
+        ],
+      },
+    },
+  )
+    .select('subscriptionPurchased moduleType sectionName shockEventsCount')
     .populate({
       path: 'subscriptionPurchased',
       select: 'isActive',
@@ -215,12 +225,111 @@ const addSensorDataInToDB = async ({
   }
 
   const now = new Date(Date.now());
+  // ---------------------------------------
+  let lengthForVibration = 0;
+  let lengthForTemperature = 0;
 
+  if (sensorModuleAttached?.moduleType === 'module-1') {
+    lengthForVibration = 1;
+    lengthForTemperature = 1;
+  } else if (sensorModuleAttached?.moduleType === 'module-2') {
+    lengthForVibration = 3;
+    lengthForTemperature = 1;
+  } else if (sensorModuleAttached?.moduleType === 'module-3') {
+    lengthForVibration = 6;
+    lengthForTemperature = 3;
+  } else if (sensorModuleAttached?.moduleType === 'module-4') {
+    lengthForVibration = 6;
+    lengthForTemperature = 6;
+  }
+  const shockEventsCount = sensorModuleAttached?.shockEventsCount || {
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+    vibration: Array.from({ length: lengthForVibration }, (_, index) => 0),
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+    temperature: Array.from({ length: lengthForTemperature }, (_, index) => 0),
+  };
+
+  // const shockEventForVibrationValueMax = 3500;
+  // const shockEventForTemperatureValueMax = 30;
+
+  // This shock event is for vibration; And now it's pending
+  // {
+  //   sensorModuleAttached?.sectionName?.vibration?.forEach(
+  //     (sectionName, index) => {
+  //       if (
+  //         sensorModuleAttached?.sensorData[0]?.vibration[index] <
+  //           shockEventForVibrationValueMax &&
+  //         sensorData?.vibration[index] > shockEventForVibrationValueMax
+  //       ) {
+  //         shockEventsCount.vibration[index] += 1;
+  //       }
+  //     },
+  //   );
+  // }
+
+  sensorModuleAttached?.sectionName?.temperature?.forEach(
+    (sectionName, index) => {
+      if (sectionName === 'washingtank') {
+        const shockEventForTemperatureValueMax = 80;
+        if (
+          sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
+            shockEventForTemperatureValueMax &&
+          sensorData?.temperature[index] > shockEventForTemperatureValueMax
+        ) {
+          shockEventsCount.temperature[index] += 1;
+          req.io.emit(
+            `machine=${sensorModuleAttached?.machine?.toString()}&sensorType=temperature&sectionName=${sensorModuleAttached
+              ?.sectionName?.temperature[index]}`,
+            { value: shockEventsCount.temperature[index], createdAt: now },
+          );
+        }
+      } else if (sectionName === 'rincetank') {
+        const shockEventForTemperatureValueMax = 50;
+        if (
+          sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
+            shockEventForTemperatureValueMax &&
+          sensorData?.temperature[index] > shockEventForTemperatureValueMax
+        ) {
+          shockEventsCount.temperature[index] += 1;
+          req.io.emit(
+            `machine=${sensorModuleAttached?.machine?.toString()}&sensorType=temperature&sectionName=${sensorModuleAttached
+              ?.sectionName?.temperature[index]}`,
+            { value: shockEventsCount.temperature[index], createdAt: now },
+          );
+        }
+      } else if (sectionName === 'recycletank') {
+        const shockEventForTemperatureValueMax = 50;
+        if (
+          sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
+            shockEventForTemperatureValueMax &&
+          sensorData?.temperature[index] > shockEventForTemperatureValueMax
+        ) {
+          shockEventsCount.temperature[index] += 1;
+          req.io.emit(
+            `machine=${sensorModuleAttached?.machine?.toString()}&sensorType=temperature&sectionName=${sensorModuleAttached
+              ?.sectionName?.temperature[index]}`,
+            { value: shockEventsCount.temperature[index], createdAt: now },
+          );
+        }
+      }
+      // for other section name now it's pending
+      // else {
+      //   if (
+      //     sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
+      //       shockEventForTemperatureValueMax &&
+      //     sensorData?.temperature[index] > shockEventForTemperatureValueMax
+      //   ) {
+      //     shockEventsCount.temperature[index] += 1;
+      //   }
+      // }
+    },
+  );
+  //---------------------------------------------------
   await SensorModuleAttached.findOneAndUpdate(
     {
       macAddress,
     },
-    { $push: { sensorData: sensorData } },
+    { $push: { sensorData: sensorData }, shockEventsCount },
     { new: false },
   );
   sensorData?.temperature?.forEach((each, index) => {
@@ -245,9 +354,22 @@ const addSensorDataInToDB = async ({
       { value: each, createdAt: now },
     );
   });
-  // req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
 
-  return null;
+  // console.log(
+  //   '\nprevious Shock event\n',
+  //   sensorModuleAttached?.shockEventsCount,
+  // );
+  // console.log('\ncurrent Shock event\n', shockEventsCount);
+  // console.log('\n-----------------------------------------\n');
+  // Now need last inserted data
+  // req.io.emit(macAddress.toLowerCase(), { ...sensorData, createdAt: now });
+  // {
+  // for sending this information , first get last sensor module attached data and compare it section wise to current data for rapidly increasing value or notDeepEqual, if it is increases then count 1
+  //   Shock Events (Recycle Tank): Number of excessive temperature events
+  //   Shock Events (Rince Tank): Number of excessive temperature events
+  //   Shock Events (Washing Tank): Number of excessive temperature events
+  // }
+  return sensorModuleAttached?.sensorData;
 };
 
 const getAttachedSensorModulesByuser = async (
