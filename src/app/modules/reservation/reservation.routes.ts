@@ -70,4 +70,14 @@ router.get(
   reservationController.getChartAnalyzing,
 );
 
+router.get(
+  '/get-total-reservation-for-chart',
+  reservationController.getTotalReservationForChart,
+);
+
+router.get(
+  '/generate-progress-reservation-in-percentage',
+  reservationController.generateProgressReservationInPercentage,
+);
+
 export const reservationRoutes = router;

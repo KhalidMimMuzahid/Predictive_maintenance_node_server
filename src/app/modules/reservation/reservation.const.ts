@@ -2,6 +2,7 @@ import {
   TMachineType,
   TMachineType2,
   TPeriod,
+  TReservationStatus,
   TReservationType,
 } from './reservation.interface';
 
@@ -30,3 +31,11 @@ export const machineTypeArray2: TMachineType2[] = [
 ];
 
 export const periodTypeArray: TPeriod[] = ['weekly', 'monthly', 'yearly'];
+
+export const reservationStatusTypeArray: TReservationStatus[] = [
+  'pending',
+  'accepted',
+  'ongoing',
+  'completed',
+  'canceled',
+];

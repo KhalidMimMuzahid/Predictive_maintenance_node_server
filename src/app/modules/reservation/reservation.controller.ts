@@ -12,6 +12,7 @@ import {
   machineTypeArray2,
   periodTypeArray,
   resTypeArrayForServiceProvider,
+  reservationStatusTypeArray,
   reservationTypeArray,
 } from './reservation.const';
 import {
@@ -19,6 +20,7 @@ import {
   TMachineType2,
   TPeriod,
   TProblem,
+  TReservationStatus,
   TReservationType,
   TSchedule,
 } from './reservation.interface';
@@ -543,6 +545,72 @@ const getChartAnalyzing: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalReservationForChart: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin'],
+    });
+
+    const period: TPeriod = req?.query?.period as TPeriod;
+    const kpiStatus1: TReservationStatus = req?.query
+      ?.kpiStatus1 as TReservationStatus;
+    const kpiStatus2: TReservationStatus = req?.query
+      ?.kpiStatus2 as TReservationStatus;
+
+    [kpiStatus1, kpiStatus2].forEach((status) => {
+      if (!reservationStatusTypeArray.some((each) => each === status)) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          `Status type must be any of ${reservationStatusTypeArray.join(', ')}`,
+        );
+      }
+    });
+
+    if (!periodTypeArray.some((each) => each === period)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `Period type must be any of ${periodTypeArray.join(', ')}`,
+      );
+    }
+
+    const result = await reservationServices.getTotalReservationForChart(
+      period,
+      kpiStatus1,
+      kpiStatus2,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'total reservation requests retrieved successfully',
+      data: result,
+    });
+  },
+);
+
+const generateProgressReservationInPercentage: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // Check if the user has access to this functionality
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+    // Call the service to calculate the progress percentage
+    const result =
+      await reservationServices.generateProgressReservationInPercentage();
+
+    // Send the response with the calculated percentage
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Progress reservation percentage calculated successfully',
+      data: result,
+    });
+  },
+);
+
 export const reservationController = {
   createReservationRequest,
   setReservationAsInvalid,
@@ -561,5 +629,7 @@ export const reservationController = {
   getReservationRequestForServiceProviderCompany,
   getDashboardScreenAnalyzingForServiceProviderCompany,
   getCompletedReservationRequestForServiceProviderCompany,
-  getChartAnalyzing,
+  getChartAnalyzing, //located at Super Admin Web -> Reservation screen in figma
+  getTotalReservationForChart,
+  generateProgressReservationInPercentage,
 };
