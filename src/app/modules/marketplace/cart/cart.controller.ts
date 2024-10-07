@@ -1,11 +1,11 @@
-import httpStatus from 'http-status';
-import sendResponse from '../../../utils/sendResponse';
 import { RequestHandler } from 'express';
+import httpStatus from 'http-status';
+import AppError from '../../../errors/AppError';
+import { TAuth } from '../../../interface/error';
 import catchAsync from '../../../utils/catchAsync';
 import { checkUserAccessApi } from '../../../utils/checkUserAccessApi';
-import { TAuth } from '../../../interface/error';
+import sendResponse from '../../../utils/sendResponse';
 import { cartServices } from './cart.service';
-import AppError from '../../../errors/AppError';
 
 const addProductToCart: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -79,7 +79,7 @@ const getMyAllCarts: RequestHandler = catchAsync(async (req, res) => {
 });
 
 export const cartController = {
-  addProductToCart,
-  deleteCart,
-  getMyAllCarts,
+  addProductToCart, //customer app-> marketplace-> product details ->add to cart
+  deleteCart, //customer app-> marketplace
+  getMyAllCarts, //customer app-> marketplace->cart->my cart
 };

@@ -74,5 +74,5 @@ const getAllOfferedSubscriptionsForShowaUser: RequestHandler = catchAsync(
 
 export const subscriptionControllers = {
   createSubscription,
-  getAllOfferedSubscriptionsForShowaUser,
+  getAllOfferedSubscriptionsForShowaUser, //(customer app)
 };

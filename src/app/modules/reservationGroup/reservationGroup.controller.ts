@@ -475,17 +475,17 @@ const deleteBid: RequestHandler = catchAsync(async (req, res) => {
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
-  addBid,
-  setBiddingDate,
+  addBid, //Service Provider -> Maintenance-> Maintenance-Bid
+  setBiddingDate, //super adminn
   selectBiddingWinner,
   sendReservationGroupToBranch,
   getReservationGroupById,
-  getLiveReservationGroups,
-  getBidedReservationGroupsByCompany,
-  getAllUnAssignedResGroupToBranchByCompany,
-  getAllOnDemandResGroupByCompany,
-  getAllOnDemandUnassignedToCompanyResGroups,
-  acceptOnDemandResGroupByBranch,
-  updateBid,
-  deleteBid,
+  getLiveReservationGroups, //Service Provider -> Maintenance-> Maintenance-Bid
+  getBidedReservationGroupsByCompany, //Service Provider -> Maintenance-> Maintenance-Bid
+  getAllUnAssignedResGroupToBranchByCompany, //Service Provider -> Maintenance
+  getAllOnDemandResGroupByCompany, //Service Provider -> Maintenance
+  getAllOnDemandUnassignedToCompanyResGroups, //Service Provider -> Maintenance
+  acceptOnDemandResGroupByBranch, //Service Provider -> Maintenance
+  updateBid, //this api is already implemented on addBid api,now you may delete this api
+  deleteBid, //Service Provider -> Maintenance-> Maintenance-Bid-bided
 };

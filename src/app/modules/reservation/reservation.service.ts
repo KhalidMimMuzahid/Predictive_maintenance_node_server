@@ -1528,7 +1528,15 @@ const generateProgressReservationInPercentage = async () => {
     },
   };
 };
+const getReservationRequestByReservationId = async (reservationId: string) => {
+  if (!Types.ObjectId.isValid(reservationId)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid reservation ID.');
+  }
 
+  const reservation = await ReservationRequest.findById(reservationId);
+
+  return reservation;
+};
 export const reservationServices = {
   createReservationRequestIntoDB,
   setReservationAsInvalid,
@@ -1550,4 +1558,5 @@ export const reservationServices = {
   getChartAnalyzing,
   getTotalReservationForChart,
   generateProgressReservationInPercentage,
+  getReservationRequestByReservationId,
 };

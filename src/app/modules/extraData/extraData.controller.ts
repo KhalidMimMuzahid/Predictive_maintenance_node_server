@@ -1,13 +1,13 @@
 import { Request, RequestHandler } from 'express';
-import catchAsync from '../../utils/catchAsync';
-import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-import { extraDataServices } from './extraData.service';
-import sendResponse from '../../utils/sendResponse';
-import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
+import AppError from '../../errors/AppError';
 import { TAuth } from '../../interface/error';
+import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
+import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
+import sendResponse from '../../utils/sendResponse';
 import { TFeedback, TInviteMember } from './extraData.interface';
+import { extraDataServices } from './extraData.service';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
   const emailOrPhone: string = req?.query?.emailOrPhone as string;

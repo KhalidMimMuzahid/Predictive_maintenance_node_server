@@ -1,12 +1,12 @@
 import { RequestHandler } from 'express';
+import httpStatus from 'http-status';
+import AppError from '../../errors/AppError';
 import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
-import AppError from '../../errors/AppError';
-import httpStatus from 'http-status';
-import { invoiceServices } from './invoice.services';
 import sendResponse from '../../utils/sendResponse';
 import { TAdditionalProduct, TInspecting } from './invoice.interface';
+import { invoiceServices } from './invoice.services';
 
 const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -171,10 +171,10 @@ const getAllAssignedTasksByEngineer: RequestHandler = catchAsync(
 );
 
 export const invoiceController = {
-  addAdditionalProducts,
-  inspection,
+  addAdditionalProducts, //service provider app->rservation->maintenance->details
+  inspection, //service provider app->rservation->maintenance
   changeStatusToCompleted,
-  getAllInvoices,
-  getAllInvoicesByUser,
-  getAllAssignedTasksByEngineer,
+  getAllInvoices, //service provider app->engineer app->Invoices->All invoices
+  getAllInvoicesByUser, //service provider app ->engineer app->Invoices->All invoices
+  getAllAssignedTasksByEngineer, //service provider app->rservation->maintenance->assigned task
 };

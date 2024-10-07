@@ -611,10 +611,46 @@ const generateProgressReservationInPercentage: RequestHandler = catchAsync(
   },
 );
 
+const getReservationRequestByReservationId: RequestHandler = catchAsync(
+  async (req, res) => {
+    const reservationId: string = req.query.reservationId as string;
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: 'all',
+    });
+
+    if (!reservationId) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Reservation ID is required to retrieve the reservation.',
+      );
+    }
+
+    const reservation =
+      await reservationServices.getReservationRequestByReservationId(
+        reservationId,
+      );
+
+    if (!reservation) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Reservation not found.');
+    }
+
+    // Send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Reservation retrieved successfully.',
+      data: reservation,
+    });
+  },
+);
+
 export const reservationController = {
   createReservationRequest,
   setReservationAsInvalid,
-  reschedule,
+  reschedule, //Service Provider -> Maintenance->Maintenance-task-reschedule
   getMyReservations,
   getMyReservationsByStatus,
   getReservationsByStatus,
@@ -622,14 +658,15 @@ export const reservationController = {
   getAllReservationsCount,
   getAllReservationsByUser,
   getAllReservationsByServiceProviderCompany,
-  getAllScheduledReservationsByServiceProviderCompany,
-  getReservationCountByServiceProviderCompany,
-  uploadRequestImage,
-  deleteReservation,
-  getReservationRequestForServiceProviderCompany,
-  getDashboardScreenAnalyzingForServiceProviderCompany,
-  getCompletedReservationRequestForServiceProviderCompany,
-  getChartAnalyzing, //located at Super Admin Web -> Reservation screen in figma
-  getTotalReservationForChart,
-  generateProgressReservationInPercentage,
+  getAllScheduledReservationsByServiceProviderCompany, //Service Provider -> Maintenance->Maintenance-task-schedule
+  getReservationCountByServiceProviderCompany, //Showa super admin → service provider
+  uploadRequestImage, //Showa super admin → service provider
+  deleteReservation, //Showa super admin → service provider
+  getReservationRequestForServiceProviderCompany, //(type wise :'ongoing','completed','canceled','rescheduled')Service provider->Maintenance task
+  getDashboardScreenAnalyzingForServiceProviderCompany, //Service Provider->maintenance dashboard->overview
+  getCompletedReservationRequestForServiceProviderCompany, //(weekly/ monthly/ yearly)Maintenance Service Provider
+  getChartAnalyzing, //(barChart)Super Admin Web-> Service Provider-> Vendors Yearly Request
+  getTotalReservationForChart, //(Comparison)Super Admin Web -> Reservation->reservation Comparison
+  generateProgressReservationInPercentage, //(Total count and its percentage)Super Admin Web -> Reservation->reservation overview
+  getReservationRequestByReservationId,
 };

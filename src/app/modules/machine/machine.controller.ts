@@ -6,8 +6,8 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
-import { TBiddingDate } from '../reservationGroup/reservationGroup.interface';
 import { TAddress } from '../common/common.interface';
+import { TBiddingDate } from '../reservationGroup/reservationGroup.interface';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
 import { TMachine, TMachineHealthStatus } from './machine.interface';
 import { machineServices } from './machine.service';
@@ -464,7 +464,7 @@ export const machineController = {
   addSensorConnectedMachine,
   addSensorModuleInToMachine,
   addSensorAttachedModuleInToMachine,
-  updateAddress,
+  updateAddress, //showa super admin->customer
   updateMachinePackageStatus,
   getMyWashingMachine,
   getMyGeneralMachine,
@@ -474,12 +474,12 @@ export const machineController = {
   getAllSensorSectionWiseByMachine,
   getMachineBy_id,
 
-  deleteMachine,
+  deleteMachine, //showa super admin->customer->machine status
   machineHealthStatus,
   machineReport,
   machinePerformanceBrandWise,
   machinePerformanceModelWise,
   // changeStatus,
   // addSensor,
-  editMachine,
+  editMachine, //showa super admin->customer->machine status
 };

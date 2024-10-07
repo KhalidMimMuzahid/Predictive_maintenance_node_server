@@ -89,13 +89,13 @@ const getProductSalesForGraph: RequestHandler = async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'grt product sales for graph',
+    message: 'get product sales for graph',
     data: result,
   });
 };
 
 export const shopController = {
-  createShop,
-  getShopDashboard,
-  getProductSalesForGraph,
+  createShop, //Service Provider app->maintenance-company-
+  getShopDashboard, //Service Provider app->maintenance-company->shop dashboard
+  getProductSalesForGraph, //Service Provider app->maintenance-company->shop dashboard
 };
