@@ -100,6 +100,6 @@ const renewSubscription: RequestHandler = catchAsync(async (req, res) => {
 
 export const subscriptionPurchasedControllers = {
   purchaseSubscription,
-  getAllMySubscriptions,
-  renewSubscription,
+  getAllMySubscriptions, //(customer app)
+  renewSubscription, //extend subscription  (customer app)
 };

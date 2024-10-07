@@ -193,6 +193,6 @@ export const walletControllers = {
   mbTransfer,
   getMyMBTransaction,
   getRecentMBTransfer,
-  addCardToMyWallet,
-  deleteCardFromMyWallet,
+  addCardToMyWallet, //(Maintenance Service Provider)
+  deleteCardFromMyWallet, //(Maintenance Service Provider)
 };

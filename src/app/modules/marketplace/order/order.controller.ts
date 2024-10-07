@@ -242,11 +242,11 @@ const getAllOrders: RequestHandler = catchAsync(async (req, res) => {
 });
 
 export const orderController = {
-  orderProduct,
+  orderProduct, //customer app->marketplace->
   cancelOrAcceptOrder,
   changeStatusWithDate,
-  getMyAllOrder,
-  getOrderDetailsByOrder,
+  getMyAllOrder, //customer app->marketplace->my orders
+  getOrderDetailsByOrder, //customer app->marketplace->order details
   getAllOrdersByShop,
-  getAllOrders,
+  getAllOrders, //Super Admin Web
 };

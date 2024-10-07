@@ -518,21 +518,21 @@ const getSearch: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 export const postController = {
-  createPost,
-  sharePost,
-  likePost,
-  unlikePost,
-  commentPost,
-  removeComment,
-  addReplayIntoComment,
-  removeReplayFromComment,
-  getPostsForMyFeed,
-  getAllLikesByPost,
-  getAllCommentsByPost,
-  getAllSharesByPost,
-  getAllReplaysByComment,
-  getPostByPostId,
-  deletePost,
-  getPostsByUser,
-  getSearch,
+  createPost, ///customer web app->feed->create post
+  sharePost, //customer app->feed
+  likePost, //customer app->feed
+  unlikePost, //customer app->feed
+  commentPost, //customer app->feed
+  removeComment, //customer app->feed
+  addReplayIntoComment, //customer app->feed
+  removeReplayFromComment, //customer app->feed
+  getPostsForMyFeed, //customer app->feed
+  getAllLikesByPost, //customer app->feed
+  getAllCommentsByPost, //customer app->feed
+  getAllSharesByPost, //customer app->feed
+  getAllReplaysByComment, //customer app->feed
+  getPostByPostId, //customer app->feed
+  deletePost, //customer app->feed->more settings
+  getPostsByUser, //customer app->feed
+  getSearch, //(search post,people and maintanence) customer app->feed->search->recent search
 };
