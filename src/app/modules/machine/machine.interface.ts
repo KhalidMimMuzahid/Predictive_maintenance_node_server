@@ -10,6 +10,9 @@ export type TMachine = {
     health: THealthStatus;
   }; // based oon what ?????????
   packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
+  operatingStatus?: 'running' | 'idle' | 'off';
+  thermalScore?: number;
+  energyScore?: number;
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;
   issues?: TIssue[];
@@ -17,7 +20,6 @@ export type TMachine = {
   // userType: 'showa-user'; // default value 'showa-user'; for future we may need, if showa-user and other user type like organization or anything
   user: Types.ObjectId; // objectId of User model
   usedFor?: TCompany; // shop or company info ;
-
   generalMachine?: {
     homeName?: string; //  ??????
     homeType?: string; // ?????? "Mansion" | "Apartment" | "others"
@@ -26,21 +28,20 @@ export type TMachine = {
   washingMachine?: {
     type: string; // like Dish washing machine, Pallet washing machine, Container washing machine
   };
-
   brand: string; // as mentioned in figma; brand name of the machine
   model: string; // as mentioned in figma; model name of the machine
   environment: 'indoor' | 'outdoor'; // as mentioned in figma  like  "indoor" or "outdoor"
   sensorModulesAttached?: Types.ObjectId[]; // objectId of SensorModuleAttached
-
   subscriptionPurchased: Types.ObjectId;
-
   isDeleted: TIsDeleted;
-  // objectId of TAttachedSensor model
 };
 
 export type TMachineHealthStatus = {
   healthStatus: THealthStatus;
   issues: string[];
+  operatingStatus?: 'running' | 'idle' | 'off';
+  thermalScore?: number;
+  energyScore?: number;
   healthStatuses: {
     // timeStamp: string;
     sectionName: string;
@@ -50,11 +51,4 @@ export type TMachineHealthStatus = {
     };
     healthStatus: THealthStatus;
   }[];
-  // sensorModulesAttached: {
-  //   _id: Types.ObjectId;
-  //   moduleType: TModuleType;
-  //   sectionName: TSectionName;
-  //   healthStatuses: THealthStatuses;
-  //   sensorData: TModule[];
-  // }[];
 };

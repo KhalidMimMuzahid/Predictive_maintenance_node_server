@@ -930,6 +930,16 @@ const machineHealthStatus = async ({
   });
 
   machineData.issues = newIssues;
+  if (machineHealthData?.operatingStatus) {
+    machineData.operatingStatus = machineHealthData?.operatingStatus;
+  }
+  if (machineHealthData?.energyScore) {
+    machineData.energyScore = machineHealthData?.energyScore;
+  }
+  if (machineHealthData?.thermalScore) {
+    machineData.thermalScore = machineHealthData?.thermalScore;
+  }
+
   await machineData.save();
 
   Promise.all(

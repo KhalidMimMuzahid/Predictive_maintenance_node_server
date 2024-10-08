@@ -47,6 +47,9 @@ const healthStatusesSchema = z.object({
 const machineHealthStatusSchema = z.object({
   healthStatus: z.enum(['bad', 'good', 'moderate']),
   issues: z.array(z.string()),
+  operatingStatus: z.enum(['running', 'idle', 'off']),
+  thermalScore: z.number().optional(),
+  energyScore: z.number().optional(),
   healthStatuses: z.array(healthStatusesSchema),
 });
 

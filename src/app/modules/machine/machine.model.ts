@@ -30,6 +30,20 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       default: 'Pending',
       required: true,
     },
+    operatingStatus: {
+      type: String,
+      enum: ['running', 'idle', 'off'],
+      // default: 'off',
+      required: false,
+    },
+    energyScore: {
+      type: Number,
+      required: false,
+    },
+    thermalScore: {
+      type: Number,
+      required: false,
+    },
     category: {
       type: String,
       enum: ['washing-machine', 'general-machine'],
