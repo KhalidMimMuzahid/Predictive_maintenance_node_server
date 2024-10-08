@@ -4,6 +4,11 @@ export type THealthStatus = 'bad' | 'good' | 'moderate' | 'unknown';
 export type TIssue = {
   issue: string;
 };
+
+export type TCycleCount = {
+  life: number;
+  reservationPeriod: number;
+};
 export type TMachine = {
   machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"
   healthStatus: {
@@ -13,6 +18,7 @@ export type TMachine = {
   operatingStatus?: 'running' | 'idle' | 'off';
   thermalScore?: number;
   energyScore?: number;
+  cycleCount?: TCycleCount;
   category: 'washing-machine' | 'general-machine'; // why those two type ???????
   name: string;
   issues?: TIssue[];
@@ -42,6 +48,7 @@ export type TMachineHealthStatus = {
   operatingStatus?: 'running' | 'idle' | 'off';
   thermalScore?: number;
   energyScore?: number;
+
   healthStatuses: {
     // timeStamp: string;
     sectionName: string;

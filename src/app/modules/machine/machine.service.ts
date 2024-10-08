@@ -866,11 +866,10 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
   };
 };
 const getMachineBy_id = async (machine: string) => {
-  console.log(machine);
   const machineData = await Machine.findById({
     _id: new mongoose.Types.ObjectId(machine),
   });
-  console.log({ machineData });
+
   return machineData;
 };
 
@@ -887,6 +886,7 @@ const machineHealthStatus = async ({
   const machineData = await Machine.findById(machine, {
     healthStatus: 1,
     issues: 1,
+    cycleCount: 1,
     // sensorModulesAttached: 1,
   });
   if (!machineData) {
@@ -895,7 +895,6 @@ const machineHealthStatus = async ({
       'no machine has found with this machine',
     );
   }
-
   const now = new Date(Date.now());
 
   // console.log({
@@ -932,6 +931,18 @@ const machineHealthStatus = async ({
   machineData.issues = newIssues;
   if (machineHealthData?.operatingStatus) {
     machineData.operatingStatus = machineHealthData?.operatingStatus;
+    if (machineHealthData?.operatingStatus === 'running') {
+      const newCycleCount = machineData.cycleCount || {
+        life: 0,
+        reservationPeriod: 0,
+      };
+
+      machineData.cycleCount = {
+        life: (newCycleCount?.life | 0) + 2,
+        reservationPeriod: (newCycleCount?.reservationPeriod | 0) + 2,
+      };
+      // (machineData.cycleCount | 0) + 2; //  this data is coming in every 1 minute, and we are assuming, after every 30 second machine increasing cycle by 1
+    }
   }
   if (machineHealthData?.energyScore) {
     machineData.energyScore = machineHealthData?.energyScore;
