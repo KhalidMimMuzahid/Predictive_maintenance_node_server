@@ -96,6 +96,6 @@ const getProductSalesForGraph: RequestHandler = async (req, res) => {
 
 export const shopController = {
   createShop, //Service Provider app->maintenance-company-
-  getShopDashboard, //Service Provider app->maintenance-company->shop dashboard
-  getProductSalesForGraph, //Service Provider app->maintenance-company->shop dashboard
+  getShopDashboard, //Service Provider app->maintenance shop-company->shop dashboard
+  getProductSalesForGraph, //Service Provider app->maintenance shop-company->shop dashboard
 };

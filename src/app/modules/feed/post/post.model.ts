@@ -105,6 +105,7 @@ const postSchema = new Schema<TPost>(
     ],
     shares: { type: [mongoose.Schema.Types.ObjectId], ref: 'Post' },
     seenBy: { type: [mongoose.Schema.Types.ObjectId], ref: 'User' },
+    isHidden: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

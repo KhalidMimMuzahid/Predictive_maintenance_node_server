@@ -463,7 +463,7 @@ const deletePost: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
-const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
+const getAllPostsByUser: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   checkUserAccessApi({ auth, accessUsers: 'all' });
 
@@ -473,7 +473,7 @@ const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'User ID is required');
   }
 
-  const postsData = await postServices.getPostsByUser({
+  const postsData = await postServices.getAllPostsByUser({
     userId,
     isMyPost: auth._id?.toString() === userId,
   });
@@ -486,37 +486,148 @@ const getPostsByUser: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-const getSearch: RequestHandler = catchAsync(async (req, res) => {
+const getRecentSearchForCustomerApp: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const { searchQuery, action } = req.query as {
+      searchQuery: string;
+
+      action: 'searchPosts' | 'searchPeople' | 'maintenance';
+    };
+
+    if (!searchTypeArray.some((each) => each === action)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `action must be any of ${searchTypeArray.reduce((total, current) => {
+          total = total + `${current}, `;
+          return total;
+        }, '')}`,
+      );
+    }
+
+    const combinedData = await postServices.getRecentSearchForCustomerApp({
+      searchQuery: searchQuery as string,
+      action: action as 'posts' | 'people' | 'maintenance',
+    });
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: `${action} retrieved successfully`,
+      data: combinedData,
+    });
+  },
+);
+
+const editPost: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  checkUserAccessApi({ auth, accessUsers: 'all' });
-  const { searchQuery, action } = req.query as {
-    searchQuery: string;
 
-    action: 'searchPosts' | 'searchPeople' | 'maintenance';
-  };
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
 
-  if (!searchTypeArray.some((each) => each === action)) {
+  const postId = req?.query?.postId as string;
+  const postData = req?.body as Partial<TPost>;
+
+  if (!postId) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `action must be any of ${searchTypeArray.reduce((total, current) => {
-        total = total + `${current}, `;
-        return total;
-      }, '')}`,
+      'Post ID is required to edit the post',
     );
   }
 
-  const combinedData = await postServices.getSearch({
-    searchQuery: searchQuery as string,
-    action: action as 'posts' | 'people' | 'maintenance',
+  if (!Object.keys(postData).length) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'No post data provided for the update',
+    );
+  }
+
+  // if (!postData) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'No post data provided for the update',
+  //   );
+  // }
+
+  const updatedPost = await postServices.editPost({
+    postId,
+    postData,
+    auth,
+  });
+
+  if (!updatedPost) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Post has been updated successfully',
+    data: updatedPost,
+  });
+});
+
+const hidePost: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req.headers.auth as unknown as TAuth;
+  const postId = req.query.postId as string;
+
+  if (!postId) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Post ID is required to hide the post',
+    );
+  }
+
+  const result = await postServices.hidePost({
+    postId,
+    auth,
   });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: `${action} retrieved successfully`,
-    data: combinedData,
+
+    data: result,
   });
 });
+
+const getRecentSearchForSuperAdminWeb: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const { searchQuery, action } = req.query as {
+      searchQuery: string;
+
+      action: 'searchPosts' | 'searchPeople' | 'maintenance';
+    };
+
+    if (!searchTypeArray.some((each) => each === action)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `action must be any of ${searchTypeArray.reduce((total, current) => {
+          total = total + `${current}, `;
+          return total;
+        }, '')}`,
+      );
+    }
+
+    const combinedData = await postServices.getRecentSearchForSuperAdminWeb({
+      searchQuery: searchQuery as string,
+      action: action as 'posts' | 'people' | 'maintenance',
+    });
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: `${action} retrieved successfully`,
+      data: combinedData,
+    });
+  },
+);
+
 export const postController = {
   createPost, ///customer web app->feed->create post
   sharePost, //customer app->feed
@@ -533,6 +644,9 @@ export const postController = {
   getAllReplaysByComment, //customer app->feed
   getPostByPostId, //customer app->feed
   deletePost, //customer app->feed->more settings
-  getPostsByUser, //customer app->feed
-  getSearch, //(search post,people and maintanence) customer app->feed->search->recent search
+  getAllPostsByUser, //customer app->feed
+  getRecentSearchForCustomerApp, //(search post,people and maintanence) customer app->feed->search->recent search
+  editPost, //customer app->feed->more settings
+  hidePost, //customer app->feed
+  getRecentSearchForSuperAdminWeb, //Showa super admin web->feed->search result
 };

@@ -37,7 +37,17 @@ router.get('/get-all-shares-by-post', postController.getAllSharesByPost);
 router.get('/get-posts-for-my-feed', postController.getPostsForMyFeed);
 router.get('/get-post-by-postId', postController.getPostByPostId);
 router.delete('/delete-post', postController.deletePost);
-router.get('/get-post-by-user', postController.getPostsByUser);
-router.get('/get-search', postController.getSearch);
+router.get('/get-post-by-user', postController.getAllPostsByUser);
+router.get(
+  '/get-recent-search-for-customer-app',
+  postController.getRecentSearchForCustomerApp,
+);
+router.patch('/edit-post', postController.editPost);
+router.post('/hide-post', postController.hidePost);
+
+router.get(
+  '/get-recent-search-for-super-admin-web',
+  postController.getRecentSearchForSuperAdminWeb,
+);
 
 export const postRoutes = router;

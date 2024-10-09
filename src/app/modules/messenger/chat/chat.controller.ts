@@ -1,11 +1,11 @@
 import { RequestHandler } from 'express';
+import httpStatus from 'http-status';
+import AppError from '../../../errors/AppError';
+import { TAuth } from '../../../interface/error';
 import catchAsync from '../../../utils/catchAsync';
+import sendResponse from '../../../utils/sendResponse';
 import { TChat } from './chat.interface';
 import { chatServices } from './chat.service';
-import sendResponse from '../../../utils/sendResponse';
-import httpStatus from 'http-status';
-import { TAuth } from '../../../interface/error';
-import AppError from '../../../errors/AppError';
 
 const createPersonalChat: RequestHandler = catchAsync(async (req, res) => {
   // const personalChatData: Partial<TChat> = req.body as Partial<TChat>;
@@ -88,8 +88,6 @@ const getMyAllChats: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
-
-
 const getChatByChat_id: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   const chat_id = req?.query?.chat_id as string;
@@ -119,5 +117,3 @@ export const chatController = {
   getMyAllChats,
   getChatByChat_id,
 };
-
-

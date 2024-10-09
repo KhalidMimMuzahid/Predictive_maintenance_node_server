@@ -38,6 +38,7 @@ export type TPost = {
   commentPrivacy: 'public' | 'friends' | 'only-me' | 'specific-friends';
   user: mongoose.Types.ObjectId;
   isSponsored: boolean;
+  isHidden: boolean;
 
   sharingStatus: TSharingStatus;
   // following: mongoose.Types.ObjectId;
