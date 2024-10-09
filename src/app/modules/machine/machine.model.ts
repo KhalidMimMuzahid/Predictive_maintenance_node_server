@@ -4,7 +4,7 @@ import {
   CompanySchema,
   IsDeletedSchema,
 } from '../common/common.model';
-import { TMachine } from './machine.interface';
+import { TCycleCount, TMachine } from './machine.interface';
 
 export const MachineSchema: Schema = new Schema<TMachine>(
   {
@@ -29,6 +29,43 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       enum: ['Pending', 'Running', 'Expired'],
       default: 'Pending',
       required: true,
+    },
+    operatingStatus: {
+      type: String,
+      enum: ['running', 'idle', 'off'],
+      // default: 'off',
+      required: false,
+    },
+    energyScore: {
+      type: Number,
+      required: false,
+    },
+    thermalScore: {
+      type: Number,
+      required: false,
+    },
+    cycleCount: {
+      type: new Schema<TCycleCount>(
+        {
+          life: {
+            type: Number,
+            required: false,
+          },
+          reservationPeriod: {
+            type: Number,
+            required: false,
+          },
+        },
+        {
+          _id: false,
+          timestamps: false,
+        },
+      ),
+      required: false,
+      default: {
+        life: 0,
+        reservationPeriod: 0,
+      },
     },
     category: {
       type: String,

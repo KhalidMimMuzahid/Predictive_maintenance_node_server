@@ -141,8 +141,12 @@ const createCoupon = async ({
     if (showaUser?.packageType === 'basic') {
       const basic = showaUser?.basic;
       csvExtraData['applicable module'] = basic?.applicableModules?.reduce(
-        (total, current) => {
-          total = total + `"${current}\n"`;
+        (total, current, index, array) => {
+          total =
+            total +
+            `${index === 0 ? '"' : ''}${current}\n${
+              index === array?.length - 1 ? '"' : ''
+            }`;
           return total;
         },
         '',
@@ -155,8 +159,12 @@ const createCoupon = async ({
     } else if (showaUser?.packageType === 'premium') {
       const premium = showaUser?.premium;
       csvExtraData['applicable module'] = premium?.applicableModules?.reduce(
-        (total, current) => {
-          total = total + `"${current}\n"`;
+        (total, current, index, array) => {
+          total =
+            total +
+            `${index === 0 ? '"' : ''}${current}\n${
+              index === array?.length - 1 ? '"' : ''
+            }`;
           return total;
         },
         '',
@@ -190,10 +198,17 @@ const createCoupon = async ({
         day: 'numeric',
       })}"`,
       validityFromActivation: `${subscriptionData?.validity} days`,
-      features: subscriptionData?.features?.reduce((total, current) => {
-        total = total + `"${current}\n"`;
-        return total;
-      }, ''),
+      features: subscriptionData?.features?.reduce(
+        (total, current, index, array) => {
+          total =
+            total +
+            `${index === 0 ? '"' : ''}${current}\n${
+              index === array?.length - 1 ? '"' : ''
+            }`;
+          return total;
+        },
+        '',
+      ),
     };
   });
   const csvData = fileHandle.jsonToCsv(structuredData);

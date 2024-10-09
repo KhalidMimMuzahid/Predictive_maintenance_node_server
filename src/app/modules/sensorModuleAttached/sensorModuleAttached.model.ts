@@ -36,6 +36,15 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
         ),
       },
     ],
+    shockEventsCount: {
+      type: new mongoose.Schema<TModule>(
+        { vibration: [Number], temperature: [Number] },
+        {
+          timestamps: false,
+          _id: false,
+        },
+      ),
+    },
     sectionName: {
       type: new mongoose.Schema<TSectionName>(
         {

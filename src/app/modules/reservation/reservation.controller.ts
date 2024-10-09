@@ -628,21 +628,17 @@ const getReservationRequestByReservationId: RequestHandler = catchAsync(
       );
     }
 
-    const reservation =
+    const result =
       await reservationServices.getReservationRequestByReservationId(
         reservationId,
       );
-
-    if (!reservation) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Reservation not found.');
-    }
 
     // Send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'Reservation retrieved successfully.',
-      data: reservation,
+      message: 'Reservation has retrieved successfully.',
+      data: result,
     });
   },
 );

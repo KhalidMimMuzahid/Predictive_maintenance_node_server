@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
 import { TIsDeleted } from '../../../common/common.interface';
-
+export type TName = { firstName: string; lastName: string };
 export type TServiceProviderAdmin = {
   user: Types.ObjectId;
-  name: { firstName: string; lastName: string };
+  name: TName;
   photoUrl?: string;
   serviceProviderCompany: Types.ObjectId;
   shop?: Types.ObjectId;

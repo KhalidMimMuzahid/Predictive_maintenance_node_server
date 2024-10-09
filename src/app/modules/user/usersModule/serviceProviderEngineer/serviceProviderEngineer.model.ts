@@ -1,5 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
-import { TServiceProviderEngineer } from './serviceProviderEngineer.interface';
+import {
+  TName,
+  TServiceProviderEngineer,
+} from './serviceProviderEngineer.interface';
 import { IsDeletedSchema } from '../../../common/common.model';
 
 export const ServiceProviderEngineerSchema: Schema =
@@ -74,7 +77,8 @@ export const ServiceProviderEngineerSchema: Schema =
   );
 
 ServiceProviderEngineerSchema.virtual('fullName').get(function () {
-  return this?.name?.firstName + ' ' + this?.name?.lastName;
+  const name = this?.name as unknown as TName;
+  return name?.firstName + ' ' + name?.lastName;
 });
 
 export const ServiceProviderEngineer = mongoose.model<TServiceProviderEngineer>(

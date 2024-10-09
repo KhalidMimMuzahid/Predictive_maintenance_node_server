@@ -67,5 +67,6 @@ export type TSensorModuleAttached = {
   isSwitchedOn: boolean; // when the sensor is active then it's value is true
   moduleType: TModuleType;
   sensorData?: TModule[];
+  shockEventsCount: TModule;
   subscriptionPurchased: Types.ObjectId;
 };

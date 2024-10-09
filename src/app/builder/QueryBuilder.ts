@@ -53,10 +53,17 @@ class QueryBuilder<T> {
     return this;
   }
 
+  // fieldLimit() {
+  //   const fields =
+  //     (this?.query?.fields as string)?.split(',')?.join(' ') || '-__v';
+  //   this.modelQuery = this?.modelQuery?.select(fields);
+  //   return this;
+  // }
+  // I have changed this fieldLimit because of typescript error
   fieldLimit() {
     const fields =
       (this?.query?.fields as string)?.split(',')?.join(' ') || '-__v';
-    this.modelQuery = this?.modelQuery?.select(fields);
+    this?.modelQuery?.select(fields);
     return this;
   }
 }
