@@ -5,6 +5,8 @@ import { TThreshold } from './ai.interface';
 import { AI } from './ai.model';
 import { ReservationRequest } from '../reservation/reservation.model';
 import { addDays } from '../../utils/addDays';
+import { Machine } from '../machine/machine.model';
+import mongoose from 'mongoose';
 
 const addThreshold = async ({
   thresholdData,
@@ -124,9 +126,93 @@ const aiPerformance = async () => {
     100;
   return performance;
 };
+
+const getMaintenanceDueByMachine = async (machine: string) => {
+  const machineData = await Machine.findById(machine);
+  if (!machineData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no machine found with the id you provided',
+    );
+  }
+
+  const machineAI = await AI.findOne({
+    type: 'machine',
+  }).select('machine');
+
+  if (
+    !machineAI?.machine?.reservationCycle?.totalCycle ||
+    !machineAI?.machine?.reservationCycle?.totalReservation
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'AI has no enough data to generate maintenance due',
+    );
+  }
+  const averageReservationCycle =
+    machineAI?.machine?.reservationCycle?.totalCycle /
+    machineAI?.machine?.reservationCycle?.totalReservation;
+  const machineCycleCountInReservationPeriod =
+    machineData?.cycleCount?.reservationPeriod || 0;
+
+  return averageReservationCycle - machineCycleCountInReservationPeriod;
+};
+
+const getLifeCycleByMachine = async (machine: string) => {
+  const machineData = await Machine.findById(machine);
+  if (!machineData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no machine found with the id you provided',
+    );
+  }
+
+  const machineAI = await AI.findOne({
+    type: 'machine',
+  }).select('machine');
+
+  if (
+    !machineAI?.machine?.lifeCycle?.totalCycle ||
+    !machineAI?.machine?.lifeCycle?.totalMachine
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'AI has no enough data to generate life cycle',
+    );
+  }
+  const averageLifeCycle =
+    machineAI?.machine?.lifeCycle?.totalCycle /
+    machineAI?.machine?.lifeCycle?.totalMachine;
+  const machineCycleCountInLife = machineData?.cycleCount?.life || 0;
+
+  return averageLifeCycle - machineCycleCountInLife;
+};
+
+const getMachineBadSections = async (machine: string) => {
+  const sectionNames = await predefinedValueServices.getIotSectionNames();
+
+  const badSectionNames = await Promise.all(
+    sectionNames?.map(async (sectionName) => {
+      const predefinedValueForAiData = await AI.findOne({
+        type: 'aiData',
+        'aiData.machine': new mongoose.Types.ObjectId(machine),
+        'aiData.sectionName': sectionName,
+      }).sort({ _id: -1 });
+      const badHealthStatus =
+        predefinedValueForAiData?.aiData?.healthStatus === 'bad'
+          ? sectionName
+          : null;
+      return badHealthStatus;
+    }),
+  );
+  return badSectionNames?.filter((each) => each);
+};
 export const aiServices = {
   addThreshold,
   getThresholds,
   getAiData,
   aiPerformance,
+  getMaintenanceDueByMachine,
+  getLifeCycleByMachine,
+  getMachineBadSections,
 };

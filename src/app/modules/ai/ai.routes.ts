@@ -12,6 +12,12 @@ router.post(
 );
 router.get('/ai-performance', aiController.aiPerformance);
 router.get('/get-ai-data', aiController.getAiData);
+router.get(
+  '/get-maintenance-due-by-machine',
+  aiController.getMaintenanceDueByMachine,
+);
+router.get('/get-life-cycle-by-machine', aiController.getLifeCycleByMachine);
+router.get('/get-machine-bad-sections', aiController.getMachineBadSections);
 
 
 
