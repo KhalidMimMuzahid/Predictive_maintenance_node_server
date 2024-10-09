@@ -16,8 +16,16 @@ export type TAiData = {
   };
   healthStatus: THealthStatus;
 };
+
+export type TMachineForAI = {
+  lifeCycle: {
+    totalCycle: number;
+    totalReservation: number;
+  };
+};
 export type TAI = {
-  type: 'threshold' | 'aiData';
+  type: 'threshold' | 'aiData' | 'machine';
   threshold?: TThreshold;
   aiData?: TAiData;
+  machine?: TMachineForAI;
 };

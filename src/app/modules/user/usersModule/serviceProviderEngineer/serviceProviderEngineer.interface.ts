@@ -8,10 +8,11 @@ export type TCurrentStateForEngineer = {
   serviceProviderBranch?: Types.ObjectId; // objectId of the ServiceProviderBranch model; if this field is missing means this engineer is not assigned to any branches
   joiningDate?: Date;
 };
+export type TName = { firstName: string; lastName: string };
 export type TServiceProviderEngineer = {
   user: Types.ObjectId; // objectId of the user model
 
-  name: { firstName: string; lastName: string };
+  name: TName;
   photoUrl?: string;
   currentState: TCurrentStateForEngineer;
   isDeleted: TIsDeleted;

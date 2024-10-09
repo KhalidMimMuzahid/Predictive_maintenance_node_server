@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { AddressSchema, IsDeletedSchema } from '../../../common/common.model';
-import { TLanguage, TShowaUser } from './showaUser.interface';
+import { TLanguage, TName, TShowaUser } from './showaUser.interface';
 const IntersectionSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, required: true },
   address: { type: AddressSchema, required: true },
@@ -48,7 +48,8 @@ const ShowaUserSchema: Schema = new Schema<TShowaUser>(
   },
 );
 ShowaUserSchema.virtual('fullName').get(function () {
-  return this?.name?.firstName + ' ' + this?.name?.lastName;
+  const name = this?.name as unknown as TName;
+  return name?.firstName + ' ' + name?.lastName;
 });
 
 ShowaUserSchema.pre('find', function (next) {
