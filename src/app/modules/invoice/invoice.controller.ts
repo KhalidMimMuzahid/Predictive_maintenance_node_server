@@ -5,8 +5,13 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
-import { TAdditionalProduct, TInspecting } from './invoice.interface';
+import {
+  TAdditionalProduct,
+  TAssignedTaskType,
+  TInspecting,
+} from './invoice.interface';
 import { invoiceServices } from './invoice.services';
+import { assignedTaskTypeArray } from './invoice.const';
 
 const addAdditionalProducts: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -156,10 +161,24 @@ const getAllAssignedTasksByEngineer: RequestHandler = catchAsync(
       auth,
       accessUsers: ['serviceProviderEngineer'],
     });
+    const status = req?.query?.status as TAssignedTaskType;
 
-    const result = await invoiceServices.getAllAssignedTasksByEngineer(
-      auth?._id,
-    );
+    if (!assignedTaskTypeArray.some((each) => each === status)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `status must be any of ${assignedTaskTypeArray.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+    const result = await invoiceServices.getAllAssignedTasksByEngineer({
+      status,
+      user: auth?._id,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -176,5 +195,5 @@ export const invoiceController = {
   changeStatusToCompleted,
   getAllInvoices, //service provider app->engineer app->Invoices->All invoices
   getAllInvoicesByUser, //service provider app ->engineer app->Invoices->All invoices
-  getAllAssignedTasksByEngineer, //service provider app->rservation->maintenance->assigned task
+  getAllAssignedTasksByEngineer, //service provider app ->rservation->maintenance->assigned task
 };

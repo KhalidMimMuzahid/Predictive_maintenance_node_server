@@ -6,7 +6,11 @@ import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.mo
 import { TeamOfEngineers } from '../teamOfEngineers/teamOfEngineers.model';
 import { User } from '../user/user.model';
 import { ServiceProviderEngineer } from '../user/usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
-import { TAdditionalProduct, TInspecting } from './invoice.interface';
+import {
+  TAdditionalProduct,
+  TAssignedTaskType,
+  TInspecting,
+} from './invoice.interface';
 import { Invoice } from './invoice.model';
 import {
   getAllInvoicesOfReservationGroup,
@@ -341,7 +345,13 @@ const getAllInvoicesByUser = async (user: string) => {
   return invoices;
 };
 
-const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
+const getAllAssignedTasksByEngineer = async ({
+  status,
+  user,
+}: {
+  status: TAssignedTaskType;
+  user: mongoose.Types.ObjectId;
+}) => {
   const userData = await User.findOne({ _id: user }).select(
     'serviceProviderEngineer',
   );
@@ -350,41 +360,270 @@ const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
     'members.member': userData?.serviceProviderEngineer,
   });
   const teamOfEngineersList = teamOfEngineers?.map((each) => each?._id);
-  const allTask = await InvoiceGroup.aggregate([
-    {
-      $match: {
-        'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let allTask: any[];
+  if (status === 'all') {
+    // do nothing
+    allTask = await InvoiceGroup.aggregate([
+      {
+        $match: {
+          'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+        },
       },
-    },
 
-    {
-      $lookup: {
-        from: 'invoices',
-        localField: 'invoices',
-        foreignField: '_id',
-        as: 'invoices',
+      {
+        $lookup: {
+          from: 'invoices',
+          localField: 'invoices',
+          foreignField: '_id',
+          as: 'invoices',
+        },
       },
-    },
 
-    {
-      $unwind: '$invoices',
-    },
-
-    {
-      $replaceRoot: {
-        newRoot: '$invoices',
+      {
+        $unwind: '$invoices',
       },
-    },
 
-    {
-      $lookup: {
-        from: 'reservationrequests',
-        localField: 'reservationRequest',
-        foreignField: '_id',
-        as: 'reservationRequest',
+      {
+        $replaceRoot: {
+          newRoot: '$invoices',
+        },
       },
-    },
-  ]);
+
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ]);
+  } else if (status === 'completed') {
+    allTask = await InvoiceGroup.aggregate([
+      {
+        $match: {
+          'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'invoices',
+          localField: 'invoices',
+          foreignField: '_id',
+          as: 'invoices',
+        },
+      },
+
+      {
+        $unwind: '$invoices',
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$invoices',
+        },
+      },
+
+      {
+        $match: {
+          taskStatus: 'completed',
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ]);
+  } else if (status === 'inspection') {
+    allTask = await InvoiceGroup.aggregate([
+      {
+        $match: {
+          'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'invoices',
+          localField: 'invoices',
+          foreignField: '_id',
+          as: 'invoices',
+        },
+      },
+
+      {
+        $unwind: '$invoices',
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$invoices',
+        },
+      },
+
+      {
+        $match: {
+          'inspection.isInspecting': true,
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ]);
+  } else if (status === 'pending') {
+    // In Figma, Its pending, But actually Its a ongoing
+    allTask = await InvoiceGroup.aggregate([
+      {
+        $match: {
+          'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'invoices',
+          localField: 'invoices',
+          foreignField: '_id',
+          as: 'invoices',
+        },
+      },
+
+      {
+        $unwind: '$invoices',
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$invoices',
+        },
+      },
+
+      {
+        $match: {
+          taskStatus: 'ongoing',
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ]);
+  } else if (status === 'schedule') {
+    // filterQuery.$match['taskStatus'] = 'ongoing';
+
+    allTask = await InvoiceGroup.aggregate([
+      {
+        $match: {
+          'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'invoices',
+          localField: 'invoices',
+          foreignField: '_id',
+          as: 'invoices',
+        },
+      },
+
+      {
+        $unwind: '$invoices',
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$invoices',
+        },
+      },
+
+      // {
+      //   $match: {
+      //     taskStatus: 'ongoing',
+      //   },
+      // },
+
+      {
+        $lookup: {
+          from: 'reservationrequests',
+          localField: 'reservationRequest',
+          foreignField: '_id',
+          as: 'reservationRequest',
+        },
+      },
+
+      {
+        $unwind: '$reservationRequest',
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+
+      {
+        $addFields: {
+          schedulesCount: { $size: '$schedule.schedules' },
+        },
+      },
+      {
+        $match: {
+          schedulesCount: { $eq: 1 },
+        },
+      },
+    ]);
+  }
+
   // console.log(teamOfEngineers);
 
   return allTask;
