@@ -6,7 +6,6 @@ export type TThreshold = {
   temperature: number;
   vibrations: number;
 };
-
 export type TAiData = {
   machine: mongoose.Types.ObjectId;
   sectionName: string;
@@ -18,7 +17,12 @@ export type TAiData = {
 };
 
 export type TMachineForAI = {
-  lifeCycle: {
+  lifeCycle?: {
+    // This is for
+    totalCycle: number;
+    totalMachine: number;
+  };
+  reservationCycle?: {
     totalCycle: number;
     totalReservation: number;
   };

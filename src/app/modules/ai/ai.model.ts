@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { TAI, TAiData, TThreshold } from './ai.interface';
+import { TAI, TAiData, TMachineForAI, TThreshold } from './ai.interface';
 
 const ThresholdSchema: Schema = new Schema<TThreshold>(
   {
@@ -27,7 +27,7 @@ const AISchema = new Schema<TAI>(
   {
     type: {
       type: String,
-      enum: ['threshold', 'aiData'],
+      enum: ['threshold', 'aiData', 'machine'],
       required: true,
     },
     threshold: {
@@ -63,6 +63,41 @@ const AISchema = new Schema<TAI>(
               },
             ),
             required: true,
+          },
+        },
+        {
+          timestamps: false,
+          _id: false,
+        },
+      ),
+      required: false,
+    },
+    machine: {
+      type: new Schema<TMachineForAI>(
+        {
+          lifeCycle: {
+            type: new Schema(
+              {
+                totalCycle: Number,
+                totalMachine: Number,
+              },
+              {
+                timestamps: false,
+                _id: false,
+              },
+            ),
+          },
+          reservationCycle: {
+            type: new Schema(
+              {
+                totalCycle: Number,
+                totalReservation: Number,
+              },
+              {
+                timestamps: false,
+                _id: false,
+              },
+            ),
           },
         },
         {

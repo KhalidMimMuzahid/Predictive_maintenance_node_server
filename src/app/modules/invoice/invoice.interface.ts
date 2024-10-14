@@ -62,6 +62,7 @@ export type TDocument = {
   fileName: string;
   fileType: string;
 };
+
 export type TInspection = {
   isInspecting?: boolean;
   inspectingTime?: number[]; // time in minutes
@@ -88,7 +89,12 @@ export type TInspection = {
 };
 
 export type TInvoiceStatus = 'ongoing' | 'completed' | 'canceled'; // last three status of reservationRequest Model status, you can see the reservationRequest Model
-
+export type TAssignedTaskType =
+  | 'all'
+  | 'inspection'
+  | 'schedule'
+  | 'pending'
+  | 'completed';
 export type TInvoice = {
   invoiceNo: string; // customized unique number
 
