@@ -1,6 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
+import { AddressSchema, IsDeletedSchema } from '../../../common/common.model';
 import { TName, TServiceProviderAdmin } from './serviceProviderAdmin.interface';
-import { IsDeletedSchema } from '../../../common/common.model';
+const IntersectionSchema = new mongoose.Schema({
+  isDeleted: { type: Boolean, required: true },
+  address: { type: AddressSchema, required: true },
+});
 
 const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>(
   {
@@ -13,7 +17,11 @@ const ServiceProviderAdminSchema: Schema = new Schema<TServiceProviderAdmin>(
       type: { firstName: { type: String }, lastName: { type: String } },
       required: true,
     },
+    occupation: { type: String, required: true },
+    dateOfBirth: { type: Date, required: true },
     photoUrl: { type: String },
+    coverPhotoUrl: { type: String },
+    addresses: { type: [IntersectionSchema] },
     serviceProviderCompany: {
       type: Schema.Types.ObjectId,
       ref: 'ServiceProviderCompany',

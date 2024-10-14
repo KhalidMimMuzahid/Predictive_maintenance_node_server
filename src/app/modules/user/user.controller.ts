@@ -1,11 +1,11 @@
-import httpStatus from 'http-status';
 import { RequestHandler } from 'express';
-import catchAsync from '../../utils/catchAsync';
+import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
+import catchAsync from '../../utils/catchAsync';
+import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
 import { userServices } from './user.service';
-import { TAuth } from '../../interface/error';
-import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 
 const signIn: RequestHandler = catchAsync(async (req, res) => {
   const uid = req?.query?.uid;
@@ -169,6 +169,40 @@ const unfollowUser: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+const editUserProfile: RequestHandler = catchAsync(async (req, res) => {
+  const auth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const {
+    user,
+    showaUser,
+    serviceProviderAdmin,
+    serviceProviderBranchManager,
+    serviceProviderEngineer,
+  } = req.body;
+
+  const result = await userServices.editUserProfile({
+    user,
+    showaUser,
+    serviceProviderAdmin,
+    serviceProviderBranchManager,
+    serviceProviderEngineer,
+  });
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User profile updated successfully',
+    data: result,
+  });
+});
+
 export const userControllers = {
   signIn,
   getUserBy_id,
@@ -178,4 +212,5 @@ export const userControllers = {
   getUserWalletInfo,
   followUser,
   unfollowUser,
+  editUserProfile,
 };

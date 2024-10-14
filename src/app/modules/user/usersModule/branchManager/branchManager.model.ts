@@ -1,8 +1,12 @@
 import mongoose, { Schema } from 'mongoose';
 // import { TServiceProviderEngineer } from './serviceProviderEngineer.interface';
-import { IsDeletedSchema } from '../../../common/common.model';
+import { AddressSchema, IsDeletedSchema } from '../../../common/common.model';
 
 import { TServiceProviderBranchManager } from './branchManager.interface';
+const IntersectionSchema = new mongoose.Schema({
+  isDeleted: { type: Boolean, required: true },
+  address: { type: AddressSchema, required: true },
+});
 
 export const ServiceProviderBranchManagerSchema: Schema =
   new Schema<TServiceProviderBranchManager>(
@@ -14,6 +18,12 @@ export const ServiceProviderBranchManagerSchema: Schema =
         required: true,
       },
       photoUrl: { type: String },
+      coverPhotoUrl: { type: String },
+      occupation: { type: String, required: true },
+
+      dateOfBirth: { type: Date, required: true },
+
+      addresses: { type: [IntersectionSchema] },
       nid: {
         type: new Schema({
           frontPhotoUrl: {

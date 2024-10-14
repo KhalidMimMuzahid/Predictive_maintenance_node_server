@@ -36,6 +36,7 @@ const ShowaUserSchema: Schema = new Schema<TShowaUser>(
       required: true,
     },
     photoUrl: { type: String },
+    coverPhotoUrl: { type: String },
     addresses: { type: [IntersectionSchema] },
     isDeleted: {
       type: IsDeletedSchema,

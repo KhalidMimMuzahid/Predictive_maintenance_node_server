@@ -661,7 +661,7 @@ export const reservationController = {
   getReservationRequestForServiceProviderCompany, //(type wise :'ongoing','completed','canceled','rescheduled')Service provider->Maintenance task
   getDashboardScreenAnalyzingForServiceProviderCompany, //Service Provider->maintenance dashboard->overview
   getCompletedReservationRequestForServiceProviderCompany, //(weekly/ monthly/ yearly)Maintenance Service Provider
-  getChartAnalyzing, //(barChart)Super Admin Web-> Service Provider-> Vendors Yearly Request
+  getChartAnalyzing, //(barChart)Super Admin Web-> Service Provider-> Vendors daily Request
   getTotalReservationForChart, //(Comparison)Super Admin Web -> Reservation->reservation Comparison
   generateProgressReservationInPercentage, //(Total count and its percentage)Super Admin Web -> Reservation->reservation overview
   getReservationRequestByReservationId,

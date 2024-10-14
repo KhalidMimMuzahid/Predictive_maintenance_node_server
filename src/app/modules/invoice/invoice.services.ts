@@ -389,6 +389,94 @@ const getAllAssignedTasksByEngineer = async (user: mongoose.Types.ObjectId) => {
 
   return allTask;
 };
+
+const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
+  const userData = await User.findOne({ _id: user }).select(
+    'serviceProviderEngineer',
+  );
+
+  const teamOfEngineers = await TeamOfEngineers.find({
+    'members.member': userData?.serviceProviderEngineer,
+  });
+
+  const teamOfEngineersList = teamOfEngineers?.map((team) => team?._id);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  console.log("Today's Date (Local):", today.toString());
+  console.log(endOfToday.toString());
+
+  const todayTasksSummary = await InvoiceGroup.aggregate([
+    {
+      $match: {
+        'taskAssignee.teamOfEngineers': { $in: teamOfEngineersList },
+        createdAt: { $gte: today, $lte: endOfToday },
+      },
+    },
+    {
+      $lookup: {
+        from: 'invoices',
+        localField: 'invoices',
+        foreignField: '_id',
+        as: 'invoices',
+      },
+    },
+    {
+      $unwind: '$invoices',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$invoices',
+      },
+    },
+
+    {
+      $facet: {
+        totalTasks: [{ $match: {} }, { $count: 'count' }],
+
+        totalInspectionTasks: [
+          { $match: { 'inspection.isInspecting': true } },
+          { $count: 'count' },
+        ],
+
+        totalCompletedTasks: [
+          { $match: { taskStatus: 'completed' } },
+          { $count: 'count' },
+        ],
+
+        totalPendingTasks: [
+          { $match: { taskStatus: 'ongoing' } },
+          { $count: 'count' },
+        ],
+      },
+    },
+
+    {
+      $project: {
+        totalTasks: { $arrayElemAt: ['$totalTasks.count', 0] },
+        totalInspectionTasks: {
+          $arrayElemAt: ['$totalInspectionTasks.count', 0],
+        },
+        totalCompletedTasks: {
+          $arrayElemAt: ['$totalCompletedTasks.count', 0],
+        },
+        totalPendingTasks: { $arrayElemAt: ['$totalPendingTasks.count', 0] },
+      },
+    },
+  ]);
+
+  return {
+    totalTasks: todayTasksSummary[0]?.totalTasks || 0,
+    totalInspectionTasks: todayTasksSummary[0]?.totalInspectionTasks || 0,
+    totalCompletedTasks: todayTasksSummary[0]?.totalCompletedTasks || 0,
+    totalPendingTasks: todayTasksSummary[0]?.totalPendingTasks || 0,
+  };
+};
+
 export const invoiceServices = {
   addAdditionalProduct,
   inspection,
@@ -396,4 +484,5 @@ export const invoiceServices = {
   getAllInvoices,
   getAllInvoicesByUser,
   getAllAssignedTasksByEngineer,
+  getTodayTasksSummary,
 };

@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
-import { TIsDeleted } from '../../../common/common.interface';
+import { TAddress, TIsDeleted } from '../../../common/common.interface';
 
+export type TName = { firstName: string; lastName: string };
 export type TCurrentStateForBranchManager = {
   status: 'in-progress' | 'approved' | 'suspended';
   designation: 'Branch Manager';
@@ -11,14 +12,18 @@ export type TCurrentStateForBranchManager = {
 export type TServiceProviderBranchManager = {
   user: Types.ObjectId; // objectId of the user model
 
-  name: { firstName: string; lastName: string };
+  name: TName;
   photoUrl?: string;
+  coverPhotoUrl?: string;
   nid?: {
     frontPhotoUrl: string;
     backPhotoUrl: string;
   };
   currentState: TCurrentStateForBranchManager;
   isDeleted: TIsDeleted;
+  occupation?: string;
+  dateOfBirth: Date;
+  addresses?: { isDeleted: boolean; address: TAddress }[];
   // nid: {
   //   frontPhotoUrl: string;
   //   backPhotoUrl: string;

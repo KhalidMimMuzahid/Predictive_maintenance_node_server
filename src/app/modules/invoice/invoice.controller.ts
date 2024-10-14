@@ -170,6 +170,29 @@ const getAllAssignedTasksByEngineer: RequestHandler = catchAsync(
   },
 );
 
+const getTodayTasksSummary: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
+
+  const result = await invoiceServices.getTodayTasksSummary(auth?._id);
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No task data found for today');
+  }
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Today’s task summary retrieved successfully',
+    data: result,
+  });
+});
+
 export const invoiceController = {
   addAdditionalProducts, //service provider app->rservation->maintenance->details
   inspection, //service provider app->rservation->maintenance
@@ -177,4 +200,5 @@ export const invoiceController = {
   getAllInvoices, //service provider app->engineer app->Invoices->All invoices
   getAllInvoicesByUser, //service provider app ->engineer app->Invoices->All invoices
   getAllAssignedTasksByEngineer, //service provider app->rservation->maintenance->assigned task
+  getTodayTasksSummary, //service provider app->Team->Member Details->User detaisls-tasks
 };

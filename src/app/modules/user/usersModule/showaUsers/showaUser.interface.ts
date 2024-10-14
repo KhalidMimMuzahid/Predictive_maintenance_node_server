@@ -16,6 +16,7 @@ export type TShowaUser = {
   dateOfBirth: Date;
   gender: 'male' | 'female' | 'prefer-not-answer';
   photoUrl?: string;
+  coverPhotoUrl?: string;
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   addresses?: { isDeleted: boolean; address: TAddress }[];
   isDeleted: TIsDeleted;

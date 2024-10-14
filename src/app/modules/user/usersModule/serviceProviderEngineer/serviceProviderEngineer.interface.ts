@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TIsDeleted } from '../../../common/common.interface';
+import { TAddress, TIsDeleted } from '../../../common/common.interface';
 
 export type TCurrentStateForEngineer = {
   status: 'in-progress' | 'approved' | 'suspended';
@@ -14,8 +14,12 @@ export type TServiceProviderEngineer = {
 
   name: TName;
   photoUrl?: string;
+  coverPhotoUrl?: string;
   currentState: TCurrentStateForEngineer;
   isDeleted: TIsDeleted;
+  occupation?: string;
+  dateOfBirth: Date;
+  addresses?: { isDeleted: boolean; address: TAddress }[];
   // ratings: {
   //   rate: number; // 0 to 5
   //   feedback: {

@@ -19,12 +19,16 @@ export type TUser = {
   uid: string;
   // uniqueNumberId?: string; // why we need this; cause we have already two different identifiers
   // fullName: firstName + " " + lastName // this fullName field will be virtual
+
   email: string;
   role: TRole;
   phone: string;
   followings: Types.ObjectId[];
   // canAccess?: ('xx' | 'yy' | 'zz')[]; // why we need this ?
   // stripeId: string;
+  userName: string;
+  bio?: string;
+  website?: string;
   wallet?: Types.ObjectId | TWallet; // it user is ObjectId of the Wallet model
   status: 'in-progress' | 'approved' | 'suspended';
 

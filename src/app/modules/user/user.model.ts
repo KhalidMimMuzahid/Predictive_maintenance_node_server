@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
-import { TUser, UserModel } from './user.interface';
 import { IsDeletedSchema } from '../common/common.model';
+import { TUser, UserModel } from './user.interface';
 
 const roles = [
   'showaUser',
@@ -20,6 +20,11 @@ const UserSchema = new Schema<TUser, UserModel>(
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true, unique: true },
     followings: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+
+    userName: { type: String, required: true, unique: true },
+    bio: { type: String },
+    website: { type: String },
+
     role: {
       type: String,
       required: true,

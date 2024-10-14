@@ -1,10 +1,12 @@
 import express, { Router } from 'express';
 
-import { showaUserRoutes } from './usersModule/showaUsers/showaUser.routes';
+import validateRequest from '../../middlewares/validateRequest';
 import { userControllers } from './user.controller';
+import { editUserValidationSchema } from './user.validation';
+import { serviceProviderBranchManagerRoutes } from './usersModule/branchManager/branchManager.routes';
 import { serviceProviderAdminRoutes } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.routes';
 import { serviceProviderEngineerRoutes } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.routes';
-import { serviceProviderBranchManagerRoutes } from './usersModule/branchManager/branchManager.routes';
+import { showaUserRoutes } from './usersModule/showaUsers/showaUser.routes';
 
 const router: Router = express.Router();
 
@@ -41,6 +43,11 @@ router.get('/get-user-wallet-info', userControllers.getUserWalletInfo);
 router.get('/get-all-showa-customers', userControllers.getAllShowaCustomers);
 router.patch('/follow-user', userControllers.followUser);
 router.patch('/unfollow-user', userControllers.unfollowUser);
+router.patch(
+  '/edit-user',
+  validateRequest(editUserValidationSchema),
+  userControllers.editUserProfile,
+);
 
 // End --------------------------------- XXXXX ----------------------------
 export const userRoutes = router;
