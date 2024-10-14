@@ -3,18 +3,23 @@ import { users } from '../../../server';
 import AppError from '../../errors/AppError';
 import { TAuth } from '../../interface/error';
 import { jwtFunc } from '../../utils/jwtFunction';
-import {
-  TServiceProviderAdmin,
-  TServiceProviderBranchManager,
-  TServiceProviderEngineer,
-  TShowaUser,
-} from '../extraData/extraData.interface';
+// import {
+//   TServiceProviderAdmin,
+//   TServiceProviderBranchManager,
+//   TServiceProviderEngineer,
+//   TShowaUser,
+// } from '../extraData/extraData.interface';
 import { TUser } from './user.interface';
 import { User } from './user.model';
 import { ServiceProviderBranchManager } from './usersModule/branchManager/branchManager.model';
 import { ServiceProviderAdmin } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
 import { ServiceProviderEngineer } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
 import { ShowaUser } from './usersModule/showaUsers/showaUser.model';
+import mongoose from 'mongoose';
+import { TShowaUser } from './usersModule/showaUsers/showaUser.interface';
+import { TServiceProviderAdmin } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.interface';
+import { TServiceProviderBranchManager } from './usersModule/branchManager/branchManager.interface';
+import { TServiceProviderEngineer } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.interface';
 
 // 'showaAdmin'
 // 'showaSubAdmin'
@@ -374,123 +379,112 @@ const unfollowUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
 // };
 
 const editUserProfile = async ({
+  auth,
   user,
   showaUser,
   serviceProviderAdmin,
   serviceProviderBranchManager,
   serviceProviderEngineer,
 }: {
-  user?: { _id: string } & Partial<TUser>;
-  showaUser?: { user: string } & Partial<TShowaUser>;
-  serviceProviderAdmin?: { user: string } & Partial<TServiceProviderAdmin>;
-  serviceProviderBranchManager?: {
-    user: string;
-  } & Partial<TServiceProviderBranchManager>;
-  serviceProviderEngineer?: {
-    user: string;
-  } & Partial<TServiceProviderEngineer>;
+  auth: TAuth;
+  user: Partial<TUser>;
+  showaUser?: Partial<TShowaUser>;
+  serviceProviderAdmin?: Partial<TServiceProviderAdmin>;
+  serviceProviderBranchManager?: Partial<TServiceProviderBranchManager>;
+  serviceProviderEngineer?: Partial<TServiceProviderEngineer>;
 }) => {
-  const updatedUsers = []; // Array to store updated user objects
+  const userData = await User.findById(auth?._id?.toString()).select(
+    '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
+  );
 
-  // Update logic for user
-  if (user && user._id) {
-    const updatedUser = await User.findOneAndUpdate({ _id: user._id }, user, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updatedUser) {
-      console.error(`User not found for ID: ${user._id}`);
-      throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
-    }
-    updatedUsers.push(updatedUser);
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, `user you provide is not found`);
   }
 
-  // Update logic for showaUser
-  if (showaUser && showaUser.user) {
-    const updatedShowaUser = await ShowaUser.findOneAndUpdate(
-      { _id: showaUser.user },
-      showaUser,
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
-    if (!updatedShowaUser) {
-      console.error(`Showa user not found for ID: ${showaUser.user}`);
-      throw new AppError(httpStatus.BAD_REQUEST, 'Showa user not found');
-    }
-    updatedUsers.push(updatedShowaUser);
-  }
+  // return { okk: 'fuck you' };
 
-  // Update logic for serviceProviderAdmin
-  if (serviceProviderAdmin && serviceProviderAdmin.user) {
-    const updatedServiceProviderAdmin =
-      await ServiceProviderAdmin.findOneAndUpdate(
-        { _id: serviceProviderAdmin.user },
-        serviceProviderAdmin,
-        {
-          new: true,
-          runValidators: true,
-        },
-      );
-    if (!updatedServiceProviderAdmin) {
-      console.error(
-        `Service provider admin not found for ID: ${serviceProviderAdmin.user}`,
-      );
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    //
+    // userName: z.string().optional(),
+    // bio: z.string().optional(),
+    // website: z.string().optional(),
+    if (user?.userName) {
+      userData.userName = user?.userName;
+    }
+    if (user?.bio) {
+      userData.bio = user?.bio;
+    }
+    if (user?.website) {
+      userData.website = user?.website;
+    }
+    const updatedUserData = await userData.save({ session });
+    if (!updatedUserData) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'Service provider admin not found',
+        'something went wrong, please try again',
       );
     }
-    updatedUsers.push(updatedServiceProviderAdmin);
-  }
 
-  // Update logic for serviceProviderBranchManager
-  if (serviceProviderBranchManager && serviceProviderBranchManager.user) {
-    const updatedBranchManager =
-      await ServiceProviderBranchManager.findOneAndUpdate(
-        { _id: serviceProviderBranchManager.user },
-        serviceProviderBranchManager,
-        {
-          new: true,
-          runValidators: true,
-        },
+    // showaUser?: Partial<TShowaUser>;
+    // serviceProviderAdmin?: Partial<TServiceProviderAdmin>;
+    // serviceProviderBranchManager?: Partial<TServiceProviderBranchManager>;
+    // serviceProviderEngineer?:
+
+    if (user?.role === 'showaUser' && user?.showaUser?.toString()) {
+      const showaUserData = await ShowaUser.findById(
+        user?.showaUser?.toString(),
       );
-    if (!updatedBranchManager) {
-      console.error(
-        `Service provider branch manager not found for ID: ${serviceProviderBranchManager.user}`,
-      );
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'Service provider branch manager not found',
-      );
+      if (!showaUserData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+      if (showaUser?.name) {
+        showaUserData.name = showaUser?.name;
+      }
+      if (showaUser?.occupation) {
+        showaUserData.occupation = showaUser?.occupation;
+      }
+      if (showaUser?.dateOfBirth) {
+        showaUserData.dateOfBirth = new Date(showaUser?.dateOfBirth);
+      }
+      if (showaUser?.photoUrl) {
+        showaUserData.photoUrl = showaUser?.photoUrl;
+      }
+      if (showaUser?.coverPhotoUrl) {
+        showaUserData.coverPhotoUrl = showaUser?.coverPhotoUrl;
+      }
+      if (showaUser?.addresses) {
+        // showaUserData.occupation = showaUser?.occupation
+        // work on that
+      }
+    } else if (
+      user?.role === 'serviceProviderAdmin' &&
+      user?.serviceProviderAdmin?.toString()
+    ) {
+      //
+    } else if (
+      user?.role === 'serviceProviderBranchManager' &&
+      user?.serviceProviderBranchManager?.toString()
+    ) {
+      //
+    } else if (
+      user?.role === 'serviceProviderEngineer' &&
+      user?.serviceProviderEngineer?.toString()
+    ) {
+      //
     }
-    updatedUsers.push(updatedBranchManager);
+    await session.commitTransaction();
+    await session.endSession();
+    return true;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
-
-  // Update logic for serviceProviderEngineer
-  if (serviceProviderEngineer && serviceProviderEngineer.user) {
-    const updatedEngineer = await ServiceProviderEngineer.findOneAndUpdate(
-      { _id: serviceProviderEngineer.user },
-      serviceProviderEngineer,
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
-    if (!updatedEngineer) {
-      console.error(
-        `Service provider engineer not found for ID: ${serviceProviderEngineer.user}`,
-      );
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'Service provider engineer not found',
-      );
-    }
-    updatedUsers.push(updatedEngineer);
-  }
-
-  return updatedUsers; // Return updated user objects
 };
 
 export const userServices = {
