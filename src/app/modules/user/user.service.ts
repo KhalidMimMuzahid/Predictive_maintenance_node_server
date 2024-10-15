@@ -457,25 +457,146 @@ const editUserProfile = async ({
       if (showaUser?.coverPhotoUrl) {
         showaUserData.coverPhotoUrl = showaUser?.coverPhotoUrl;
       }
-      if (showaUser?.addresses) {
-        // showaUserData.occupation = showaUser?.occupation
-        // work on that
+
+      const updatedShowaUser = await showaUserData.save({ session });
+      if (!updatedShowaUser) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
       }
+      // if (showaUser?.addresses) {
+      //   // showaUserData.occupation = showaUser?.occupation
+      //   // work on that
+      // }
     } else if (
       user?.role === 'serviceProviderAdmin' &&
       user?.serviceProviderAdmin?.toString()
     ) {
-      //
+      const serviceProviderAdminData = await ServiceProviderAdmin.findById(
+        user?.serviceProviderAdmin?.toString(),
+      );
+      if (!serviceProviderAdminData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+      if (serviceProviderAdmin?.name) {
+        serviceProviderAdminData.name = serviceProviderAdmin?.name;
+      }
+      if (serviceProviderAdmin?.occupation) {
+        serviceProviderAdminData.occupation = serviceProviderAdmin?.occupation;
+      }
+      if (serviceProviderAdmin?.dateOfBirth) {
+        serviceProviderAdminData.dateOfBirth = new Date(
+          serviceProviderAdmin?.dateOfBirth,
+        );
+      }
+      if (serviceProviderAdmin?.photoUrl) {
+        serviceProviderAdminData.photoUrl = serviceProviderAdmin?.photoUrl;
+      }
+      if (serviceProviderAdmin?.coverPhotoUrl) {
+        serviceProviderAdminData.coverPhotoUrl =
+          serviceProviderAdmin?.coverPhotoUrl;
+      }
+
+      const updatedServiceProviderAdmin = await serviceProviderAdminData.save({
+        session,
+      });
+      if (!updatedServiceProviderAdmin) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
     } else if (
       user?.role === 'serviceProviderBranchManager' &&
       user?.serviceProviderBranchManager?.toString()
     ) {
-      //
+      const serviceProviderBranchManagerData =
+        await ServiceProviderBranchManager.findById(
+          user?.serviceProviderBranchManager?.toString(),
+        );
+      if (!serviceProviderBranchManagerData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+      if (serviceProviderBranchManager?.name) {
+        serviceProviderBranchManagerData.name =
+          serviceProviderBranchManager?.name;
+      }
+      if (serviceProviderBranchManager?.occupation) {
+        serviceProviderBranchManagerData.occupation =
+          serviceProviderBranchManager?.occupation;
+      }
+      if (serviceProviderBranchManager?.dateOfBirth) {
+        serviceProviderBranchManagerData.dateOfBirth = new Date(
+          serviceProviderBranchManager?.dateOfBirth,
+        );
+      }
+      if (serviceProviderBranchManager?.photoUrl) {
+        serviceProviderBranchManagerData.photoUrl =
+          serviceProviderBranchManager?.photoUrl;
+      }
+      if (serviceProviderBranchManager?.coverPhotoUrl) {
+        serviceProviderBranchManagerData.coverPhotoUrl =
+          serviceProviderBranchManager?.coverPhotoUrl;
+      }
+
+      const updatedServiceProviderBranchManager =
+        await serviceProviderBranchManagerData.save({ session });
+      if (!updatedServiceProviderBranchManager) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
     } else if (
       user?.role === 'serviceProviderEngineer' &&
       user?.serviceProviderEngineer?.toString()
     ) {
-      //
+      const serviceProviderEngineerData =
+        await ServiceProviderEngineer.findById(
+          user?.serviceProviderEngineer?.toString(),
+        );
+      if (!serviceProviderEngineerData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+      if (serviceProviderEngineer?.name) {
+        serviceProviderEngineerData.name = serviceProviderEngineer?.name;
+      }
+      if (serviceProviderEngineer?.occupation) {
+        serviceProviderEngineerData.occupation =
+          serviceProviderEngineer?.occupation;
+      }
+      if (serviceProviderEngineer?.dateOfBirth) {
+        serviceProviderEngineerData.dateOfBirth = new Date(
+          serviceProviderEngineer?.dateOfBirth,
+        );
+      }
+      if (serviceProviderEngineer?.photoUrl) {
+        serviceProviderEngineerData.photoUrl =
+          serviceProviderEngineer?.photoUrl;
+      }
+      if (serviceProviderEngineer?.coverPhotoUrl) {
+        serviceProviderEngineerData.coverPhotoUrl =
+          serviceProviderEngineer?.coverPhotoUrl;
+      }
+
+      const updatedServiceProviderEngineer =
+        await serviceProviderEngineerData.save({ session });
+      if (!updatedServiceProviderEngineer) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
     }
     await session.commitTransaction();
     await session.endSession();

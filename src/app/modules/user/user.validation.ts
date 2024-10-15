@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { updateAddressValidationSchema } from '../common/common.validation';
+// import { updateAddressValidationSchema } from '../common/common.validation';
 
 // Define validation schema for TUser
 export const rootUserCreateValidationSchema = z.object({
@@ -26,7 +26,7 @@ export const editUserValidationSchema = z.object({
       dateOfBirth: z.string().optional(),
       photoUrl: z.string().optional(),
       coverPhotoUrl: z.string().optional(),
-      addresses: updateAddressValidationSchema.optional(),
+      // address: updateAddressValidationSchema.optional(),
     })
     .optional(),
   serviceProviderAdmin: z
@@ -41,7 +41,7 @@ export const editUserValidationSchema = z.object({
       dateOfBirth: z.string().optional(),
       photoUrl: z.string().optional(),
       coverPhotoUrl: z.string().optional(),
-      addresses: updateAddressValidationSchema.optional(),
+      // addresses: updateAddressValidationSchema.optional(),
     })
     .optional(),
   serviceProviderBranchManager: z
@@ -56,7 +56,7 @@ export const editUserValidationSchema = z.object({
       dateOfBirth: z.string().optional(),
       photoUrl: z.string().optional(),
       coverPhotoUrl: z.string().optional(),
-      addresses: updateAddressValidationSchema.optional(),
+      // addresses: updateAddressValidationSchema.optional(),
     })
     .optional(),
   serviceProviderEngineer: z
@@ -71,7 +71,7 @@ export const editUserValidationSchema = z.object({
       dateOfBirth: z.string().optional(),
       photoUrl: z.string().optional(),
       coverPhotoUrl: z.string().optional(),
-      addresses: updateAddressValidationSchema.optional(),
+      // addresses: updateAddressValidationSchema.optional(),
     })
     .optional(),
 });
