@@ -21,7 +21,7 @@ const UserSchema = new Schema<TUser, UserModel>(
     phone: { type: String, required: true, unique: true },
     followings: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 
-    userName: { type: String, required: true, unique: true },
+    userName: { type: String, required: false, unique: true },
     bio: { type: String },
     website: { type: String },
 

@@ -187,6 +187,7 @@ const editUserProfile: RequestHandler = catchAsync(async (req, res) => {
   } = req.body;
 
   const result = await userServices.editUserProfile({
+    auth,
     user,
     showaUser,
     serviceProviderAdmin,
