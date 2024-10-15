@@ -433,9 +433,9 @@ const editUserProfile = async ({
     // serviceProviderBranchManager?: Partial<TServiceProviderBranchManager>;
     // serviceProviderEngineer?:
 
-    if (user?.role === 'showaUser' && user?.showaUser?.toString()) {
+    if (userData?.role === 'showaUser' && userData?.showaUser?.toString()) {
       const showaUserData = await ShowaUser.findById(
-        user?.showaUser?.toString(),
+        userData?.showaUser?.toString(),
       );
       if (!showaUserData) {
         throw new AppError(
@@ -471,11 +471,11 @@ const editUserProfile = async ({
       //   // work on that
       // }
     } else if (
-      user?.role === 'serviceProviderAdmin' &&
-      user?.serviceProviderAdmin?.toString()
+      userData?.role === 'serviceProviderAdmin' &&
+      userData?.serviceProviderAdmin?.toString()
     ) {
       const serviceProviderAdminData = await ServiceProviderAdmin.findById(
-        user?.serviceProviderAdmin?.toString(),
+        userData?.serviceProviderAdmin?.toString(),
       );
       if (!serviceProviderAdminData) {
         throw new AppError(
@@ -512,12 +512,12 @@ const editUserProfile = async ({
         );
       }
     } else if (
-      user?.role === 'serviceProviderBranchManager' &&
-      user?.serviceProviderBranchManager?.toString()
+      userData?.role === 'serviceProviderBranchManager' &&
+      userData?.serviceProviderBranchManager?.toString()
     ) {
       const serviceProviderBranchManagerData =
         await ServiceProviderBranchManager.findById(
-          user?.serviceProviderBranchManager?.toString(),
+          userData?.serviceProviderBranchManager?.toString(),
         );
       if (!serviceProviderBranchManagerData) {
         throw new AppError(
@@ -556,12 +556,12 @@ const editUserProfile = async ({
         );
       }
     } else if (
-      user?.role === 'serviceProviderEngineer' &&
-      user?.serviceProviderEngineer?.toString()
+      userData?.role === 'serviceProviderEngineer' &&
+      userData?.serviceProviderEngineer?.toString()
     ) {
       const serviceProviderEngineerData =
         await ServiceProviderEngineer.findById(
-          user?.serviceProviderEngineer?.toString(),
+          userData?.serviceProviderEngineer?.toString(),
         );
       if (!serviceProviderEngineerData) {
         throw new AppError(
