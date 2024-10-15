@@ -594,14 +594,11 @@ const generateProgressReservationInPercentage: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-    // Check if the user has access to this functionality
     checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
 
-    // Call the service to calculate the progress percentage
     const result =
       await reservationServices.generateProgressReservationInPercentage();
 
-    // Send the response with the calculated percentage
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
