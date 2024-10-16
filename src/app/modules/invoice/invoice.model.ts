@@ -130,6 +130,11 @@ const InspectionSchema = new Schema<TInspection>({
   isInspecting: {
     type: Boolean,
   },
+  serviceProviderEngineer: {
+    type: Schema.Types.ObjectId,
+    ref: 'ServiceProviderEngineer',
+    required: true,
+  },
   inspectingTime: {
     type: [Number],
     required: true,

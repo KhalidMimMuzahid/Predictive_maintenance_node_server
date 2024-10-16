@@ -380,6 +380,7 @@ const unfollowUser = async ({ user, auth }: { user: string; auth: TAuth }) => {
 
 const editUserProfile = async ({
   auth,
+  user_id,
   user,
   showaUser,
   serviceProviderAdmin,
@@ -387,16 +388,32 @@ const editUserProfile = async ({
   serviceProviderEngineer,
 }: {
   auth: TAuth;
+  user_id: string;
   user: Partial<TUser>;
   showaUser?: Partial<TShowaUser>;
   serviceProviderAdmin?: Partial<TServiceProviderAdmin>;
   serviceProviderBranchManager?: Partial<TServiceProviderBranchManager>;
   serviceProviderEngineer?: Partial<TServiceProviderEngineer>;
 }) => {
-  const userData = await User.findById(auth?._id?.toString()).select(
-    '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
-  );
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let userData: mongoose.Document<unknown, {}, TUser> &
+    TUser & {
+      _id: mongoose.Types.ObjectId;
+    } & {
+      __v?: number;
+    };
 
+  // if this req send by showa admin and also send a user_id, this this user will be updated
+  if (auth?.role === 'showaAdmin' && user_id) {
+    userData = await User.findById(user_id).select(
+      '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
+    );
+  } else {
+    // else who send this request, whose info will be updated
+    userData = await User.findById(auth?._id?.toString()).select(
+      '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
+    );
+  }
   if (!userData) {
     throw new AppError(httpStatus.BAD_REQUEST, `user you provide is not found`);
   }

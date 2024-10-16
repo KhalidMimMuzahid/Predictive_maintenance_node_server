@@ -65,6 +65,7 @@ export type TDocument = {
 
 export type TInspection = {
   isInspecting?: boolean;
+  serviceProviderEngineer: Types.ObjectId; // objectId of ServiceProviderEngineer model
   inspectingTime?: number[]; // time in minutes
   serviceFee?: number;
   operatorInformation?: {

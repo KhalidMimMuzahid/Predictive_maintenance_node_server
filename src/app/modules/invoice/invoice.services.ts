@@ -166,7 +166,14 @@ const inspection = async ({
       updateObject['$push'] = $push;
     }
     if (inspectingData?.inspection) {
-      updateObject['inspection'] = inspectingData?.inspection;
+      updateObject['inspection'] = {...inspectingData?.inspection,
+      serviceProviderEngineer: serviceProviderEngineer?._id
+      };
+    }
+    else{
+      updateObject['inspection'] = {
+        serviceProviderEngineer: serviceProviderEngineer?._id
+      }
     }
 
     const updatedInvoice = await Invoice.findOneAndUpdate(
