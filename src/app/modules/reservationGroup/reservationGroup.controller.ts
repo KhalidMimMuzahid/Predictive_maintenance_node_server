@@ -345,7 +345,27 @@ const getAllOnDemandResGroupByCompany: RequestHandler = catchAsync(
     });
   },
 );
+const getAllResGroupByBranch: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderAdmin', 'serviceProviderBranchManager'],
+  });
+  const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+
+  const results = await reservationGroupServices.getAllResGroupByBranch({
+    serviceProviderBranch,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'all res-groups for branch have retrieved successfully',
+    data: results,
+  });
+});
 const getAllOnDemandUnassignedToCompanyResGroups: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -484,7 +504,10 @@ export const reservationGroupController = {
   getBidedReservationGroupsByCompany, //Service Provider -> Maintenance-> Maintenance-Bid
   getAllUnAssignedResGroupToBranchByCompany, //Service Provider -> Maintenance
   getAllOnDemandResGroupByCompany, //Service Provider -> Maintenance
+  getAllResGroupByBranch,
+  // getAllUnAssignedResGroupToTeamOfEngineersByBranch
   getAllOnDemandUnassignedToCompanyResGroups, //Service Provider -> Maintenance
+
   acceptOnDemandResGroupByBranch, //Service Provider -> Maintenance
   updateBid, //this api is already implemented on addBid api,now you may delete this api
   deleteBid, //Service Provider -> Maintenance-> Maintenance-Bid-bided

@@ -79,6 +79,13 @@ router.get(
   reservationGroupController.getAllOnDemandResGroupByCompany,
 );
 router.get(
+  '/get-all-res-group-by-branch',
+  reservationGroupController.getAllResGroupByBranch,
+);
+  // getAllResGroupByBranch
+  // getAllUnAssignedResGroupToTeamOfEngineersByBranch
+
+router.get(
   '/get-all-on-demand-unassigned-to-company-res-groups',
   reservationGroupController.getAllOnDemandUnassignedToCompanyResGroups,
 );

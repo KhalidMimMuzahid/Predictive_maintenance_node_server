@@ -900,6 +900,25 @@ const getAllOnDemandResGroupByCompany = async ({
 
   return result;
 };
+
+
+
+const getAllResGroupByBranch = async ({
+  serviceProviderBranch,
+}: {
+  serviceProviderBranch: string;
+}) => {
+  const result = await ReservationRequestGroup.find({
+    'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
+      serviceProviderBranch,
+    ),
+    // isOnDemand: true,
+  });
+
+  return result;
+}; 
+
+
 const getAllOnDemandUnassignedToCompanyResGroups = async () => {
   const result = await ReservationRequestGroup.find({
     isOnDemand: true,
@@ -1134,10 +1153,13 @@ export const reservationGroupServices = {
   getReservationGroupById,
   getLiveReservationGroups,
   getBidedReservationGroupsByCompany,
+
   getAllUnAssignedResGroupToBranchByCompany,
   getAllOnDemandResGroupByCompany,
+  getAllResGroupByBranch,
   getAllOnDemandUnassignedToCompanyResGroups,
   acceptOnDemandResGroupByCompany,
+
   updateBid,
   deleteBid,
 };
