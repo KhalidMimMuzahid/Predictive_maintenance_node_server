@@ -15,5 +15,9 @@ router.patch(
   '/renew-subscription',
   subscriptionPurchasedControllers.renewSubscription,
 );
+router.get(
+  '/get-all-subscription-purchased-by-user',
+  subscriptionPurchasedControllers.getAllSubscriptionPurchasedHistoryByUser,
+);
 
 export const subscriptionPurchasedRoutes = router;

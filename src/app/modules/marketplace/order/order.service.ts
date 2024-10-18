@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
@@ -220,6 +221,101 @@ const getAllOrders = async () => {
   return orders;
 };
 
+const getTotalSalesReport = async (startDate: Date, endDate: Date) => {
+  const startYear = startDate.getFullYear();
+  const startMonth = startDate.getMonth(); // 0-based
+  const endYear = endDate.getFullYear();
+  const endMonth = endDate.getMonth(); // 0-based
+
+  // Create an array to hold the report data
+  const completeReport: {
+    date: string;
+    totalSales: number;
+    totalOrders: number;
+  }[] = [];
+
+  // Calculate the difference in months between startDate and endDate
+  const diffInMonths = (endYear - startYear) * 12 + (endMonth - startMonth);
+
+  // If the duration is under a month, prepare daily report
+  if (diffInMonths === 0) {
+    // Generate daily report
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const formattedDate = currentDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      completeReport.push({
+        date: formattedDate,
+        totalSales: 0, // Default to 0
+        totalOrders: 0, // Default to 0
+      });
+      currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+    }
+  } else {
+    // If the duration is more than a month, prepare monthly report
+    for (let year = startYear; year <= endYear; year++) {
+      const monthCount = year === endYear ? endMonth + 1 : 12; // Ensure we stop at the end month
+      for (
+        let month = year === startYear ? startMonth : 0;
+        month < monthCount;
+        month++
+      ) {
+        const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}`; // Format as YYYY-MM
+        completeReport.push({
+          date: formattedDate,
+          totalSales: 0, // Default to 0
+          totalOrders: 0, // Default to 0
+        });
+      }
+    }
+  }
+
+  const matchCriteria = {
+    createdAt: {
+      $gte: startDate,
+      $lte: endDate,
+    },
+    'paidStatus.isPaid': true,
+  };
+
+  const report = await Order.aggregate([
+    { $match: matchCriteria },
+    {
+      $group: {
+        _id:
+          diffInMonths === 0
+            ? { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }
+            : { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+        totalSales: { $sum: '$cost.totalAmount' },
+        totalOrders: { $sum: 1 },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: '$_id',
+        totalSales: { $ifNull: ['$totalSales', 0] },
+        totalOrders: { $ifNull: ['$totalOrders', 0] },
+      },
+    },
+    {
+      $sort: { date: 1 },
+    },
+  ]);
+
+  // Fill in report data into the completeReport
+  report.forEach((item) => {
+    const foundIndex = completeReport.findIndex((r) => r.date === item.date);
+    if (foundIndex !== -1) {
+      completeReport[foundIndex].totalSales = item.totalSales;
+      completeReport[foundIndex].totalOrders = item.totalOrders;
+    }
+  });
+
+  return {
+    completeReport,
+  };
+};
+
 export const orderServices = {
   orderProduct,
   cancelOrAcceptOrder,
@@ -228,4 +324,5 @@ export const orderServices = {
   getOrderDetailsByOrder,
   getAllOrdersByShop,
   getAllOrders,
+  getTotalSalesReport,
 };

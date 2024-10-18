@@ -147,8 +147,25 @@ const renewSubscription = async ({
   return subscriptionPurchase;
 };
 
+const getAllSubscriptionPurchasedHistoryByUser = async (
+  userId: string,
+): Promise<{ subscriptions: TSubscriptionPurchased[] }> => {
+  const subscriptions = await SubscriptionPurchased.find({
+    user: new mongoose.Types.ObjectId(userId),
+  }).populate('subscription');
+
+  // const totalCount = await SubscriptionPurchased.countDocuments({
+  //   user: userId,
+  // });
+
+  return {
+    subscriptions,
+  };
+};
+
 export const subscriptionPurchasedServices = {
   createSubscription,
   getAllMySubscriptions,
   renewSubscription,
+  getAllSubscriptionPurchasedHistoryByUser,
 };

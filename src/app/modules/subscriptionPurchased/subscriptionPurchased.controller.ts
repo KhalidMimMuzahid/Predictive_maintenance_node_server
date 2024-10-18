@@ -98,8 +98,38 @@ const renewSubscription: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllSubscriptionPurchasedHistoryByUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+
+    const userId: string = (req.query?.user as string) || auth?._id?.toString();
+
+    if (!userId) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        'User ID is missing in the request',
+      );
+    }
+
+    const subscriptions =
+      await subscriptionPurchasedServices.getAllSubscriptionPurchasedHistoryByUser(
+        userId,
+      );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Subscription purchases retrieved successfully',
+      data: subscriptions,
+    });
+  },
+);
+
 export const subscriptionPurchasedControllers = {
   purchaseSubscription,
   getAllMySubscriptions, //(customer app)
   renewSubscription, //extend subscription  (customer app)
+  getAllSubscriptionPurchasedHistoryByUser,
 };
