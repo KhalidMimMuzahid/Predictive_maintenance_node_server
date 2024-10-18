@@ -9,17 +9,18 @@ import { jwtFunc } from '../../utils/jwtFunction';
 //   TServiceProviderEngineer,
 //   TShowaUser,
 // } from '../extraData/extraData.interface';
+import mongoose from 'mongoose';
+import { TAddress } from '../common/common.interface';
 import { TUser } from './user.interface';
 import { User } from './user.model';
-import { ServiceProviderBranchManager } from './usersModule/branchManager/branchManager.model';
-import { ServiceProviderAdmin } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
-import { ServiceProviderEngineer } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
-import { ShowaUser } from './usersModule/showaUsers/showaUser.model';
-import mongoose from 'mongoose';
-import { TShowaUser } from './usersModule/showaUsers/showaUser.interface';
-import { TServiceProviderAdmin } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.interface';
 import { TServiceProviderBranchManager } from './usersModule/branchManager/branchManager.interface';
+import { ServiceProviderBranchManager } from './usersModule/branchManager/branchManager.model';
+import { TServiceProviderAdmin } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.interface';
+import { ServiceProviderAdmin } from './usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
 import { TServiceProviderEngineer } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.interface';
+import { ServiceProviderEngineer } from './usersModule/serviceProviderEngineer/serviceProviderEngineer.model';
+import { TShowaUser } from './usersModule/showaUsers/showaUser.interface';
+import { ShowaUser } from './usersModule/showaUsers/showaUser.model';
 
 // 'showaAdmin'
 // 'showaSubAdmin'
@@ -625,6 +626,286 @@ const editUserProfile = async ({
   }
 };
 
+// const editUserAddress = async ({
+//   auth,
+//   addresses,
+// }: {
+//   auth: TAuth;
+//   addresses: { isDeleted: boolean; address: TAddress }[];
+// }) => {
+//   const address = addresses;
+
+//   const userData = await User.findById(auth?._id?.toString()).select(
+//     '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
+//   );
+
+//   if (!userData) {
+//     throw new AppError(httpStatus.BAD_REQUEST, `User not found`);
+//   }
+
+//   if (userData.role === 'showaUser' && userData?.showaUser) {
+//     const showaUserData = await ShowaUser.findById(
+//       userData.showaUser.toString(),
+//     );
+//     if (!showaUserData) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'Showa user not found');
+//     }
+
+//     showaUserData.addresses = address;
+
+//     const updatedShowaUser = await showaUserData.save();
+//     if (!updatedShowaUser) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to update Showa user');
+//     }
+//   } else if (
+//     userData.role === 'serviceProviderAdmin' &&
+//     userData?.serviceProviderAdmin
+//   ) {
+//     const serviceProviderAdminData = await ServiceProviderAdmin.findById(
+//       userData.serviceProviderAdmin.toString(),
+//     );
+//     if (!serviceProviderAdminData) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Service provider admin not found',
+//       );
+//     }
+
+//     serviceProviderAdminData.addresses = address;
+
+//     const updatedServiceProviderAdmin = await serviceProviderAdminData.save();
+//     if (!updatedServiceProviderAdmin) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Failed to update Service Provider Admin',
+//       );
+//     }
+//   } else if (
+//     userData.role === 'serviceProviderBranchManager' &&
+//     userData?.serviceProviderBranchManager
+//   ) {
+//     const serviceProviderBranchManagerData =
+//       await ServiceProviderBranchManager.findById(
+//         userData.serviceProviderBranchManager.toString(),
+//       );
+//     if (!serviceProviderBranchManagerData) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'Branch Manager not found');
+//     }
+
+//     serviceProviderBranchManagerData.addresses = address;
+
+//     const updatedServiceProviderBranchManager =
+//       await serviceProviderBranchManagerData.save();
+//     if (!updatedServiceProviderBranchManager) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Failed to update Branch Manager',
+//       );
+//     }
+//   } else if (
+//     userData.role === 'serviceProviderEngineer' &&
+//     userData?.serviceProviderEngineer
+//   ) {
+//     const serviceProviderEngineerData = await ServiceProviderEngineer.findById(
+//       userData.serviceProviderEngineer.toString(),
+//     );
+//     if (!serviceProviderEngineerData) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'ServiceProviderEngineer not found',
+//       );
+//     }
+
+//     serviceProviderEngineerData.addresses = address;
+
+//     const updatedServiceProviderEngineer =
+//       await serviceProviderEngineerData.save();
+//     if (!updatedServiceProviderEngineer) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Failed to update ServiceProviderEngineer',
+//       );
+//     }
+//   } else {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Invalid role for editing addresses',
+//     );
+//   }
+
+//   return true;
+// };
+
+const editUserAddress = async ({
+  auth,
+  addresses,
+}: {
+  auth: TAuth;
+  addresses: Partial<{ isDeleted: boolean; address: TAddress }>[];
+}) => {
+  const userData = await User.findById(auth?._id?.toString()).select(
+    '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
+  );
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
+  }
+
+  const updateAddresses = (
+    existingAddresses: { isDeleted: boolean; address: TAddress }[],
+    newAddresses: Partial<{ isDeleted: boolean; address: TAddress }>[],
+  ): { isDeleted: boolean; address: TAddress }[] => {
+    return newAddresses.map((newAddress, index) => {
+      const existingAddress = existingAddresses[index] || {
+        isDeleted: false,
+        address: {} as TAddress,
+      };
+      return {
+        isDeleted:
+          newAddress.isDeleted !== undefined
+            ? newAddress.isDeleted
+            : existingAddress.isDeleted,
+        address: {
+          googleString:
+            newAddress.address?.googleString ??
+            existingAddress.address.googleString,
+          location: {
+            latitude:
+              newAddress.address?.location?.latitude ??
+              existingAddress.address.location?.latitude,
+            longitude:
+              newAddress.address?.location?.longitude ??
+              existingAddress.address.location?.longitude,
+          },
+          street: newAddress.address?.street ?? existingAddress.address.street,
+          city: newAddress.address?.city ?? existingAddress.address.city,
+          prefecture:
+            newAddress.address?.prefecture ??
+            existingAddress.address.prefecture,
+          postalCode:
+            newAddress.address?.postalCode ??
+            existingAddress.address.postalCode,
+          country:
+            newAddress.address?.country ?? existingAddress.address.country,
+          buildingName:
+            newAddress.address?.buildingName ??
+            existingAddress.address.buildingName,
+          roomNumber:
+            newAddress.address?.roomNumber ??
+            existingAddress.address.roomNumber,
+          state: newAddress.address?.state ?? existingAddress.address.state,
+          details:
+            newAddress.address?.details ?? existingAddress.address.details,
+        },
+      };
+    });
+  };
+
+  if (userData.role === 'showaUser' && userData?.showaUser) {
+    const showaUserData = await ShowaUser.findById(
+      userData.showaUser.toString(),
+    );
+    if (!showaUserData) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Showa user not found');
+    }
+
+    showaUserData.addresses = updateAddresses(
+      showaUserData.addresses,
+      addresses,
+    );
+
+    const updatedShowaUser = await showaUserData.save();
+    if (!updatedShowaUser) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to update Showa user');
+    }
+  } else if (
+    userData.role === 'serviceProviderAdmin' &&
+    userData?.serviceProviderAdmin
+  ) {
+    const serviceProviderAdminData = await ServiceProviderAdmin.findById(
+      userData.serviceProviderAdmin.toString(),
+    );
+    if (!serviceProviderAdminData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Service provider admin not found',
+      );
+    }
+
+    serviceProviderAdminData.addresses = updateAddresses(
+      serviceProviderAdminData.addresses,
+      addresses,
+    );
+
+    const updatedServiceProviderAdmin = await serviceProviderAdminData.save();
+    if (!updatedServiceProviderAdmin) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to update Service Provider Admin',
+      );
+    }
+  } else if (
+    userData.role === 'serviceProviderBranchManager' &&
+    userData?.serviceProviderBranchManager
+  ) {
+    const serviceProviderBranchManagerData =
+      await ServiceProviderBranchManager.findById(
+        userData.serviceProviderBranchManager.toString(),
+      );
+    if (!serviceProviderBranchManagerData) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Branch Manager not found');
+    }
+
+    serviceProviderBranchManagerData.addresses = updateAddresses(
+      serviceProviderBranchManagerData.addresses,
+      addresses,
+    );
+
+    const updatedServiceProviderBranchManager =
+      await serviceProviderBranchManagerData.save();
+    if (!updatedServiceProviderBranchManager) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to update Branch Manager',
+      );
+    }
+  } else if (
+    userData.role === 'serviceProviderEngineer' &&
+    userData?.serviceProviderEngineer
+  ) {
+    const serviceProviderEngineerData = await ServiceProviderEngineer.findById(
+      userData.serviceProviderEngineer.toString(),
+    );
+    if (!serviceProviderEngineerData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'ServiceProviderEngineer not found',
+      );
+    }
+
+    serviceProviderEngineerData.addresses = updateAddresses(
+      serviceProviderEngineerData.addresses,
+      addresses,
+    );
+
+    const updatedServiceProviderEngineer =
+      await serviceProviderEngineerData.save();
+    if (!updatedServiceProviderEngineer) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to update ServiceProviderEngineer',
+      );
+    }
+  } else {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Invalid role for editing addresses',
+    );
+  }
+
+  return true;
+};
+
 export const userServices = {
   signIn,
   getUserBy_id,
@@ -635,4 +916,5 @@ export const userServices = {
   followUser,
   unfollowUser,
   editUserProfile,
+  editUserAddress,
 };

@@ -26,5 +26,6 @@ router.get(
 );
 router.get('/get-all-orders-by-shop', orderController.getAllOrdersByShop);
 router.get('/get-all-orders', orderController.getAllOrders);
+router.get('/get-total-sales-report', orderController.getTotalSalesReport);
 
 export const orderRoutes = router;

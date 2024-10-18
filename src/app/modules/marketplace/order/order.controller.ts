@@ -241,6 +241,34 @@ const getAllOrders: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalSalesReport: RequestHandler = catchAsync(async (req, res) => {
+  const auth = req.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const { startingDate, endingDate } = req.query;
+
+  if (!startingDate) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Starting date is required');
+  }
+
+  const startDate = new Date(startingDate as string);
+  const endDate = endingDate ? new Date(endingDate as string) : new Date();
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid date format');
+  }
+
+  const result = await orderServices.getTotalSalesReport(startDate, endDate);
+
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Total sales report generated successfully',
+    data: result,
+  });
+});
+
 export const orderController = {
   orderProduct, //customer app->marketplace->
   cancelOrAcceptOrder,
@@ -249,4 +277,5 @@ export const orderController = {
   getOrderDetailsByOrder, //customer app->marketplace->order details
   getAllOrdersByShop, //service provider app->shop company->all orders
   getAllOrders, //service provider app->shop company->all orders
+  getTotalSalesReport,
 };

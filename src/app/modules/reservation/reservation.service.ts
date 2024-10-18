@@ -532,31 +532,93 @@ const getAllScheduledReservationsByServiceProviderCompany = async (
   return allScheduledReservations;
 };
 
+// const getReservationCountByServiceProviderCompany = async (
+//   serviceProviderCompany: string,
+// ) => {
+//   const orderReceivedReservationsCount = await Invoice.countDocuments({
+//     'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+//       serviceProviderCompany,
+//     ),
+//   });
+//   const orderCompletedReservationsCount = await Invoice.countDocuments({
+//     'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+//       serviceProviderCompany,
+//     ),
+//     taskStatus: 'completed',
+//   });
+//   const orderCanceledReservationsCount = await Invoice.countDocuments({
+//     'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+//       serviceProviderCompany,
+//     ),
+//     taskStatus: 'canceled',
+//   });
+//   return {
+//     orderReceivedReservationsCount,
+//     orderCompletedReservationsCount,
+//     orderCanceledReservationsCount,
+//   };
+// };
+
+// const getReservationCountByServiceProviderCompany = async (
+//   serviceProviderCompany: string,
+//   orderType?: TInvoiceStatus,
+//   //orderType?: string,
+// ) => {
+//   const filterQuery = {
+//     'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
+//       serviceProviderCompany,
+//     ),
+//   };
+
+//   if (!orderType) {
+//     const orderReceivedReservationsCount =
+//       await Invoice.countDocuments(filterQuery);
+//     return { orderReceivedReservationsCount };
+//   } else if (orderType === 'completed') {
+//     const orderCompletedReservationsCount = await Invoice.countDocuments({
+//       ...filterQuery,
+//       taskStatus: 'completed',
+//     });
+//     return { orderCompletedReservationsCount };
+//   } else if (orderType === 'canceled') {
+//     const orderCanceledReservationsCount = await Invoice.countDocuments({
+//       ...filterQuery,
+//       taskStatus: 'canceled',
+//     });
+//     return { orderCanceledReservationsCount };
+//   }
+// };
+
 const getReservationCountByServiceProviderCompany = async (
   serviceProviderCompany: string,
+  orderType?: TInvoiceStatus,
 ) => {
-  const orderReceivedReservationsCount = await Invoice.countDocuments({
-    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
-      serviceProviderCompany,
-    ),
-  });
-  const orderCompletedReservationsCount = await Invoice.countDocuments({
-    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
-      serviceProviderCompany,
-    ),
-    taskStatus: 'completed',
-  });
-  const orderCanceledReservationsCount = await Invoice.countDocuments({
-    'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(
-      serviceProviderCompany,
-    ),
-    taskStatus: 'canceled',
-  });
-  return {
-    orderReceivedReservationsCount,
-    orderCompletedReservationsCount,
-    orderCanceledReservationsCount,
-  };
+  // const filterQuery = {
+  //   'postBiddingProcess.serviceProviderCompany': new mongoose.Types.ObjectId(serviceProviderCompany),
+  // };
+
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterQuery: any = {};
+  filterQuery['postBiddingProcess.serviceProviderCompany'] =
+    new mongoose.Types.ObjectId(serviceProviderCompany);
+
+  if (!orderType) {
+    const orderReceivedReservationsCount =
+      await Invoice.countDocuments(filterQuery);
+    return { orderReceivedReservationsCount };
+  } else if (orderType === 'completed') {
+    const orderCompletedReservationsCount = await Invoice.countDocuments({
+      ...filterQuery,
+      taskStatus: 'completed',
+    });
+    return { orderCompletedReservationsCount };
+  } else if (orderType === 'canceled') {
+    const orderCanceledReservationsCount = await Invoice.countDocuments({
+      ...filterQuery,
+      taskStatus: 'canceled',
+    });
+    return { orderCanceledReservationsCount };
+  }
 };
 const getAllReservationsCount = async (machineType: TMachineType2) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1222,8 +1284,6 @@ const generateProgressReservationInPercentage = async () => {
 };
 
 const getReservationRequestByReservationId = async (reservationId: string) => {
-
-
   const reservation = await ReservationRequest.findById(reservationId);
   if (!reservation) {
     throw new AppError(httpStatus.NOT_FOUND, 'Reservation not found.');

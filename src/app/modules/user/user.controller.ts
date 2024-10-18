@@ -205,6 +205,34 @@ const {
   });
 });
 
+const editUserAddress: RequestHandler = catchAsync(async (req, res) => {
+  const auth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const { addresses } = req.body;
+
+  if (!addresses || !Array.isArray(addresses)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid address data provided');
+  }
+
+  const result = await userServices.editUserAddress({
+    auth,
+    addresses,
+  });
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User address updated successfully',
+    data: result,
+  });
+});
+
 export const userControllers = {
   signIn,
   getUserBy_id,
@@ -215,4 +243,5 @@ export const userControllers = {
   followUser,
   unfollowUser,
   editUserProfile,
+  editUserAddress,
 };

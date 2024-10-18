@@ -357,6 +357,7 @@ const getAllScheduledReservationsByServiceProviderCompany: RequestHandler =
       data: results,
     });
   });
+
 const getReservationCountByServiceProviderCompany: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -364,15 +365,24 @@ const getReservationCountByServiceProviderCompany: RequestHandler = catchAsync(
 
     const serviceProviderCompany: string = req?.query
       ?.serviceProviderCompany as string;
+
+    const orderType: TInvoiceStatus = req?.query?.orderType as TInvoiceStatus;
+
+    // const orderType: string | undefined = req?.query?.orderType as
+    //   | string
+    //   | undefined;
+
     const result =
       await reservationServices.getReservationCountByServiceProviderCompany(
         serviceProviderCompany,
+        orderType,
       );
+
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'reservationCount data has retrieved successfully',
+      message: 'Reservation count data retrieved successfully',
       data: result,
     });
   },
@@ -594,14 +604,11 @@ const generateProgressReservationInPercentage: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-    // Check if the user has access to this functionality
     checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
 
-    // Call the service to calculate the progress percentage
     const result =
       await reservationServices.generateProgressReservationInPercentage();
 
-    // Send the response with the calculated percentage
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -655,7 +662,7 @@ export const reservationController = {
   getAllReservationsByUser,
   getAllReservationsByServiceProviderCompany,
   getAllScheduledReservationsByServiceProviderCompany, //Service Provider -> Maintenance->Maintenance-task-schedule
-  getReservationCountByServiceProviderCompany, //Showa super admin → service provider
+  getReservationCountByServiceProviderCompany, //Showa super admin → service provider or service provider companies table order coloumn
   uploadRequestImage, //Showa super admin → service provider
   deleteReservation, //Showa super admin → service provider
   getReservationRequestForServiceProviderCompany, //(type wise :'ongoing','completed','canceled','rescheduled')Service provider->Maintenance task
