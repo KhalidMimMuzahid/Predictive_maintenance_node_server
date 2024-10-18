@@ -103,7 +103,7 @@ const createServiceProviderBranchManagerIntoDB = async ({
     serviceProviderBranchManager.user = createdUser?._id;
     let inviteMemberData: TInviteMember;
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    let serviceProviderBranchManagerData: any;
+    let serviceProviderBranchData: any;
 
     if (invitedMember) {
       const extraData = await ExtraData.findOne({
@@ -117,11 +117,11 @@ const createServiceProviderBranchManagerIntoDB = async ({
         );
       }
       inviteMemberData = extraData?.inviteMember;
-      serviceProviderBranchManagerData = await ServiceProviderBranch.findById(
+      serviceProviderBranchData = await ServiceProviderBranch.findById(
         inviteMemberData?.serviceProviderBranchManager?.serviceProviderBranch,
       );
 
-      if (!serviceProviderBranchManagerData) {
+      if (!serviceProviderBranchData) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
           'something went wrong, please try again',
@@ -138,7 +138,7 @@ const createServiceProviderBranchManagerIntoDB = async ({
       serviceProviderCompany: serviceProviderCompany_id,
       serviceProviderBranch: inviteMemberData?.serviceProviderBranchManager
         ?.serviceProviderBranch
-        ? serviceProviderBranchManagerData?._id
+        ? serviceProviderBranchData?._id
         : undefined,
       // joiningDate: ""
     };

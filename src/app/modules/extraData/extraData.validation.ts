@@ -36,7 +36,8 @@ const inviteMemberValidationSchema = z.object({
         .optional(),
       serviceProviderEngineer: z
         .object({
-          serviceProviderBranch: z.string().optional(),
+          serviceProviderCompany: z.string(),
+          serviceProviderBranch: z.string(),
           email: z.string(),
           phone: z.string(),
           name: z.object({ firstName: z.string(), lastName: z.string() }),
