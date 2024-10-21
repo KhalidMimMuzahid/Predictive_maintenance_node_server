@@ -929,7 +929,7 @@ const getAllOnDemandUnassignedToCompanyResGroups = async () => {
 
   return result;
 };
-const acceptOnDemandResGroupByCompany = async ({
+const acceptOnDemandResGroupByBranch = async ({
   auth,
   reservationGroup,
   serviceProviderBranch_id,
@@ -1157,7 +1157,7 @@ export const reservationGroupServices = {
   getAllUnAssignedResGroupToBranchByCompany,
   getAllOnDemandResGroupByCompany,
   getAllOnDemandUnassignedToCompanyResGroups,
-  acceptOnDemandResGroupByCompany,
+  acceptOnDemandResGroupByBranch,
 
   updateBid,
   deleteBid,

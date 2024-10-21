@@ -53,7 +53,7 @@ const ReservationRequestGroupSchema: Schema =
       ],
       taskStatus: {
         type: String,
-        enum: ['ongoing', 'completed', 'canceled'],
+        enum: ['pending', 'accepted', 'ongoing', 'completed', 'canceled'],
       },
       isOnDemand: {
         type: Boolean,

@@ -452,7 +452,12 @@ const getDashboardScreenAnalyzingForServiceProviderCompany: RequestHandler =
 
     checkUserAccessApi({
       auth,
-      accessUsers: ['showaAdmin', 'showaSubAdmin', 'serviceProviderAdmin'],
+      accessUsers: [
+        'showaAdmin',
+        'showaSubAdmin',
+        'serviceProviderAdmin',
+        'serviceProviderBranchManager',
+      ],
     });
 
     const serviceProviderCompany: string = req?.query
