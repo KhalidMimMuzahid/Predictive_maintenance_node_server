@@ -102,9 +102,41 @@ const editServiceProviderEngineer: RequestHandler = catchAsync(
     });
   },
 );
+const getAllServiceProviderEngineersByBranch: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req.headers.auth as unknown as TAuth;
 
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderBranchManager', 'serviceProviderAdmin'],
+    });
+
+    const serviceProviderBranch = req.query.serviceProviderBranch as string;
+
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderBranch is required',
+      );
+    }
+
+    const result =
+      await serviceProviderEngineerServices.getAllServiceProviderEngineersByBranch(
+        serviceProviderBranch,
+      );
+
+    // Send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all service provider engineers have retrieved successfully',
+      data: result,
+    });
+  },
+);
 export const serviceProviderEngineerControllers = {
   createServiceProviderEngineer,
   approveAndAssignEngineerInToBranch,
   editServiceProviderEngineer,
+  getAllServiceProviderEngineersByBranch,
 };

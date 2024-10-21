@@ -367,9 +367,20 @@ const editServiceProviderEngineer = async (
 
   return updatedServiceProviderEngineer;
 };
+const getAllServiceProviderEngineersByBranch = async (
+  serviceProviderBranch: string,
+) => {
+  const result = await ServiceProviderEngineer.find({
+    'currentState.serviceProviderBranch': new Types.ObjectId(
+      serviceProviderBranch,
+    ),
+  });
 
+  return result;
+};
 export const serviceProviderEngineerServices = {
   createServiceProviderEngineerIntoDB,
   approveServiceProviderEngineerIntoDB,
   editServiceProviderEngineer,
+  getAllServiceProviderEngineersByBranch,
 };
