@@ -7,13 +7,9 @@ import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
 import { machineTypeArray } from '../reservation/reservation.const';
 import { TMachineType } from '../reservation/reservation.interface';
-import {
-  resGroupCategoryForBranchArray,
-  reservationGroupTypeArray,
-} from './reservationGroup.const';
+import { reservationGroupTypeArray } from './reservationGroup.const';
 import {
   TBiddingDate,
-  TResGroupCategoryForBranch,
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { reservationGroupServices } from './reservationGroup.service';
@@ -349,41 +345,7 @@ const getAllOnDemandResGroupByCompany: RequestHandler = catchAsync(
     });
   },
 );
-const getAllResGroupByBranch: RequestHandler = catchAsync(async (req, res) => {
-  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  // we are checking the permission of this api
-  checkUserAccessApi({
-    auth,
-    accessUsers: ['serviceProviderAdmin', 'serviceProviderBranchManager'],
-  });
-  const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
-  const category = req?.query?.category as TResGroupCategoryForBranch;
-
-  if (!resGroupCategoryForBranchArray.some((each) => each === category)) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      `category must be any of ${resGroupCategoryForBranchArray.reduce(
-        (total, current) => {
-          total = total + `${current}, `;
-          return total;
-        },
-        '',
-      )}`,
-    );
-  }
-  const results = await reservationGroupServices.getAllResGroupByBranch({
-    serviceProviderBranch,
-    category,
-  });
-  // send response
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'all res-groups for branch have retrieved successfully',
-    data: results,
-  });
-});
 const getAllOnDemandUnassignedToCompanyResGroups: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -516,11 +478,21 @@ const getAllUnassignedResGroupToTeamOfEngineersByBranch: RequestHandler =
 
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderBranchManager'],
+      accessUsers: ['serviceProviderBranchManager', 'serviceProviderAdmin'],
     });
 
+    const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderBranch is  required',
+      );
+    }
+
     const results =
-      await reservationGroupServices.getAllUnassignedResGroupToTeamOfEngineersByBranch();
+      await reservationGroupServices.getAllUnassignedResGroupToTeamOfEngineersByBranch(
+        serviceProviderBranch,
+      );
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -543,7 +515,6 @@ export const reservationGroupController = {
   getBidedReservationGroupsByCompany, //Service Provider -> Maintenance-> Maintenance-Bid
   getAllUnAssignedResGroupToBranchByCompany, //Service Provider -> Maintenance
   getAllOnDemandResGroupByCompany, //Service Provider -> Maintenance
-  getAllResGroupByBranch,
   // getAllUnAssignedResGroupToTeamOfEngineersByBranch
   getAllOnDemandUnassignedToCompanyResGroups, //Service Provider -> Maintenance
 

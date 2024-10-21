@@ -656,15 +656,24 @@ const getAllOngoingResByBranch: RequestHandler = catchAsync(
 
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderBranchManager'],
+      accessUsers: ['serviceProviderBranchManager', 'serviceProviderAdmin'],
     });
+    const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderBranch is  required',
+      );
+    }
 
-    const results = await reservationServices.getAllOngoingResByBranch();
+    const results = await reservationServices.getAllOngoingResByBranch(
+      serviceProviderBranch,
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'all ongoing resrervation requests retrieved successfully.',
+      message: 'all ongoing reservation requests retrieved successfully.',
       data: results,
     });
   },
@@ -676,15 +685,24 @@ const getAllRescheduledResByBranch: RequestHandler = catchAsync(
 
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderBranchManager'],
+      accessUsers: ['serviceProviderBranchManager', 'serviceProviderAdmin'],
     });
+    const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderBranch is  required',
+      );
+    }
 
-    const results = await reservationServices.getAllRescheduledResByBranch();
+    const results = await reservationServices.getAllRescheduledResByBranch(
+      serviceProviderBranch,
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'all rescheduled resrervation requests retrieved successfully.',
+      message: 'all rescheduled reservation requests retrieved successfully.',
       data: results,
     });
   },
@@ -696,15 +714,24 @@ const getAllCompletedResByBranch: RequestHandler = catchAsync(
 
     checkUserAccessApi({
       auth,
-      accessUsers: ['serviceProviderBranchManager'],
+      accessUsers: ['serviceProviderBranchManager', 'serviceProviderAdmin'],
     });
+    const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+    if (!serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'serviceProviderBranch is  required',
+      );
+    }
 
-    const results = await reservationServices.getAllCompletedResByBranch();
+    const results = await reservationServices.getAllCompletedResByBranch(
+      serviceProviderBranch,
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'all completed resrervation requests retrieved successfully.',
+      message: 'all completed reservation requests retrieved successfully.',
       data: results,
     });
   },

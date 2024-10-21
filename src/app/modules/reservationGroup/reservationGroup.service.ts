@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
 import { TAuth } from '../../interface/error';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
-import { Invoice } from '../invoice/invoice.model';
 import { TMachineType } from '../reservation/reservation.interface';
 import { ReservationRequest } from '../reservation/reservation.model';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
@@ -15,7 +14,6 @@ import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/s
 import {
   TBiddingDate,
   TPostBiddingProcess,
-  TResGroupCategoryForBranch,
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { ReservationRequestGroup } from './reservationGroup.model';
@@ -909,121 +907,6 @@ const getAllOnDemandResGroupByCompany = async ({
   return result;
 };
 
-const getAllResGroupByBranch = async ({
-  serviceProviderBranch,
-  category,
-}: {
-  serviceProviderBranch: string;
-  category: TResGroupCategoryForBranch;
-}) => {
-  if (category == 'all') {
-    const result = await ReservationRequestGroup.find({
-      'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
-        serviceProviderBranch,
-      ),
-      // isOnDemand: true,
-    });
-    return result;
-  } else if (category == 'scheduled') {
-    // for scheduled we need to return all of those group which are postBiddingProcess.serviceProviderBranch
-    const result = await ReservationRequestGroup.find({
-      'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
-        serviceProviderBranch,
-      ),
-    });
-    return result;
-  } else if (category == 're-scheduled') {
-    //
-    const result = await Invoice.aggregate([
-      {
-        $match: {
-          'postBiddingProcess.serviceProviderBranch':
-            new mongoose.Types.ObjectId(serviceProviderBranch),
-        },
-      },
-      {
-        $unwind: '$reservationRequest',
-      },
-
-      {
-        $replaceRoot: {
-          newRoot: '$reservationRequest',
-        },
-      },
-
-      {
-        $replaceRoot: {
-          newRoot: '$reservationRequest',
-        },
-      },
-      {
-        $addFields: {
-          schedulesCount: { $size: '$schedule.schedules' },
-        },
-      },
-      {
-        $match: {
-          schedulesCount: { $gt: 1 },
-        },
-      },
-    ]);
-    return result;
-  } else if (category == 'ongoing') {
-    //
-    const result = await Invoice.aggregate([
-      {
-        $match: {
-          'postBiddingProcess.serviceProviderBranch':
-            new mongoose.Types.ObjectId(serviceProviderBranch),
-          taskStatus: 'ongoing',
-        },
-      },
-      {
-        $unwind: '$reservationRequest',
-      },
-
-      {
-        $replaceRoot: {
-          newRoot: '$reservationRequest',
-        },
-      },
-
-      {
-        $replaceRoot: {
-          newRoot: '$reservationRequest',
-        },
-      },
-    ]);
-    return result;
-  } else if (category == 'completed') {
-    const result = await Invoice.aggregate([
-      {
-        $match: {
-          'postBiddingProcess.serviceProviderBranch':
-            new mongoose.Types.ObjectId(serviceProviderBranch),
-          taskStatus: 'completed',
-        },
-      },
-      {
-        $unwind: '$reservationRequest',
-      },
-
-      {
-        $replaceRoot: {
-          newRoot: '$reservationRequest',
-        },
-      },
-
-      {
-        $replaceRoot: {
-          newRoot: '$reservationRequest',
-        },
-      },
-    ]);
-    return result;
-  }
-};
-
 const getAllOnDemandUnassignedToCompanyResGroups = async () => {
   const result = await ReservationRequestGroup.find({
     isOnDemand: true,
@@ -1248,8 +1131,16 @@ const deleteBid = async ({
   return updatedReservationGroup;
 };
 
-const getAllUnassignedResGroupToTeamOfEngineersByBranch = async () => {
-  return;
+const getAllUnassignedResGroupToTeamOfEngineersByBranch = async (
+  serviceProviderBranch: string,
+) => {
+  // for scheduled we need to return all of those group which are postBiddingProcess.serviceProviderBranch
+  const result = await ReservationRequestGroup.find({
+    'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
+      serviceProviderBranch,
+    ),
+  });
+  return result;
 };
 
 export const reservationGroupServices = {
@@ -1265,7 +1156,6 @@ export const reservationGroupServices = {
 
   getAllUnAssignedResGroupToBranchByCompany,
   getAllOnDemandResGroupByCompany,
-  getAllResGroupByBranch,
   getAllOnDemandUnassignedToCompanyResGroups,
   acceptOnDemandResGroupByCompany,
 

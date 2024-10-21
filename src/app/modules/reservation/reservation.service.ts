@@ -1297,14 +1297,99 @@ const getReservationRequestByReservationId = async (reservationId: string) => {
   return reservation;
 };
 
-const getAllOngoingResByBranch = async () => {
-  return;
+const getAllOngoingResByBranch = async (serviceProviderBranch: string) => {
+  const result = await Invoice.aggregate([
+    {
+      $match: {
+        'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
+          serviceProviderBranch,
+        ),
+        taskStatus: 'ongoing',
+      },
+    },
+    {
+      $unwind: '$reservationRequest',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+  ]);
+  return result;
 };
-const getAllRescheduledResByBranch = async () => {
-  return;
+const getAllRescheduledResByBranch = async (serviceProviderBranch: string) => {
+  const result = await Invoice.aggregate([
+    {
+      $match: {
+        'postBiddingProcess.serviceProviderBranch': new Types.ObjectId(
+          serviceProviderBranch,
+        ),
+        taskStatus: 'ongoing',
+      },
+    },
+    {
+      $unwind: '$reservationRequest',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+    {
+      $addFields: {
+        schedulesCount: { $size: '$schedule.schedules' },
+      },
+    },
+    {
+      $match: {
+        schedulesCount: { $gt: 1 },
+      },
+    },
+  ]);
+  return result;
 };
-const getAllCompletedResByBranch = async () => {
-  return;
+const getAllCompletedResByBranch = async (serviceProviderBranch: string) => {
+  const result = await Invoice.aggregate([
+    {
+      $match: {
+        'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
+          serviceProviderBranch,
+        ),
+        taskStatus: 'completed',
+      },
+    },
+    {
+      $unwind: '$reservationRequest',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+  ]);
+  return result;
 };
 
 export const reservationServices = {
