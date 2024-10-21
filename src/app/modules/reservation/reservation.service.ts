@@ -1031,6 +1031,11 @@ const getTotalReservationForChart = async (
   kpiStatus1: TReservationStatus,
   kpiStatus2: TReservationStatus,
 ) => {
+  // Check if both KPI statuses are the same
+  if (kpiStatus1 === kpiStatus2) {
+    throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
+  }
+
   let timeFrame;
 
   if (period === 'monthly') {

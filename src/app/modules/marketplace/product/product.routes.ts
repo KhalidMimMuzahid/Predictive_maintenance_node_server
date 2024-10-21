@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
-import { productController } from './product.controller';
 import validateRequest from '../../../middlewares/validateRequest';
+import { productController } from './product.controller';
 import { productValidation } from './product.validation';
 
 const router: Router = express.Router();
@@ -35,6 +35,7 @@ router.get(
   '/get-product-by-product_id',
   productController.getProductByProduct_id,
 );
+router.get('/get-top-sales-product', productController.getTopSalesProducts);
 
 export const productRoutes = router;
 //
