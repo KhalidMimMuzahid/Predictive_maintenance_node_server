@@ -31,12 +31,14 @@ export type TSchedule = {
   // date: Date;
   schedules: Date[]; // every schedule will be stored here , if you re schedule this request 5 times, this array will hold five different date
 };
+
 export type TReservationStatus =
-  | 'pending'
-  | 'accepted'
-  | 'ongoing'
-  | 'completed'
-  | 'canceled'; // reservation request status; we have another status --> "expired" , we can generate this status in frontend by checking, if status is not completed and also the last date of schedule list is over
+  | 'pending' // when res req will be created
+  | 'accepted' // when res req group will send to any company // select bidding winner
+  | 'ongoing' // when res req will be assigned to any team of engineers
+  | 'completed' // when the res will  be completed
+  | 'canceled'; // when res req will be canceled
+  // we have another status --> "expired" , we can generate this status in frontend by checking, if status is not completed and also the last date of schedule list is over
 
 export type TMachineType2 = 'washing-machine' | 'general-machine';
 export type TReservationRequest = {

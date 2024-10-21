@@ -7,9 +7,13 @@ import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
 import { machineTypeArray } from '../reservation/reservation.const';
 import { TMachineType } from '../reservation/reservation.interface';
-import { reservationGroupTypeArray } from './reservationGroup.const';
+import {
+  resGroupCategoryForBranchArray,
+  reservationGroupTypeArray,
+} from './reservationGroup.const';
 import {
   TBiddingDate,
+  TResGroupCategoryForBranch,
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { reservationGroupServices } from './reservationGroup.service';
@@ -354,9 +358,23 @@ const getAllResGroupByBranch: RequestHandler = catchAsync(async (req, res) => {
     accessUsers: ['serviceProviderAdmin', 'serviceProviderBranchManager'],
   });
   const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
+  const category = req?.query?.category as TResGroupCategoryForBranch;
 
+  if (!resGroupCategoryForBranchArray.some((each) => each === category)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `category must be any of ${resGroupCategoryForBranchArray.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
   const results = await reservationGroupServices.getAllResGroupByBranch({
     serviceProviderBranch,
+    category,
   });
   // send response
   sendResponse(res, {

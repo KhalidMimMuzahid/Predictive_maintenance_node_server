@@ -1,3 +1,5 @@
+import { TResGroupCategoryForBranch } from './reservationGroup.interface';
+
 export const reservationGroupTypeArray = [
   'all',
   'pending',
@@ -8,3 +10,10 @@ export const reservationGroupTypeArray = [
   'canceled',
 ];
 
+export const resGroupCategoryForBranchArray: TResGroupCategoryForBranch[] = [
+  'all',
+  'scheduled',
+  're-scheduled',
+  'ongoing',
+  'completed',
+];

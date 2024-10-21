@@ -22,13 +22,23 @@ export type TBiddingDate = {
   startDate?: Date;
   endDate?: Date;
 };
-
+export type TResGroupCategoryForBranch =
+  | 'all'
+  | 'scheduled'
+  | 're-scheduled'
+  | 'ongoing'
+  | 'completed';
 export type TReservationRequestGroup = {
   groupId: string; // customized unique Identifier
   groupName: string;
   groupForMachineType: TMachineType;
   reservationRequests: Types.ObjectId[]; // objectId of TReservationRequest Model
-  taskStatus: 'ongoing' | 'completed' | 'canceled';
+  taskStatus:
+    | 'pending' // when res req group will be created
+    | 'accepted' // when res req group will send to any company // select bidding winner
+    | 'ongoing' // when this will be assigned to any team of engineers
+    | 'completed' // when all of the res  inside this group will  be completed
+    | 'canceled'; // when it will  be canceled
   isOnDemand: boolean;
 
   biddingDate: TBiddingDate;

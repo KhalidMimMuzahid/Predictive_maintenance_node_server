@@ -17,6 +17,7 @@ import {
   isEngineerBelongsToThisTeamByInvoiceGroup,
   isEngineerBelongsToThisTeamByReservation,
 } from './invoice.utils';
+import { ReservationRequest } from '../reservation/reservation.model';
 
 const addAdditionalProduct = async ({
   user,
@@ -166,14 +167,14 @@ const inspection = async ({
       updateObject['$push'] = $push;
     }
     if (inspectingData?.inspection) {
-      updateObject['inspection'] = {...inspectingData?.inspection,
-      serviceProviderEngineer: serviceProviderEngineer?._id
-      };
-    }
-    else{
       updateObject['inspection'] = {
-        serviceProviderEngineer: serviceProviderEngineer?._id
-      }
+        ...inspectingData?.inspection,
+        serviceProviderEngineer: serviceProviderEngineer?._id,
+      };
+    } else {
+      updateObject['inspection'] = {
+        serviceProviderEngineer: serviceProviderEngineer?._id,
+      };
     }
 
     const updatedInvoice = await Invoice.findOneAndUpdate(
@@ -268,12 +269,11 @@ const changeStatusToCompleted = async ({
     taskStatus: { $ne: 'completed' },
     _id: { $in: restOfTheInvoices },
   });
-
-  if (incompleteInvoices?.length === 0) {
-    // that means all of the rest of the invoices have been completed
-    const session = await mongoose.startSession();
-    try {
-      session.startTransaction();
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    if (incompleteInvoices?.length === 0) {
+      // that means all of the rest of the invoices have been completed
 
       const updatedInvoiceGroup = await InvoiceGroup.findByIdAndUpdate(
         existingInvoice.invoiceGroup,
@@ -306,6 +306,20 @@ const changeStatusToCompleted = async ({
         throw new AppError(httpStatus.BAD_REQUEST, 'something went wrong');
       }
 
+      const updatedReservationRequest =
+        await ReservationRequest.findByIdAndUpdate(
+          existingInvoice?.reservationRequest?.toString(),
+          {
+            status: 'completed',
+          },
+          {
+            session,
+          },
+        );
+      if (!updatedReservationRequest) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'something went wrong');
+      }
+
       await session.commitTransaction();
       await session.endSession();
       const result = await Invoice.findOne({
@@ -315,15 +329,33 @@ const changeStatusToCompleted = async ({
         options: { strictPopulate: false },
       });
       return result;
-    } catch (error) {
-      await session.abortTransaction();
+    } else {
+      existingInvoice.taskStatus = 'completed';
+      const updatedInvoice = await existingInvoice.save({ session });
+      if (!updatedInvoice) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'something went wrong');
+      }
+      const updatedReservationRequest =
+        await ReservationRequest.findByIdAndUpdate(
+          existingInvoice?.reservationRequest?.toString(),
+          {
+            status: 'completed',
+          },
+          {
+            session,
+          },
+        );
+      if (!updatedReservationRequest) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'something went wrong');
+      }
+      await session.commitTransaction();
       await session.endSession();
-      throw error;
+      return updatedInvoice;
     }
-  } else {
-    existingInvoice.taskStatus = 'completed';
-    await existingInvoice.save();
-    return existingInvoice;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
 };
 
