@@ -1296,6 +1296,17 @@ const getReservationRequestByReservationId = async (reservationId: string) => {
   }
   return reservation;
 };
+
+const getAllOngoingResByBranch = async () => {
+  return;
+};
+const getAllRescheduledResByBranch = async () => {
+  return;
+};
+const getAllCompletedResByBranch = async () => {
+  return;
+};
+
 export const reservationServices = {
   createReservationRequestIntoDB,
   setReservationAsInvalid,
@@ -1318,4 +1329,7 @@ export const reservationServices = {
   getTotalReservationForChart,
   generateProgressReservationInPercentage,
   getReservationRequestByReservationId,
+  getAllOngoingResByBranch,
+  getAllRescheduledResByBranch,
+  getAllCompletedResByBranch,
 };
