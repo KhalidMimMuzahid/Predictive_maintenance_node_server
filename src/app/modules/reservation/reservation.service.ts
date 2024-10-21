@@ -187,6 +187,7 @@ const createReservationRequestIntoDB = async ({
             groupId: groupId,
             groupName: 'Automated-grouped',
             isOnDemand: true,
+            taskStatus: 'pending',
           },
         ],
         { session: session },

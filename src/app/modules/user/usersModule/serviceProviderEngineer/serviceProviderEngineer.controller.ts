@@ -17,10 +17,15 @@ const createServiceProviderEngineer: RequestHandler = catchAsync(
         'serviceProviderCompany._id is required for signing up an engineer',
       );
     }
-
+    const invitedMember: string = req?.query?.invitedMember as string;
     const result =
       await serviceProviderEngineerServices.createServiceProviderEngineerIntoDB(
-        { serviceProviderCompany, rootUser, serviceProviderEngineer },
+        {
+          serviceProviderCompany,
+          rootUser,
+          serviceProviderEngineer,
+          invitedMember,
+        },
       );
     // send response
     sendResponse(res, {

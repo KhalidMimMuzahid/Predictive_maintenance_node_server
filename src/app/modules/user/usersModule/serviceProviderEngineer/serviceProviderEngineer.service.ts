@@ -13,15 +13,19 @@ import {
   TServiceProviderEngineer,
 } from './serviceProviderEngineer.interface';
 import { ServiceProviderEngineer } from './serviceProviderEngineer.model';
+import { TInviteMember } from '../../../extraData/extraData.interface';
+import { ExtraData } from '../../../extraData/extraData.model';
 
 const createServiceProviderEngineerIntoDB = async ({
   serviceProviderCompany, // string of objectId; need to make it objectId first
   rootUser,
   serviceProviderEngineer,
+  invitedMember,
 }: {
   serviceProviderCompany: string;
   rootUser: Partial<TUser>;
   serviceProviderEngineer: TServiceProviderEngineer;
+  invitedMember: string;
 }) => {
   //create a user object
   rootUser.role = 'serviceProviderEngineer';
@@ -97,10 +101,49 @@ const createServiceProviderEngineerIntoDB = async ({
     const createdWalletForUser = createdWalletArrayForUser[0];
 
     serviceProviderEngineer.user = createdUser?._id;
+
+    // --------------------------------------------------------- --------
+
+    let inviteMemberData: TInviteMember;
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    let serviceProviderBranchData: any;
+
+    if (invitedMember) {
+      const extraData = await ExtraData.findOne({
+        _id: new mongoose.Types.ObjectId(invitedMember),
+        type: 'inviteMember',
+      });
+      if (!extraData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'invitedMember you provided has not found',
+        );
+      }
+      inviteMemberData = extraData?.inviteMember;
+      serviceProviderBranchData = await ServiceProviderBranch.findById(
+        inviteMemberData?.serviceProviderEngineer?.serviceProviderBranch,
+      );
+
+      if (!serviceProviderBranchData) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+    }
+
+    // -------------------------------------------------------------------
+
     const currentState: TCurrentStateForEngineer = {
-      status: 'in-progress',
+      status: inviteMemberData?.serviceProviderEngineer?.serviceProviderBranch
+        ? 'approved'
+        : 'in-progress',
       designation: 'Engineer',
       serviceProviderCompany: serviceProviderCompany_id,
+      serviceProviderBranch: inviteMemberData?.serviceProviderEngineer
+        ?.serviceProviderBranch
+        ? serviceProviderBranchData?._id
+        : undefined,
       // joiningDate: ""
     };
     serviceProviderEngineer.currentState = currentState;

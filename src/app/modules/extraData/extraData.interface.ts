@@ -26,6 +26,7 @@ export type TShowaUser = {
   name: { firstName: string; lastName: string };
 };
 export type TServiceProviderEngineer = {
+  serviceProviderCompany?: string; // objectId of serviceProviderCompany
   serviceProviderBranch?: string; // objectId of serviceProviderBranch
   email: string;
   phone: string;

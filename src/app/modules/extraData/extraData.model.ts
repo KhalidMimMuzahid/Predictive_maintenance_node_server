@@ -72,7 +72,10 @@ const InviteMemberSchema = new Schema<TInviteMember>({
         required: true,
       },
       name: {
-        type: { firstName: { type: String }, lastName: { type: String } },
+        type: {
+          firstName: { type: String, required: true },
+          lastName: { type: String, required: true },
+        },
         required: true,
       },
     }),
@@ -80,9 +83,13 @@ const InviteMemberSchema = new Schema<TInviteMember>({
   },
   serviceProviderEngineer: {
     type: new Schema<TServiceProviderEngineer>({
+      serviceProviderCompany: {
+        type: String,
+        required: true,
+      },
       serviceProviderBranch: {
         type: String,
-        required: false,
+        required: true,
       },
       email: {
         type: String,
@@ -93,7 +100,10 @@ const InviteMemberSchema = new Schema<TInviteMember>({
         required: true,
       },
       name: {
-        type: { firstName: { type: String }, lastName: { type: String } },
+        type: {
+          firstName: { type: String, required: true },
+          lastName: { type: String, required: true },
+        },
         required: true,
       },
     }),
@@ -118,7 +128,10 @@ const InviteMemberSchema = new Schema<TInviteMember>({
         required: true,
       },
       name: {
-        type: { firstName: { type: String }, lastName: { type: String } },
+        type: {
+          firstName: { type: String, required: true },
+          lastName: { type: String, required: true },
+        },
         required: true,
       },
       photoUrl: {

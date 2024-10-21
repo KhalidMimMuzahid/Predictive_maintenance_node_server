@@ -10,7 +10,11 @@ export type TInvoiceGroup = {
 
   taskAssignee?: {
     teamOfEngineers: Types.ObjectId;
-    taskStatus: 'ongoing' | 'completed' | 'canceled';
+
+    taskStatus:
+      | 'ongoing' // when res req group will be assigned to any team of engineers
+      | 'completed' // when all the reservation will be completed
+      | 'canceled'; // when res req group or all res req will be canceled
   };
   //   report: {
   //     // maintenance report

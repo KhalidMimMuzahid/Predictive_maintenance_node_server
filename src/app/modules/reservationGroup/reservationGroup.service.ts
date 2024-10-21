@@ -14,9 +14,11 @@ import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/s
 import {
   TBiddingDate,
   TPostBiddingProcess,
+  TResGroupCategoryForBranch,
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { ReservationRequestGroup } from './reservationGroup.model';
+import { Invoice } from '../invoice/invoice.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
@@ -119,7 +121,7 @@ const createReservationRequestGroup = async ({
           groupForMachineType,
           groupId: groupId,
           groupName: groupName,
-
+          taskStatus: 'pending',
           biddingDate: {
             startDate: isNaN(
               new Date(biddingDateString?.startDate) as unknown as number,
@@ -163,7 +165,10 @@ const createReservationRequestGroup = async ({
     // Or,
     const updatedReservations = await ReservationRequest.updateMany(
       { _id: { $in: reservationRequests } },
-      { reservationRequestGroup: reservationGroup?._id },
+      {
+        reservationRequestGroup: reservationGroup?._id,
+        // taskStatus: 'ongoing' | 'completed' | 'canceled';
+      },
       { session: session },
     );
 
@@ -623,7 +628,10 @@ const selectBiddingWinner = async ({
     const updatedReservationRequestGroup =
       await ReservationRequestGroup.findByIdAndUpdate(
         new mongoose.Types.ObjectId(reservationRequestGroup_id),
-        { postBiddingProcess },
+        {
+          postBiddingProcess,
+          status: 'accepted',
+        },
         { new: true, session: session },
       );
 
@@ -901,23 +909,120 @@ const getAllOnDemandResGroupByCompany = async ({
   return result;
 };
 
-
-
 const getAllResGroupByBranch = async ({
   serviceProviderBranch,
+  category,
 }: {
   serviceProviderBranch: string;
+  category: TResGroupCategoryForBranch;
 }) => {
-  const result = await ReservationRequestGroup.find({
-    'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
-      serviceProviderBranch,
-    ),
-    // isOnDemand: true,
-  });
+  if (category == 'all') {
+    const result = await ReservationRequestGroup.find({
+      'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
+        serviceProviderBranch,
+      ),
+      // isOnDemand: true,
+    });
+    return result;
+  } else if (category == 'scheduled') {
+    // for scheduled we need to return all of those group which are postBiddingProcess.serviceProviderBranch
+    const result = await ReservationRequestGroup.find({
+      'postBiddingProcess.serviceProviderBranch': new mongoose.Types.ObjectId(
+        serviceProviderBranch,
+      ),
+    });
+    return result;
+  } else if (category == 're-scheduled') {
+    //
+    const result = await Invoice.aggregate([
+      {
+        $match: {
+          'postBiddingProcess.serviceProviderBranch':
+            new mongoose.Types.ObjectId(serviceProviderBranch),
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
 
-  return result;
-}; 
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
 
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+      {
+        $addFields: {
+          schedulesCount: { $size: '$schedule.schedules' },
+        },
+      },
+      {
+        $match: {
+          schedulesCount: { $gt: 1 },
+        },
+      },
+    ]);
+    return result;
+  } else if (category == 'ongoing') {
+    //
+    const result = await Invoice.aggregate([
+      {
+        $match: {
+          'postBiddingProcess.serviceProviderBranch':
+            new mongoose.Types.ObjectId(serviceProviderBranch),
+          taskStatus: 'ongoing',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ]);
+    return result;
+  } else if (category == 'completed') {
+    const result = await Invoice.aggregate([
+      {
+        $match: {
+          'postBiddingProcess.serviceProviderBranch':
+            new mongoose.Types.ObjectId(serviceProviderBranch),
+          taskStatus: 'completed',
+        },
+      },
+      {
+        $unwind: '$reservationRequest',
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+
+      {
+        $replaceRoot: {
+          newRoot: '$reservationRequest',
+        },
+      },
+    ]);
+    return result;
+  }
+};
 
 const getAllOnDemandUnassignedToCompanyResGroups = async () => {
   const result = await ReservationRequestGroup.find({
@@ -1025,7 +1130,7 @@ const acceptOnDemandResGroupByCompany = async ({
   const updatedReservationRequestGroup =
     await ReservationRequestGroup.findByIdAndUpdate(
       reservationGroup,
-      { postBiddingProcess },
+      { postBiddingProcess, taskStatus: 'accepted' },
       { new: true },
     );
 

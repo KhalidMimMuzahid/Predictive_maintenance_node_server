@@ -255,8 +255,15 @@ const inviteMember = async ({
       'something went wrong, please try again',
     );
   }
-
-  const htmlBody = `<div>
+const invitedUrl =
+  inviteMember?.type === 'serviceProviderBranchManager'
+    ? 'https://showa.page.link/registration'
+    : inviteMember?.type === 'showaUser'
+      ? 'link for showa user'
+      : inviteMember?.type === 'serviceProviderEngineer'
+        ? 'link for serviceProviderEngineer'
+        : 'link for serviceProviderAdmin';
+const htmlBody = `<div>
             <h2 style="color: #333; margin-bottom: 20px;">You're invited to sign-up as a ${inviteMember?.type}.</h2>
            
     <div style="margin-top: 20px;">
@@ -265,7 +272,7 @@ const inviteMember = async ({
                 ]?.email}</h3>
             </div>
 
-            <a href=${'https://showa.page.link/registration'} target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
+            <a href=${invitedUrl} target="_blank" style="display: inline-block; background-color: #1a73e8; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; transition: background-color 0.3s, transform 0.2s;">
                 Click here to sign-up
             </a>
             <div style="margin-top: 20px;">
