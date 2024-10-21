@@ -223,9 +223,9 @@ const getAllOrders = async () => {
 
 const getTotalSalesReport = async (startDate: Date, endDate: Date) => {
   const startYear = startDate.getFullYear();
-  const startMonth = startDate.getMonth(); // 0-based
+  const startMonth = startDate.getMonth();
   const endYear = endDate.getFullYear();
-  const endMonth = endDate.getMonth(); // 0-based
+  const endMonth = endDate.getMonth();
 
   // Create an array to hold the report data
   const completeReport: {
@@ -239,31 +239,30 @@ const getTotalSalesReport = async (startDate: Date, endDate: Date) => {
 
   // If the duration is under a month, prepare daily report
   if (diffInMonths === 0) {
-    // Generate daily report
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
       const formattedDate = currentDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       completeReport.push({
         date: formattedDate,
-        totalSales: 0, // Default to 0
-        totalOrders: 0, // Default to 0
+        totalSales: 0,
+        totalOrders: 0,
       });
-      currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+      currentDate.setDate(currentDate.getDate() + 1);
     }
   } else {
     // If the duration is more than a month, prepare monthly report
     for (let year = startYear; year <= endYear; year++) {
-      const monthCount = year === endYear ? endMonth + 1 : 12; // Ensure we stop at the end month
+      const monthCount = year === endYear ? endMonth + 1 : 12;
       for (
         let month = year === startYear ? startMonth : 0;
         month < monthCount;
         month++
       ) {
-        const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}`; // Format as YYYY-MM
+        const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}`;
         completeReport.push({
           date: formattedDate,
-          totalSales: 0, // Default to 0
-          totalOrders: 0, // Default to 0
+          totalSales: 0,
+          totalOrders: 0,
         });
       }
     }

@@ -82,12 +82,17 @@ router.get(
   '/get-all-res-group-by-branch',
   reservationGroupController.getAllResGroupByBranch,
 );
-  // getAllResGroupByBranch
-  // getAllUnAssignedResGroupToTeamOfEngineersByBranch
+// getAllResGroupByBranch
+// getAllUnAssignedResGroupToTeamOfEngineersByBranch
 
 router.get(
   '/get-all-on-demand-unassigned-to-company-res-groups',
   reservationGroupController.getAllOnDemandUnassignedToCompanyResGroups,
+);
+
+router.get(
+  '/get-all-unassigned-res-group-to-team-of-engineers-by-branch',
+  reservationGroupController.getAllUnassignedResGroupToTeamOfEngineersByBranch,
 );
 
 //router.get('/get-recent-bid', reservationGroupController.getRecentBid);

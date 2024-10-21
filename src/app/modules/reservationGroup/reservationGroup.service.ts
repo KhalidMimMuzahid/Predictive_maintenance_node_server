@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
 import { TAuth } from '../../interface/error';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
+import { Invoice } from '../invoice/invoice.model';
 import { TMachineType } from '../reservation/reservation.interface';
 import { ReservationRequest } from '../reservation/reservation.model';
 import { ServiceProviderBranch } from '../serviceProviderBranch/serviceProviderBranch.model';
@@ -18,7 +19,6 @@ import {
   TReservationGroupType,
 } from './reservationGroup.interface';
 import { ReservationRequestGroup } from './reservationGroup.model';
-import { Invoice } from '../invoice/invoice.model';
 
 const createReservationRequestGroup = async ({
   reservationRequests,
@@ -1248,6 +1248,10 @@ const deleteBid = async ({
   return updatedReservationGroup;
 };
 
+const getAllUnassignedResGroupToTeamOfEngineersByBranch = async () => {
+  return;
+};
+
 export const reservationGroupServices = {
   createReservationRequestGroup,
   addBid,
@@ -1267,4 +1271,5 @@ export const reservationGroupServices = {
 
   updateBid,
   deleteBid,
+  getAllUnassignedResGroupToTeamOfEngineersByBranch,
 };

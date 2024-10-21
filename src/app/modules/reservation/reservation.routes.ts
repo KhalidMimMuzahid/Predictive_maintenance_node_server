@@ -85,4 +85,17 @@ router.get(
   reservationController.getReservationRequestByReservationId,
 );
 
+router.get(
+  '/get-all-ongoing-reservation-by-branch',
+  reservationController.getAllOngoingResByBranch,
+);
+router.get(
+  '/get-all-rescheduled-reservation-by-branch',
+  reservationController.getAllRescheduledResByBranch,
+);
+router.get(
+  '/get-all-completed-reservation-by-branch',
+  reservationController.getAllCompletedResByBranch,
+);
+
 export const reservationRoutes = router;

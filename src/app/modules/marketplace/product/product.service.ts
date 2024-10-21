@@ -1,7 +1,11 @@
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
+import PredefinedValue from '../../predefinedValue/predefinedValue.model';
+import Order from '../order/order.model';
+import Shop from '../shop/shop.model';
 import {
   TProduct,
   TProductFilter,
@@ -10,9 +14,6 @@ import {
   TSortedBy,
 } from './product.interface';
 import Product from './product.model';
-import Shop from '../shop/shop.model';
-import PredefinedValue from '../../predefinedValue/predefinedValue.model';
-import mongoose from 'mongoose';
 
 const createProduct = async ({
   auth,
@@ -373,6 +374,122 @@ const getProductByProduct_id = async (productId: string) => {
   return product;
 };
 
+const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
+  // Calculate the date range for the second-to-last period
+  const secondEndDate = new Date(startDate);
+  const secondStartDate = new Date(secondEndDate);
+  secondStartDate.setDate(
+    secondEndDate.getDate() - (endDate.getDate() - startDate.getDate()),
+  );
+
+  // Fetch data for the last period
+  const lastPeriodResults = await Order.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: startDate, $lte: endDate },
+        'paidStatus.isPaid': true,
+      },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $group: {
+        _id: '$product',
+        totalQuantity: { $sum: '$cost.quantity' },
+        totalRevenue: { $sum: '$cost.totalAmount' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'productDetails',
+      },
+    },
+    {
+      $unwind: '$productDetails',
+    },
+    {
+      $project: {
+        _id: 1,
+        totalQuantity: 1,
+        totalRevenue: 1,
+        'productDetails.name': 1,
+        'productDetails.salePrice': 1,
+        'productDetails.photos': '$productDetails.photos',
+      },
+    },
+    {
+      $sort: { totalQuantity: -1 },
+    },
+    {
+      $limit: 4,
+    },
+  ]);
+
+  // Fetch data for the second-to-last period
+  const secondLastPeriodResults = await Order.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: secondStartDate, $lte: secondEndDate },
+        'paidStatus.isPaid': true,
+      },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $group: {
+        _id: '$product',
+        totalQuantity: { $sum: '$cost.quantity' },
+        totalRevenue: { $sum: '$cost.totalAmount' },
+      },
+    },
+  ]);
+
+  // Calculate percentage progress for each product
+  const calculatePercentageProgress = (
+    lastPeriodValue: number,
+    secondLastPeriodValue: number,
+  ): number => {
+    if (secondLastPeriodValue === 0) {
+      return lastPeriodValue > 0 ? 100 : 0;
+    }
+    return (
+      ((lastPeriodValue - secondLastPeriodValue) / secondLastPeriodValue) * 100
+    );
+  };
+
+  // Map the products from both periods and calculate progress
+  const topProductsWithProgress = lastPeriodResults.map((product) => {
+    const secondLastPeriodProduct = secondLastPeriodResults.find(
+      (secondProduct) => String(secondProduct._id) === String(product._id),
+    ) || { totalQuantity: 0, totalRevenue: 0 };
+
+    const totalQuantityProgress = calculatePercentageProgress(
+      product.totalQuantity,
+      secondLastPeriodProduct.totalQuantity,
+    );
+
+    const totalRevenueProgress = calculatePercentageProgress(
+      product.totalRevenue,
+      secondLastPeriodProduct.totalRevenue,
+    );
+
+    return {
+      ...product,
+      progress: {
+        quantityProgressPercentage: totalQuantityProgress.toFixed(2),
+        revenueProgressPercentage: totalRevenueProgress.toFixed(2),
+      },
+    };
+  });
+
+  return topProductsWithProgress;
+};
+
 export const productServices = {
   createProduct,
   editProduct,
@@ -383,4 +500,5 @@ export const productServices = {
   getAllProductsByShop,
 
   getProductByProduct_id,
+  getTopSalesProducts,
 };

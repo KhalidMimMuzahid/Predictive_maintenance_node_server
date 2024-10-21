@@ -650,6 +650,66 @@ const getReservationRequestByReservationId: RequestHandler = catchAsync(
   },
 );
 
+const getAllOngoingResByBranch: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderBranchManager'],
+    });
+
+    const results = await reservationServices.getAllOngoingResByBranch();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all ongoing resrervation requests retrieved successfully.',
+      data: results,
+    });
+  },
+);
+
+const getAllRescheduledResByBranch: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderBranchManager'],
+    });
+
+    const results = await reservationServices.getAllRescheduledResByBranch();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all rescheduled resrervation requests retrieved successfully.',
+      data: results,
+    });
+  },
+);
+
+const getAllCompletedResByBranch: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderBranchManager'],
+    });
+
+    const results = await reservationServices.getAllCompletedResByBranch();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all completed resrervation requests retrieved successfully.',
+      data: results,
+    });
+  },
+);
+
 export const reservationController = {
   createReservationRequest,
   setReservationAsInvalid,
@@ -672,4 +732,7 @@ export const reservationController = {
   getTotalReservationForChart, //(Comparison)Super Admin Web -> Reservation->reservation Comparison
   generateProgressReservationInPercentage, //(Total count and its percentage)Super Admin Web -> Reservation->reservation overview
   getReservationRequestByReservationId,
+  getAllOngoingResByBranch, //Service Provider app -> Maintenance-> Maintenance-Task-ongoing
+  getAllRescheduledResByBranch, //Service Provider app -> Maintenance-> Maintenance-Task-Rescheduled
+  getAllCompletedResByBranch, //Service Provider app -> Maintenance-> Maintenance-Task-completed
 };

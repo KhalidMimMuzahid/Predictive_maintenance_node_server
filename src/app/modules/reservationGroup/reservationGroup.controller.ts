@@ -510,6 +510,27 @@ const deleteBid: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getAllUnassignedResGroupToTeamOfEngineersByBranch: RequestHandler =
+  catchAsync(async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['serviceProviderBranchManager'],
+    });
+
+    const results =
+      await reservationGroupServices.getAllUnassignedResGroupToTeamOfEngineersByBranch();
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'all unassigned res-group to team of engineers have retrieved successfully',
+      data: results,
+    });
+  });
+
 export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
@@ -529,4 +550,5 @@ export const reservationGroupController = {
   acceptOnDemandResGroupByBranch, //Service Provider -> Maintenance
   updateBid, //this api is already implemented on addBid api,now you may delete this api
   deleteBid, //Service Provider -> Maintenance-> Maintenance-Bid-bided
+  getAllUnassignedResGroupToTeamOfEngineersByBranch, //Service Provider app -> Maintenance-> Maintenance-Task-scheduled
 };
