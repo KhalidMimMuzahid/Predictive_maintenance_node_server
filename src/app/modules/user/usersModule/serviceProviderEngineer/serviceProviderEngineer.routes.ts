@@ -18,4 +18,8 @@ router.patch(
   '/edit-service-provider-engineer',
   serviceProviderEngineerControllers.editServiceProviderEngineer,
 );
+router.get(
+  '/get-all-service-provider-engineers-by-branch',
+  serviceProviderEngineerControllers.getAllServiceProviderEngineersByBranch,
+);
 export const serviceProviderEngineerRoutes = router;
