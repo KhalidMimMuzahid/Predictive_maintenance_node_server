@@ -382,6 +382,8 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
     secondEndDate.getDate() - (endDate.getDate() - startDate.getDate()),
   );
 
+  //console.log({ secondStartDate, secondEndDate });
+
   // Fetch data for the last period
   const lastPeriodResults = await Order.aggregate([
     {
@@ -405,21 +407,28 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
         from: 'products',
         localField: '_id',
         foreignField: '_id',
-        as: 'productDetails',
+        as: 'product',
       },
     },
     {
-      $unwind: '$productDetails',
+      $unwind: '$product',
     },
     {
       $project: {
         _id: 1,
         totalQuantity: 1,
         totalRevenue: 1,
-        'productDetails.name': 1,
-        'productDetails.salePrice': 1,
-        'productDetails.photos': '$productDetails.photos',
+        'product.name': 1,
+        'product.regularPrice': 1,
+        'product.salePrice': 1,
+        //'product.photos': '$product.photos',
+        'product.photos': {
+          $arrayElemAt: ['$product.photos', 0],
+        },
       },
+    },
+    {
+      $match: { totalQuantity: { $ne: 0 } },
     },
     {
       $sort: { totalQuantity: -1 },
@@ -457,9 +466,7 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
     if (secondLastPeriodValue === 0) {
       return lastPeriodValue > 0 ? 100 : 0;
     }
-    return (
-      ((lastPeriodValue - secondLastPeriodValue) / secondLastPeriodValue) * 100
-    );
+    return ((lastPeriodValue - secondLastPeriodValue) / lastPeriodValue) * 100;
   };
 
   // Map the products from both periods and calculate progress
@@ -468,10 +475,10 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
       (secondProduct) => String(secondProduct._id) === String(product._id),
     ) || { totalQuantity: 0, totalRevenue: 0 };
 
-    const totalQuantityProgress = calculatePercentageProgress(
-      product.totalQuantity,
-      secondLastPeriodProduct.totalQuantity,
-    );
+    // const totalQuantityProgress = calculatePercentageProgress(
+    //   product.totalQuantity,
+    //   secondLastPeriodProduct.totalQuantity,
+    // );
 
     const totalRevenueProgress = calculatePercentageProgress(
       product.totalRevenue,
@@ -481,7 +488,7 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
     return {
       ...product,
       progress: {
-        quantityProgressPercentage: totalQuantityProgress.toFixed(2),
+        //quantityProgressPercentage: totalQuantityProgress.toFixed(2),
         revenueProgressPercentage: totalRevenueProgress.toFixed(2),
       },
     };

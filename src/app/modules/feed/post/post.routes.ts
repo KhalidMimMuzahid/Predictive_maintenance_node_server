@@ -49,5 +49,9 @@ router.get(
   '/get-recent-search-for-super-admin-web',
   postController.getRecentSearchForSuperAdminWeb,
 );
+router.get(
+  '/get-top-selling-products-from-feed',
+  postController.getTopSellingProductsFromFeed,
+);
 
 export const postRoutes = router;
