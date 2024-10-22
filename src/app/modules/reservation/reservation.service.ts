@@ -1308,15 +1308,16 @@ const getAllOngoingResByBranch = async (serviceProviderBranch: string) => {
       },
     },
     {
-      $unwind: '$reservationRequest',
-    },
-
-    {
-      $replaceRoot: {
-        newRoot: '$reservationRequest',
+      $lookup: {
+        from: 'reservationrequests', // Name of the user collection
+        localField: 'reservationRequest',
+        foreignField: '_id',
+        as: 'reservationRequest',
       },
     },
-
+    {
+      $unwind: '$reservationRequest',
+    },
     {
       $replaceRoot: {
         newRoot: '$reservationRequest',
@@ -1336,6 +1337,14 @@ const getAllRescheduledResByBranch = async (serviceProviderBranch: string) => {
       },
     },
     {
+      $lookup: {
+        from: 'reservationrequests', // Name of the user collection
+        localField: 'reservationRequest',
+        foreignField: '_id',
+        as: 'reservationRequest',
+      },
+    },
+    {
       $unwind: '$reservationRequest',
     },
 
@@ -1346,18 +1355,21 @@ const getAllRescheduledResByBranch = async (serviceProviderBranch: string) => {
     },
 
     {
-      $replaceRoot: {
-        newRoot: '$reservationRequest',
-      },
-    },
-    {
       $addFields: {
         schedulesCount: { $size: '$schedule.schedules' },
       },
     },
     {
       $match: {
-        schedulesCount: { $gt: 1 },
+        $or: [
+          {
+            schedulesCount: { $gt: 1 },
+          },
+          {
+            schedulesCount: { $gt: 0 },
+            'schedule.category': 'on-demand',
+          },
+        ],
       },
     },
   ]);
@@ -1374,13 +1386,15 @@ const getAllCompletedResByBranch = async (serviceProviderBranch: string) => {
       },
     },
     {
-      $unwind: '$reservationRequest',
-    },
-
-    {
-      $replaceRoot: {
-        newRoot: '$reservationRequest',
+      $lookup: {
+        from: 'reservationrequests', // Name of the user collection
+        localField: 'reservationRequest',
+        foreignField: '_id',
+        as: 'reservationRequest',
       },
+    },
+    {
+      $unwind: '$reservationRequest',
     },
 
     {

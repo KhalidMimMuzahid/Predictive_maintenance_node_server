@@ -261,7 +261,7 @@ const invitedUrl =
     : inviteMember?.type === 'showaUser'
       ? 'link for showa user'
       : inviteMember?.type === 'serviceProviderEngineer'
-        ? 'link for serviceProviderEngineer'
+        ? 'https://showa.page.link/registration'
         : 'link for serviceProviderAdmin';
 const htmlBody = `<div>
             <h2 style="color: #333; margin-bottom: 20px;">You're invited to sign-up as a ${inviteMember?.type}.</h2>
