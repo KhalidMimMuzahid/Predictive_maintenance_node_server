@@ -3,6 +3,7 @@ import mongoose, { Types } from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
 import { TSearchType } from '../../common/common.interface';
+import Order from '../../marketplace/order/order.model';
 import { ServiceProviderCompany } from '../../serviceProviderCompany/serviceProviderCompany.model';
 import { User } from '../../user/user.model';
 import { TPost, TReplay, TSharingStatus } from './post.interface';
@@ -1530,6 +1531,146 @@ const getRecentSearchForSuperAdminWeb = async ({
   return result;
 };
 
+// const getTopSellingProducts = async (
+//   startDate: Date,
+//   endDate: Date,
+//   limit: number = 10,
+// ) => {
+//   const topSellingProducts = await Order.aggregate([
+//     {
+//       $match: {
+//         createdAt: { $gte: startDate, $lte: endDate },
+//         'paidStatus.isPaid': true, // Only include paid orders
+//       },
+//     },
+//     {
+//       $unwind: '$product', // Unwind to process each product in the order
+//     },
+//     {
+//       $group: {
+//         _id: '$product', // Group by product ID
+//         // totalQuantity: { $sum: '$cost.quantity' }, // Sum the quantities sold
+//         // totalRevenue: { $sum: '$cost.totalAmount' }, // Sum total revenue for each product
+//       },
+//     },
+//     {
+//       $lookup: {
+//         from: 'products', // Reference the products collection
+//         localField: '_id',
+//         foreignField: '_id',
+//         as: 'productDetails',
+//       },
+//     },
+//     {
+//       $unwind: '$productDetails', // Unwind to get product details
+//     },
+//     {
+//       $project: {
+//         _id: 1,
+//         // totalQuantity: 1,
+//         // totalRevenue: 1,
+//         'productDetails.name': 1,
+//         'productDetails.regularPrice': 1,
+//         'productDetails.salePrice': 1,
+//         'productDetails.stockManagement.availableStock': 1,
+//         'productDetails.photos': {
+//           $arrayElemAt: ['$productDetails.photos', 0],
+//         },
+//       },
+//     },
+//     {
+//       $sort: { totalQuantity: -1 }, // Sort by total quantity sold in descending order
+//     },
+//     {
+//       $limit: limit, // Apply the dynamic limit
+//     },
+//   ]);
+
+//   return topSellingProducts;
+// };
+
+const getTopSellingProductsFromFeed = async (
+  startDate: Date,
+  endDate: Date,
+  limit: number = 10,
+) => {
+  const topSellingProducts = await Order.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: startDate, $lte: endDate },
+        'paidStatus.isPaid': true,
+      },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $group: {
+        _id: '$product',
+        totalQuantity: { $sum: '$cost.quantity' },
+        // totalRevenue: { $sum: '$cost.totalAmount' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'product',
+      },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $project: {
+        _id: 1,
+        totalQuantity: 1,
+        // totalRevenue: 1,
+        'product.name': 1,
+        'product.regularPrice': 1,
+        'product.salePrice': 1,
+        'product.stockManagement.availableStock': 1,
+        'product.photos': {
+          $arrayElemAt: ['$product.photos', 0],
+        },
+        discount: {
+          $cond: {
+            if: {
+              $gt: ['$product.regularPrice', '$product.salePrice'],
+            }, // Check if regularPrice is greater than salePrice
+            then: {
+              $multiply: [
+                {
+                  $divide: [
+                    {
+                      $subtract: [
+                        '$product.regularPrice',
+                        '$product.salePrice',
+                      ],
+                    },
+                    '$product.regularPrice',
+                  ],
+                },
+                100,
+              ],
+            },
+            else: 0,
+          },
+        },
+      },
+    },
+    {
+      $sort: { totalQuantity: -1 },
+    },
+    {
+      $limit: limit,
+    },
+  ]);
+
+  return topSellingProducts;
+};
+
 export const postServices = {
   createPost,
   sharePost,
@@ -1551,4 +1692,5 @@ export const postServices = {
   editPost,
   hidePost,
   getRecentSearchForSuperAdminWeb,
+  getTopSellingProductsFromFeed,
 };

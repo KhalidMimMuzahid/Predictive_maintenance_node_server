@@ -59,6 +59,7 @@ const createReservationRequestIntoDB = async ({
     select: 'isActive',
     options: { strictPopulate: false },
   });
+  // console.log({ machine_id });
   // console.log(machineData);
   if (!machineData) {
     throw new AppError(
@@ -1208,9 +1209,7 @@ const generateProgressReservationInPercentage = async () => {
     if (secondLast30DaysValue === 0) {
       return last30DaysValue > 0 ? 100 : 0; // If no previous data, it's either 100% increase or no change.
     }
-    return (
-      ((last30DaysValue - secondLast30DaysValue) / secondLast30DaysValue) * 100
-    );
+    return ((last30DaysValue - secondLast30DaysValue) / last30DaysValue) * 100;
   };
 
   const totalReservationsCount =

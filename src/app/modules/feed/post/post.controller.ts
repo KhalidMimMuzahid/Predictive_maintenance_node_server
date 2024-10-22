@@ -628,6 +628,34 @@ const getRecentSearchForSuperAdminWeb: RequestHandler = catchAsync(
   },
 );
 
+const getTopSellingProductsFromFeed: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth = req.headers?.auth as unknown as TAuth;
+
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+
+    const result = await postServices.getTopSellingProductsFromFeed(
+      startDate,
+      endDate,
+      limit,
+    );
+
+    // Send the response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Top sales products have been retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const postController = {
   createPost, ///customer web app->feed->create post
   sharePost, //customer app->feed
@@ -649,4 +677,5 @@ export const postController = {
   editPost, //customer app->feed->more settings
   hidePost, //customer app->feed
   getRecentSearchForSuperAdminWeb, //Showa super admin web->feed->search result
+  getTopSellingProductsFromFeed,
 };
