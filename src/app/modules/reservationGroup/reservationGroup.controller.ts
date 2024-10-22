@@ -387,7 +387,7 @@ const acceptOnDemandResGroupByBranch: RequestHandler = catchAsync(
     const serviceProviderBranch = req?.query?.serviceProviderBranch as string;
 
     const results =
-      await reservationGroupServices.acceptOnDemandResGroupByCompany({
+      await reservationGroupServices.acceptOnDemandResGroupByBranch({
         auth,
         reservationGroup,
         serviceProviderBranch_id: serviceProviderBranch,
