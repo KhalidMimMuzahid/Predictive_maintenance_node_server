@@ -1127,321 +1127,6 @@ const getTotalReservationForChart = async (
   return requests.filter((req) => req !== undefined);
 };
 
-// const generateProgressReservationInPercentage = async () => {
-//   const today = new Date();
-
-//   const last30DaysAgo = new Date(today);
-//   last30DaysAgo.setDate(today.getDate() - 30);
-
-//   const secondLast30DaysAgo = new Date(last30DaysAgo);
-//   secondLast30DaysAgo.setDate(last30DaysAgo.getDate() - 30);
-
-//   const last30DaysResults = await ReservationRequest.aggregate([
-//     {
-//       $match: {
-//         createdAt: { $gte: last30DaysAgo, $lte: today },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: null,
-//         totalReservations: { $sum: 1 },
-//         totalOnDemandReservations: {
-//           $sum: {
-//             $cond: [{ $eq: ['$schedule.category', 'on-demand'] }, 1, 0],
-//           },
-//         },
-//         totalAcceptedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'accepted'] }, 1, 0] },
-//         },
-//         totalOngoingReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'ongoing'] }, 1, 0] },
-//         },
-//         totalCompletedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
-//         },
-//         totalCanceledReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'canceled'] }, 1, 0] },
-//         },
-//       },
-//     },
-//   ]);
-
-//   const secondLast30DaysResults = await ReservationRequest.aggregate([
-//     {
-//       $match: {
-//         createdAt: { $gte: secondLast30DaysAgo, $lte: last30DaysAgo },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: null,
-//         totalReservations: { $sum: 1 },
-//         totalOnDemandReservations: {
-//           $sum: {
-//             $cond: [{ $eq: ['$schedule.category', 'on-demand'] }, 1, 0],
-//           },
-//         },
-//         totalAcceptedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'accepted'] }, 1, 0] },
-//         },
-//         totalOngoingReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'ongoing'] }, 1, 0] },
-//         },
-//         totalCompletedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
-//         },
-//         totalCanceledReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'canceled'] }, 1, 0] },
-//         },
-//       },
-//     },
-//   ]);
-
-//   const last30DaysData = last30DaysResults[0] || {};
-//   const secondLast30DaysData = secondLast30DaysResults[0] || {};
-
-//   const calculatePercentageProgress = (
-//     last30DaysValue: number,
-//     secondLast30DaysValue: number,
-//   ): number => {
-//     if (secondLast30DaysValue === 0) {
-//       return last30DaysValue > 0 ? 100 : 0; // If no previous data, it's either 100% increase or no change.
-//     }
-//     return ((last30DaysValue - secondLast30DaysValue) / last30DaysValue) * 100;
-//   };
-
-//   const totalReservationsCount =
-//     (last30DaysData.totalReservations || 0) +
-//     (secondLast30DaysData.totalReservations || 0);
-//   const totalReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalReservations || 0,
-//     secondLast30DaysData.totalReservations || 0,
-//   );
-
-//   const totalOnDemandCount =
-//     (last30DaysData.totalOnDemandReservations || 0) +
-//     (secondLast30DaysData.totalOnDemandReservations || 0);
-//   const onDemandReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalOnDemandReservations || 0,
-//     secondLast30DaysData.totalOnDemandReservations || 0,
-//   );
-
-//   const totalAcceptedCount =
-//     (last30DaysData.totalAcceptedReservations || 0) +
-//     (secondLast30DaysData.totalAcceptedReservations || 0);
-//   const acceptedReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalAcceptedReservations || 0,
-//     secondLast30DaysData.totalAcceptedReservations || 0,
-//   );
-
-//   const totalOngoingCount =
-//     (last30DaysData.totalOngoingReservations || 0) +
-//     (secondLast30DaysData.totalOngoingReservations || 0);
-//   const ongoingReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalOngoingReservations || 0,
-//     secondLast30DaysData.totalOngoingReservations || 0,
-//   );
-
-//   const totalCompletedCount =
-//     (last30DaysData.totalCompletedReservations || 0) +
-//     (secondLast30DaysData.totalCompletedReservations || 0);
-//   const completedReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalCompletedReservations || 0,
-//     secondLast30DaysData.totalCompletedReservations || 0,
-//   );
-
-//   const totalCanceledCount =
-//     (last30DaysData.totalCanceledReservations || 0) +
-//     (secondLast30DaysData.totalCanceledReservations || 0);
-//   const canceledReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalCanceledReservations || 0,
-//     secondLast30DaysData.totalCanceledReservations || 0,
-//   );
-
-//   return {
-//     totalReservations: {
-//       totalCount: totalReservationsCount,
-//       progressPercentage: totalReservationProgress,
-//     },
-//     onDemand: {
-//       totalOnDemand: totalOnDemandCount,
-//       progressPercentage: onDemandReservationProgress,
-//     },
-//     accepted: {
-//       totalAccepted: totalAcceptedCount,
-//       progressPercentage: acceptedReservationProgress,
-//     },
-//     ongoing: {
-//       totalOngoing: totalOngoingCount,
-//       progressPercentage: ongoingReservationProgress,
-//     },
-//     completed: {
-//       totalCompleted: totalCompletedCount,
-//       progressPercentage: completedReservationProgress,
-//     },
-//     canceled: {
-//       totalCanceled: totalCanceledCount,
-//       progressPercentage: canceledReservationProgress,
-//     },
-//   };
-// };
-
-// const generateProgressReservationInPercentage = async () => {
-//   const today = new Date();
-
-//   const last30DaysAgo = new Date(today);
-//   last30DaysAgo.setDate(today.getDate() - 30);
-
-//   const secondLast30DaysAgo = new Date(last30DaysAgo);
-//   secondLast30DaysAgo.setDate(last30DaysAgo.getDate() - 30);
-
-//   // Aggregation for last 30 days
-//   const last30DaysResults = await ReservationRequest.aggregate([
-//     {
-//       $match: {
-//         createdAt: { $gte: last30DaysAgo, $lte: today },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: null,
-//         totalReservations: { $sum: 1 },
-//         totalOnDemandReservations: {
-//           $sum: {
-//             $cond: [{ $eq: ['$schedule.category', 'on-demand'] }, 1, 0],
-//           },
-//         },
-//         totalAcceptedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'accepted'] }, 1, 0] },
-//         },
-//         totalOngoingReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'ongoing'] }, 1, 0] },
-//         },
-//         totalCompletedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
-//         },
-//         totalCanceledReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'canceled'] }, 1, 0] },
-//         },
-//       },
-//     },
-//   ]);
-
-//   // Aggregation for second last 30 days
-//   const secondLast30DaysResults = await ReservationRequest.aggregate([
-//     {
-//       $match: {
-//         createdAt: { $gte: secondLast30DaysAgo, $lte: last30DaysAgo },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: null,
-//         totalReservations: { $sum: 1 },
-//         totalOnDemandReservations: {
-//           $sum: {
-//             $cond: [{ $eq: ['$schedule.category', 'on-demand'] }, 1, 0],
-//           },
-//         },
-//         totalAcceptedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'accepted'] }, 1, 0] },
-//         },
-//         totalOngoingReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'ongoing'] }, 1, 0] },
-//         },
-//         totalCompletedReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
-//         },
-//         totalCanceledReservations: {
-//           $sum: { $cond: [{ $eq: ['$status', 'canceled'] }, 1, 0] },
-//         },
-//       },
-//     },
-//   ]);
-
-// const last30DaysData = last30DaysResults[0] || {};
-// const secondLast30DaysData = secondLast30DaysResults[0] || {};
-
-// const calculatePercentageProgress = (
-//   last30DaysValue: number,
-//   secondLast30DaysValue: number,
-// ): number => {
-//   if (last30DaysValue === 0 && secondLast30DaysValue === 0) {
-//     return 0; // If there are no reservations in both periods, return 0
-//   }
-//   if (secondLast30DaysValue === 0) {
-//     return last30DaysValue > 0 ? 100 : 0; // If no data in the second last 30 days, consider it 100% increase
-//   }
-//   return ((last30DaysValue - secondLast30DaysValue) / last30DaysValue) * 100;
-// };
-
-//   // Calculate total and progress
-//   const totalReservationsCount = last30DaysData.totalReservations || 0;
-//   const totalReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalReservations || 0,
-//     secondLast30DaysData.totalReservations || 0,
-//   );
-
-//   const totalOnDemandCount = last30DaysData.totalOnDemandReservations || 0;
-//   const onDemandReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalOnDemandReservations || 0,
-//     secondLast30DaysData.totalOnDemandReservations || 0,
-//   );
-
-//   const totalAcceptedCount = last30DaysData.totalAcceptedReservations || 0;
-//   const acceptedReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalAcceptedReservations || 0,
-//     secondLast30DaysData.totalAcceptedReservations || 0,
-//   );
-
-//   const totalOngoingCount = last30DaysData.totalOngoingReservations || 0;
-//   const ongoingReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalOngoingReservations || 0,
-//     secondLast30DaysData.totalOngoingReservations || 0,
-//   );
-
-//   const totalCompletedCount = last30DaysData.totalCompletedReservations || 0;
-//   const completedReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalCompletedReservations || 0,
-//     secondLast30DaysData.totalCompletedReservations || 0,
-//   );
-
-//   const totalCanceledCount = last30DaysData.totalCanceledReservations || 0;
-//   const canceledReservationProgress = calculatePercentageProgress(
-//     last30DaysData.totalCanceledReservations || 0,
-//     secondLast30DaysData.totalCanceledReservations || 0,
-//   );
-
-//   // Return the results
-//   return {
-//     totalReservations: {
-//       totalCount: totalReservationsCount,
-//       progressPercentage: totalReservationProgress,
-//     },
-//     onDemand: {
-//       totalOnDemand: totalOnDemandCount,
-//       progressPercentage: onDemandReservationProgress,
-//     },
-//     accepted: {
-//       totalAccepted: totalAcceptedCount,
-//       progressPercentage: acceptedReservationProgress,
-//     },
-//     ongoing: {
-//       totalOngoing: totalOngoingCount,
-//       progressPercentage: ongoingReservationProgress,
-//     },
-//     completed: {
-//       totalCompleted: totalCompletedCount,
-//       progressPercentage: completedReservationProgress,
-//     },
-//     canceled: {
-//       totalCanceled: totalCanceledCount,
-//       progressPercentage: canceledReservationProgress,
-//     },
-//   };
-// };
-
 const generateProgressReservationInPercentage = async () => {
   const today = new Date();
 
@@ -1451,7 +1136,6 @@ const generateProgressReservationInPercentage = async () => {
   const secondLast30DaysAgo = new Date(last30DaysAgo);
   secondLast30DaysAgo.setDate(last30DaysAgo.getDate() - 30);
 
-  // Aggregate for last 30 days for progress calculation
   const last30DaysResults = await ReservationRequest.aggregate([
     {
       $match: {
@@ -1483,7 +1167,6 @@ const generateProgressReservationInPercentage = async () => {
     },
   ]);
 
-  // Aggregate for second last 30 days for progress calculation
   const secondLast30DaysResults = await ReservationRequest.aggregate([
     {
       $match: {
@@ -1634,16 +1317,15 @@ const getAllOngoingResByBranch = async (serviceProviderBranch: string) => {
       },
     },
     {
-      $lookup: {
-        from: 'reservationrequests', // Name of the user collection
-        localField: 'reservationRequest',
-        foreignField: '_id',
-        as: 'reservationRequest',
-      },
-    },
-    {
       $unwind: '$reservationRequest',
     },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+
     {
       $replaceRoot: {
         newRoot: '$reservationRequest',
@@ -1663,14 +1345,6 @@ const getAllRescheduledResByBranch = async (serviceProviderBranch: string) => {
       },
     },
     {
-      $lookup: {
-        from: 'reservationrequests', // Name of the user collection
-        localField: 'reservationRequest',
-        foreignField: '_id',
-        as: 'reservationRequest',
-      },
-    },
-    {
       $unwind: '$reservationRequest',
     },
 
@@ -1681,21 +1355,18 @@ const getAllRescheduledResByBranch = async (serviceProviderBranch: string) => {
     },
 
     {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
+    },
+    {
       $addFields: {
         schedulesCount: { $size: '$schedule.schedules' },
       },
     },
     {
       $match: {
-        $or: [
-          {
-            schedulesCount: { $gt: 1 },
-          },
-          {
-            schedulesCount: { $gt: 0 },
-            'schedule.category': 'on-demand',
-          },
-        ],
+        schedulesCount: { $gt: 1 },
       },
     },
   ]);
@@ -1712,15 +1383,13 @@ const getAllCompletedResByBranch = async (serviceProviderBranch: string) => {
       },
     },
     {
-      $lookup: {
-        from: 'reservationrequests', // Name of the user collection
-        localField: 'reservationRequest',
-        foreignField: '_id',
-        as: 'reservationRequest',
-      },
-    },
-    {
       $unwind: '$reservationRequest',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$reservationRequest',
+      },
     },
 
     {

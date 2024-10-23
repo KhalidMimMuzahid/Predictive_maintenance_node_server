@@ -374,21 +374,21 @@ const getProductByProduct_id = async (productId: string) => {
   return product;
 };
 
-const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
-  // Calculate the date range for the second-to-last period
-  const secondEndDate = new Date(startDate);
-  const secondStartDate = new Date(secondEndDate);
-  secondStartDate.setDate(
-    secondEndDate.getDate() - (endDate.getDate() - startDate.getDate()),
-  );
+const getTopSalesProducts = async () => {
+  const today = new Date();
 
-  //console.log({ secondStartDate, secondEndDate });
+  // Define date range for the last 30 days
+  const last30DaysAgo = new Date(today);
+  last30DaysAgo.setDate(today.getDate() - 30);
 
-  // Fetch data for the last period
-  const lastPeriodResults = await Order.aggregate([
+  const secondLast30DaysAgo = new Date(last30DaysAgo);
+  secondLast30DaysAgo.setDate(last30DaysAgo.getDate() - 30);
+
+  // Aggregation for last 30 days
+  const last30DaysResults = await Order.aggregate([
     {
       $match: {
-        createdAt: { $gte: startDate, $lte: endDate },
+        createdAt: { $gte: last30DaysAgo, $lte: today },
         'paidStatus.isPaid': true,
       },
     },
@@ -421,10 +421,7 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
         'product.name': 1,
         'product.regularPrice': 1,
         'product.salePrice': 1,
-        //'product.photos': '$product.photos',
-        'product.photos': {
-          $arrayElemAt: ['$product.photos', 0],
-        },
+        'product.photos': { $arrayElemAt: ['$product.photos', 0] },
       },
     },
     {
@@ -438,11 +435,10 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
     },
   ]);
 
-  // Fetch data for the second-to-last period
-  const secondLastPeriodResults = await Order.aggregate([
+  const secondLast30DaysResults = await Order.aggregate([
     {
       $match: {
-        createdAt: { $gte: secondStartDate, $lte: secondEndDate },
+        createdAt: { $gte: secondLast30DaysAgo, $lte: last30DaysAgo },
         'paidStatus.isPaid': true,
       },
     },
@@ -458,27 +454,26 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
     },
   ]);
 
-  // Calculate percentage progress for each product
   const calculatePercentageProgress = (
-    lastPeriodValue: number,
-    secondLastPeriodValue: number,
+    last30DaysValue: number,
+    secondLast30DaysValue: number,
   ): number => {
-    if (secondLastPeriodValue === 0) {
-      return lastPeriodValue > 0 ? 100 : 0;
+    if (secondLast30DaysValue === 0) {
+      return last30DaysValue > 0 ? 100 : 0; // If no previous data, assume either 100% increase or no change.
     }
-    return ((lastPeriodValue - secondLastPeriodValue) / lastPeriodValue) * 100;
+    return ((last30DaysValue - secondLast30DaysValue) / last30DaysValue) * 100;
   };
 
   // Map the products from both periods and calculate progress
-  const topProductsWithProgress = lastPeriodResults.map((product) => {
-    const secondLastPeriodProduct = secondLastPeriodResults.find(
+  const topProductsWithProgress = last30DaysResults.map((product) => {
+    const secondLastPeriodProduct = secondLast30DaysResults.find(
       (secondProduct) => String(secondProduct._id) === String(product._id),
     ) || { totalQuantity: 0, totalRevenue: 0 };
 
-    // const totalQuantityProgress = calculatePercentageProgress(
-    //   product.totalQuantity,
-    //   secondLastPeriodProduct.totalQuantity,
-    // );
+    const totalQuantityProgress = calculatePercentageProgress(
+      product.totalQuantity,
+      secondLastPeriodProduct.totalQuantity,
+    );
 
     const totalRevenueProgress = calculatePercentageProgress(
       product.totalRevenue,
@@ -488,7 +483,7 @@ const getTopSalesProducts = async (startDate: Date, endDate: Date) => {
     return {
       ...product,
       progress: {
-        //quantityProgressPercentage: totalQuantityProgress.toFixed(2),
+        quantityProgressPercentage: totalQuantityProgress.toFixed(2),
         revenueProgressPercentage: totalRevenueProgress.toFixed(2),
       },
     };

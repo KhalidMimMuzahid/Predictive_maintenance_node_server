@@ -252,22 +252,16 @@ const getProductByProduct_id: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getTopSalesProducts: RequestHandler = catchAsync(async (req, res) => {
-  const auth = req.headers?.auth as unknown as TAuth;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  // Checking user access permission
   checkUserAccessApi({ auth, accessUsers: 'all' });
 
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 30); // Last 30 days
-  const endDate = new Date();
+  const result = await productServices.getTopSalesProducts();
 
-  const result = await productServices.getTopSalesProducts(startDate, endDate);
-
-  // Send the response
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Top sales products have been retrieved successfully',
+    message: 'Top sales products fetched successfully',
     data: result,
   });
 });

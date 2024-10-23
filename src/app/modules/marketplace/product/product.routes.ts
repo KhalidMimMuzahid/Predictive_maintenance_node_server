@@ -38,4 +38,3 @@ router.get(
 router.get('/get-top-sales-product', productController.getTopSalesProducts);
 
 export const productRoutes = router;
-//
