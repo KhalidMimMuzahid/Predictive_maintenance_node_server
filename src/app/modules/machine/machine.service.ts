@@ -18,6 +18,7 @@ import { TAddress } from '../common/common.interface';
 import { timeDifference } from '../../utils/timeDifference';
 import { AI } from '../ai/ai.model';
 import { ReservationRequest } from '../reservation/reservation.model';
+import { aiServices } from '../ai/ai.service';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -993,7 +994,12 @@ const machineHealthStatus = async ({
       );
     }),
   );
-
+  const machineBadSections = await aiServices.getMachineBadSections(
+    machine?.toString(),
+  );
+  req.io.emit(`machine=${machine?.toString()}&category=badSections`, {
+    badSections: machineBadSections,
+  });
   return null;
 };
 
