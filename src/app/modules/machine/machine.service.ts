@@ -515,6 +515,7 @@ const addSensorAttachedModuleInToMachineIntoDB = async (
     const updatedMachine = await Machine.findByIdAndUpdate(machine_id, {
       $addToSet: { sensorModulesAttached: sensorModuleAttached_id },
     });
+
     if (!updatedMachine) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -901,7 +902,11 @@ const machineHealthStatus = async ({
   //   machine,
   //   machineHealthData,
   // });
-  if (machineData.healthStatus?.health !== machineHealthData?.healthStatus) {
+  //only if the health status is changed and machine's operating status is not Off
+  if (
+    machineData.healthStatus?.health !== machineHealthData?.healthStatus &&
+    machineHealthData?.operatingStatus !== 'off'
+  ) {
     machineData.healthStatus = {
       health: machineHealthData?.healthStatus,
     };
@@ -931,12 +936,19 @@ const machineHealthStatus = async ({
   machineData.issues = newIssues;
   if (machineHealthData?.operatingStatus) {
     machineData.operatingStatus = machineHealthData?.operatingStatus;
+    req.io.emit(`machine=${machine?.toString()}&category=operatingStatus`, {
+      operatingStatus: machineHealthData?.operatingStatus,
+      createdAt: now,
+    });
     if (machineHealthData?.operatingStatus === 'running') {
       const newCycleCount = machineData.cycleCount || {
         life: 0,
         reservationPeriod: 0,
       };
-
+      req.io.emit(`machine=${machine?.toString()}&category=cycleCount`, {
+        cycleCount: (newCycleCount?.life | 0) + 2,
+        createdAt: now,
+      });
       machineData.cycleCount = {
         life: (newCycleCount?.life | 0) + 2,
         reservationPeriod: (newCycleCount?.reservationPeriod | 0) + 2,
@@ -946,9 +958,17 @@ const machineHealthStatus = async ({
   }
   if (machineHealthData?.energyScore) {
     machineData.energyScore = machineHealthData?.energyScore;
+    req.io.emit(`machine=${machine?.toString()}&category=energyScore`, {
+      energyScore: machineHealthData?.energyScore,
+      createdAt: now,
+    });
   }
   if (machineHealthData?.thermalScore) {
     machineData.thermalScore = machineHealthData?.thermalScore;
+    req.io.emit(`machine=${machine?.toString()}&category=thermalScore`, {
+      energyScore: machineHealthData?.thermalScore,
+      createdAt: now,
+    });
   }
 
   await machineData.save();
