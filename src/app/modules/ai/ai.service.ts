@@ -140,22 +140,19 @@ const getMaintenanceDueByMachine = async (machine: string) => {
     type: 'machine',
   }).select('machine');
 
-  if (
-    !machineAI?.machine?.reservationCycle?.totalCycle ||
-    !machineAI?.machine?.reservationCycle?.totalReservation
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'AI has no enough data to generate maintenance due',
-    );
-  }
+  const totalCycle = machineAI?.machine?.reservationCycle?.totalCycle || 0;
+  const totalReservation =
+    machineAI?.machine?.reservationCycle?.totalReservation || 0;
+
+  const standardReservationCycleForMachine = 356000; // 5 *356* 200  for five years
   const averageReservationCycle =
-    machineAI?.machine?.reservationCycle?.totalCycle /
-    machineAI?.machine?.reservationCycle?.totalReservation;
+    (totalCycle + standardReservationCycleForMachine) / (totalReservation + 1); // we are adding 1 here because of adding standardReservationCycleForMachine with totalCycle
   const machineCycleCountInReservationPeriod =
     machineData?.cycleCount?.reservationPeriod || 0;
 
-  return averageReservationCycle - machineCycleCountInReservationPeriod;
+  return Math.ceil(
+    (averageReservationCycle - machineCycleCountInReservationPeriod) / 200,
+  );
 };
 
 const getLifeCycleByMachine = async (machine: string) => {
@@ -171,21 +168,14 @@ const getLifeCycleByMachine = async (machine: string) => {
     type: 'machine',
   }).select('machine');
 
-  if (
-    !machineAI?.machine?.lifeCycle?.totalCycle ||
-    !machineAI?.machine?.lifeCycle?.totalMachine
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'AI has no enough data to generate life cycle',
-    );
-  }
+  const totalCycle = machineAI?.machine?.lifeCycle?.totalCycle || 0;
+  const totalMachine = machineAI?.machine?.lifeCycle?.totalMachine || 0;
+  const standardLifeCycleForMachine = 730000; // 10 *356* 200  for five years
   const averageLifeCycle =
-    machineAI?.machine?.lifeCycle?.totalCycle /
-    machineAI?.machine?.lifeCycle?.totalMachine;
+    (totalCycle + standardLifeCycleForMachine) / (totalMachine + 1); // we are adding 1 here because of adding standardLifeCycleForMachine with totalCycle;
   const machineCycleCountInLife = machineData?.cycleCount?.life || 0;
 
-  return averageLifeCycle - machineCycleCountInLife;
+  return Math.ceil((averageLifeCycle - machineCycleCountInLife) / 200);
 };
 
 const getMachineBadSections = async (machine: string) => {
