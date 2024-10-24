@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 
-import { extraDataController } from './extraData.controller';
 import validateRequest from '../../middlewares/validateRequest';
+import { extraDataController } from './extraData.controller';
 import { extraDataValidation } from './extraData.validation';
 const router: Router = express.Router();
 
@@ -13,9 +13,6 @@ router.post(
 );
 router.post('/create-coupon', extraDataController.createCoupon);
 router.patch('/activate-coupon', extraDataController.activateCoupon);
-
-
-
 
 router.post(
   '/invite-member',
@@ -34,6 +31,6 @@ router.post('/upload-photo', extraDataController.uploadPhoto);
 
 // those router is only for testings
 router.get('/send-iot-data-ai-server', extraDataController.sendIotDataAiServer);
-
+router.post('/create-faq', extraDataController.createFaq);
 
 export const extraDataRoutes = router;

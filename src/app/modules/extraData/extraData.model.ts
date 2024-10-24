@@ -12,6 +12,7 @@ import {
   TServiceProviderEngineer,
   TShowaUser,
 } from './extraData.interface';
+
 export const DeleteUserSchema = new Schema<TDeleteUser>({
   emailOrPhone: {
     type: String,
@@ -33,6 +34,7 @@ const FeedbackSchema = new Schema<TFeedback>({
     },
   ],
 });
+
 const InviteMemberSchema = new Schema<TInviteMember>({
   type: {
     type: String,
@@ -172,11 +174,27 @@ const CouponSchema = new Schema<TCoupon>({
     required: true,
   },
 });
+
+const FaqSchema = new Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  type: {
+    type: String,
+    required: true,
+  },
+  answer: {
+    type: String,
+    required: true,
+  },
+});
+
 export const ExtraDataSchema: Schema = new Schema<TExtraData>(
   {
     type: {
       type: String,
-      enum: ['deleteUser', 'feedback', 'inviteMember', 'coupon', 'more'],
+      enum: ['deleteUser', 'feedback', 'inviteMember', 'coupon', 'faq', 'more'],
     },
     deleteUser: {
       type: DeleteUserSchema,
@@ -194,6 +212,10 @@ export const ExtraDataSchema: Schema = new Schema<TExtraData>(
       type: CouponSchema,
       required: false,
     },
+    faq: {
+      type: FaqSchema,
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -203,4 +225,4 @@ export const ExtraDataSchema: Schema = new Schema<TExtraData>(
 export const ExtraData = mongoose.model<TExtraData>(
   'ExtraData',
   ExtraDataSchema,
-); 
+);

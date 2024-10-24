@@ -1,16 +1,21 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/AppError';
-import { User } from '../user/user.model';
-import { ExtraData } from './extraData.model';
-import { uploadFileToAWS } from '../../utils/uploadFileToAWS';
 import mongoose from 'mongoose';
-import { TExtraData, TFeedback, TInviteMember } from './extraData.interface';
-import { sendMail } from '../../utils/sendMail';
-import { Subscription } from '../subscription/subscription.model';
+import AppError from '../../errors/AppError';
+import { TAuth } from '../../interface/error';
 import { fileHandle } from '../../utils/fileHandle';
 import { padNumberWithZeros } from '../../utils/padNumberWithZeros';
-import { TAuth } from '../../interface/error';
+import { sendMail } from '../../utils/sendMail';
+import { uploadFileToAWS } from '../../utils/uploadFileToAWS';
+import { Subscription } from '../subscription/subscription.model';
 import { subscriptionPurchasedServices } from '../subscriptionPurchased/subscriptionPurchased.service';
+import { User } from '../user/user.model';
+import {
+  TExtraData,
+  TFaq,
+  TFeedback,
+  TInviteMember,
+} from './extraData.interface';
+import { ExtraData } from './extraData.model';
 const deleteMyAccount = async (emailOrPhone: string) => {
   const isExistsUser = await User.findOne({
     $or: [{ email: emailOrPhone }, { phone: emailOrPhone }],
@@ -255,15 +260,15 @@ const inviteMember = async ({
       'something went wrong, please try again',
     );
   }
-const invitedUrl =
-  inviteMember?.type === 'serviceProviderBranchManager'
-    ? 'https://showa.page.link/registration'
-    : inviteMember?.type === 'showaUser'
-      ? 'link for showa user'
-      : inviteMember?.type === 'serviceProviderEngineer'
-        ? 'https://showa.page.link/registration'
-        : 'link for serviceProviderAdmin';
-const htmlBody = `<div>
+  const invitedUrl =
+    inviteMember?.type === 'serviceProviderBranchManager'
+      ? 'https://showa.page.link/registration'
+      : inviteMember?.type === 'showaUser'
+        ? 'link for showa user'
+        : inviteMember?.type === 'serviceProviderEngineer'
+          ? 'https://showa.page.link/registration'
+          : 'link for serviceProviderAdmin';
+  const htmlBody = `<div>
             <h2 style="color: #333; margin-bottom: 20px;">You're invited to sign-up as a ${inviteMember?.type}.</h2>
            
     <div style="margin-top: 20px;">
@@ -350,6 +355,31 @@ const uploadPhoto = async ({
   const uploadedFile = (await uploadFileToAWS({ key, file })) as unknown as any;
   return { url: uploadedFile?.Location, fileType, fileName };
 };
+
+const createFaq = async (faqData: TFaq): Promise<TExtraData> => {
+  const { title, type, answer } = faqData;
+
+  const newExtraData: TExtraData = {
+    type: 'faq',
+    faq: {
+      title,
+      type,
+      answer,
+    },
+  };
+
+  const createdExtraData = await ExtraData.create(newExtraData);
+
+  if (!createdExtraData) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to create FAQ',
+    );
+  }
+
+  return createdExtraData;
+};
+
 export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
@@ -360,4 +390,5 @@ export const extraDataServices = {
   invitedMemberByEmail,
   reviewFeedback,
   uploadPhoto,
+  createFaq,
 };

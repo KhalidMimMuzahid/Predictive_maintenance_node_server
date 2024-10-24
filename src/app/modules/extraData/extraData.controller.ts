@@ -6,7 +6,7 @@ import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
 import sendResponse from '../../utils/sendResponse';
-import { TFeedback, TInviteMember } from './extraData.interface';
+import { TFaq, TFeedback, TInviteMember } from './extraData.interface';
 import { extraDataServices } from './extraData.service';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
@@ -251,6 +251,33 @@ const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const createFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const { title, type, answer } = req.body as TFaq;
+
+  if (!title || !type || !answer) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Title, type, and answer are required',
+    );
+  }
+
+  const result = await extraDataServices.createFaq({
+    title,
+    type,
+    answer,
+  });
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED, // Use 201 for created resources
+    success: true,
+    message: 'FAQ has been created successfully',
+    data: result,
+  });
+});
+
 export const extraDataController = {
   deleteMyAccount,
   addFeedback,
@@ -262,4 +289,5 @@ export const extraDataController = {
   reviewFeedback,
   sendIotDataAiServer,
   uploadPhoto,
+  createFaq,
 };
