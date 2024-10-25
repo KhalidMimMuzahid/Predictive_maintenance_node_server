@@ -171,6 +171,42 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
     });
   },
 );
+const getMainDashboardFirstSectionSummery: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+    const serviceProviderBranch: string = req?.query
+      ?.serviceProviderBranch as string;
+
+    if (!serviceProviderCompany && !serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `serviceProviderCompany or serviceProviderBranch is required`,
+      );
+    } else if (serviceProviderCompany && serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        ` one of these serviceProviderCompany or serviceProviderBranch is required at a time, not both`,
+      );
+    }
+    const result =
+      await serviceProviderCompanyServices.getMainDashboardFirstSectionSummery({
+        serviceProviderCompany,
+        serviceProviderBranch,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'All Members For ServiceProviderCompany has retrieved successfully',
+      data: result,
+    });
+  },
+);
 
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
@@ -179,4 +215,5 @@ export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
+  getMainDashboardFirstSectionSummery, // Service Provider CXO/Branch manager Main dashboard screen
 };

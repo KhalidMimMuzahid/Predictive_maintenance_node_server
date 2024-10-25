@@ -507,7 +507,7 @@ export const reservationGroupController = {
   createReservationGroup,
   allReservationsGroup,
   addBid, //Service Provider -> Maintenance-> Maintenance-Bid
-  setBiddingDate, //super adminn
+  setBiddingDate, //super admin
   selectBiddingWinner,
   sendReservationGroupToBranch,
   getReservationGroupById,

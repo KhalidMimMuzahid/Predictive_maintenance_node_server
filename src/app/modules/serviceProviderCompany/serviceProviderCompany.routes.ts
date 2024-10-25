@@ -33,5 +33,9 @@ router.get(
   '/get-all-members-for-service-provider-company',
   serviceProviderCompanyControllers.getAllMembersForServiceProviderCompany,
 );
+router.get(
+  '/get-main-dashboard-first-section-summery',
+  serviceProviderCompanyControllers.getMainDashboardFirstSectionSummery,
+);
 
 export const serviceProviderCompanyRoutes = router;
