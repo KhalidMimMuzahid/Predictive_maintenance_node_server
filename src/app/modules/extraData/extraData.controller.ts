@@ -251,16 +251,52 @@ const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+// const createFaq: RequestHandler = catchAsync(async (req, res) => {
+//   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+//   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+//   const { title, type, answer } = req.body as TFaq;
+
+//   if (!title || !type || !answer) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Title, type, and answer are required',
+//     );
+//   }
+
+//   const result = await extraDataServices.createFaq({
+//     title,
+//     type,
+//     answer,
+//   });
+//   // Send the response
+//   sendResponse(res, {
+//     statusCode: httpStatus.CREATED, // Use 201 for created resources
+//     success: true,
+//     message: 'FAQ has been created successfully',
+//     data: result,
+//   });
+// });
+
 const createFaq: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
 
   const { title, type, answer } = req.body as TFaq;
 
+  // Validate required fields
   if (!title || !type || !answer) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'Title, type, and answer are required',
+    );
+  }
+
+  const allowedTypes = ['app', 'service', 'security'];
+  if (!allowedTypes.includes(type)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `FAQ type must be one of the following: ${allowedTypes.join(', ')}`,
     );
   }
 
@@ -269,12 +305,90 @@ const createFaq: RequestHandler = catchAsync(async (req, res) => {
     type,
     answer,
   });
+
   // Send the response
   sendResponse(res, {
     statusCode: httpStatus.CREATED, // Use 201 for created resources
     success: true,
     message: 'FAQ has been created successfully',
     data: result,
+  });
+});
+
+const getAllFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const result = await extraDataServices.getAllFaq();
+
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'FAQs retrieved successfully',
+    data: result,
+  });
+});
+
+const editFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const extraDataId: string = req?.query?.extraDataId as string;
+
+  const { title, type, answer } = req.body as TFaq;
+
+  if (!extraDataId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'extraData ID is required');
+  }
+
+  if (!title || !type || !answer) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Title, FAQ type, and answer are required',
+    );
+  }
+
+  const allowedTypes = ['app', 'service', 'security'];
+  if (!allowedTypes.includes(type)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `FAQ type must be one of the following: ${allowedTypes.join(', ')}`,
+    );
+  }
+
+  const result = await extraDataServices.editFaq(extraDataId, {
+    title,
+    type,
+    answer,
+  });
+
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'FAQ has been updated successfully',
+    data: result,
+  });
+});
+
+const deleteFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const extraDataId: string = req.query.extraDataId as string;
+
+  if (!extraDataId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'extraData Id is required');
+  }
+
+  const deletedFaq = await extraDataServices.deleteFaq(extraDataId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'FAQ has been deleted successfully',
+    data: deletedFaq,
   });
 });
 
@@ -290,4 +404,7 @@ export const extraDataController = {
   sendIotDataAiServer,
   uploadPhoto,
   createFaq,
+  getAllFaq,
+  editFaq,
+  deleteFaq,
 };

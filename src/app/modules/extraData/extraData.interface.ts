@@ -69,7 +69,7 @@ export type TCoupon = {
 };
 export type TFaq = {
   title: string;
-  type: string;
+  type: 'app' | 'service' | 'security';
   answer: string;
 };
 export type TExtraData = {

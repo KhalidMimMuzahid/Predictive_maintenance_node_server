@@ -29,5 +29,9 @@ router.patch(
 );
 
 router.get('/get-today-tasks-summary', invoiceController.getTodayTasksSummary);
+router.get(
+  '/get-total-invoice-summary',
+  invoiceController.getTotalInvoiceSummary,
+);
 
 export const invoiceRoutes = router;

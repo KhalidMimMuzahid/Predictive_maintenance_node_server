@@ -13,6 +13,10 @@ router.post(
 );
 router.post('/create-coupon', extraDataController.createCoupon);
 router.patch('/activate-coupon', extraDataController.activateCoupon);
+router.post('/create-faq', extraDataController.createFaq);
+router.get('/get-all-faq', extraDataController.getAllFaq);
+router.patch('/edit-faq', extraDataController.editFaq);
+router.delete('/edit-faq', extraDataController.deleteFaq);
 
 router.post(
   '/invite-member',
@@ -31,6 +35,5 @@ router.post('/upload-photo', extraDataController.uploadPhoto);
 
 // those router is only for testings
 router.get('/send-iot-data-ai-server', extraDataController.sendIotDataAiServer);
-router.post('/create-faq', extraDataController.createFaq);
 
 export const extraDataRoutes = router;

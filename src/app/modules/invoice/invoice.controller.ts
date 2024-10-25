@@ -212,6 +212,24 @@ const getTodayTasksSummary: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalInvoiceSummary: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await invoiceServices.getTotalInvoiceSummary();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Total invoice summary retrieved successfully',
+    data: result,
+  });
+});
+
 export const invoiceController = {
   addAdditionalProducts, //service provider app->rservation->maintenance->details
   inspection, //service provider app->rservation->maintenance
@@ -220,4 +238,5 @@ export const invoiceController = {
   getAllInvoicesByUser, //service provider app ->engineer app->Invoices->All invoices
   getAllAssignedTasksByEngineer, //service provider app->rservation->maintenance->assigned task
   getTodayTasksSummary, //service provider app->Team->Member Details->User detaisls-tasks
+  getTotalInvoiceSummary,
 };

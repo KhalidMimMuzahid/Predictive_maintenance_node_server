@@ -356,7 +356,7 @@ const uploadPhoto = async ({
   return { url: uploadedFile?.Location, fileType, fileName };
 };
 
-const createFaq = async (faqData: TFaq): Promise<TExtraData> => {
+const createFaq = async (faqData: TFaq) => {
   const { title, type, answer } = faqData;
 
   const newExtraData: TExtraData = {
@@ -380,6 +380,54 @@ const createFaq = async (faqData: TFaq): Promise<TExtraData> => {
   return createdExtraData;
 };
 
+const getAllFaq = async () => {
+  const faqs = await ExtraData.find({ type: 'faq' });
+
+  if (!faqs || faqs.length === 0) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No FAQs found');
+  }
+
+  return faqs;
+};
+const editFaq = async (extraDataId: string, faqData: Partial<TFaq>) => {
+  const updatedFaq = await ExtraData.findOneAndUpdate(
+    { _id: extraDataId, type: 'faq' },
+    {
+      $set: {
+        'faq.title': faqData.title,
+        'faq.type': faqData.type,
+        'faq.answer': faqData.answer,
+      },
+    },
+    { new: true, runValidators: true },
+  );
+
+  if (!updatedFaq) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'FAQ not found or could not be updated',
+    );
+  }
+
+  return updatedFaq;
+};
+
+const deleteFaq = async (extraDataId: string) => {
+  const deletedFaq = await ExtraData.findOneAndDelete({
+    _id: extraDataId,
+    type: 'faq',
+  });
+
+  if (!deletedFaq) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'FAQ not found or could not be deleted',
+    );
+  }
+
+  return;
+};
+
 export const extraDataServices = {
   deleteMyAccount,
   addFeedback,
@@ -391,4 +439,7 @@ export const extraDataServices = {
   reviewFeedback,
   uploadPhoto,
   createFaq,
+  getAllFaq,
+  editFaq,
+  deleteFaq,
 };

@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
 import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 import { TeamOfEngineers } from '../teamOfEngineers/teamOfEngineers.model';
 import { User } from '../user/user.model';
@@ -17,7 +18,6 @@ import {
   isEngineerBelongsToThisTeamByInvoiceGroup,
   isEngineerBelongsToThisTeamByReservation,
 } from './invoice.utils';
-import { ReservationRequest } from '../reservation/reservation.model';
 
 const addAdditionalProduct = async ({
   user,
@@ -756,6 +756,23 @@ const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
   };
 };
 
+const getTotalInvoiceSummary = async () => {
+  const totalInvoices = await Invoice.countDocuments();
+
+  const totalPaidInvoices = await Invoice.countDocuments({
+    'additionalProducts.isPaid': true,
+  });
+
+  const totalDueInvoices = await Invoice.countDocuments({
+    'additionalProducts.isPaid': false,
+  });
+  return {
+    totalInvoices,
+    totalPaidInvoices,
+    totalDueInvoices,
+  };
+};
+
 export const invoiceServices = {
   addAdditionalProduct,
   inspection,
@@ -764,4 +781,5 @@ export const invoiceServices = {
   getAllInvoicesByUser,
   getAllAssignedTasksByEngineer,
   getTodayTasksSummary,
+  getTotalInvoiceSummary,
 };
