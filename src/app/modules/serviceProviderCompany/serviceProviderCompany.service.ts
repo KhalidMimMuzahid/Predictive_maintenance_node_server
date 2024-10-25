@@ -15,6 +15,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { TSortType } from '../marketplace/product/product.interface';
 import { TAuth } from '../../interface/error';
+import { Invoice } from '../invoice/invoice.model';
 
 const getServiceProviderCompanyForAdmin = async (
   _id: mongoose.Types.ObjectId,
@@ -331,6 +332,43 @@ const getAllMembersForServiceProviderCompany = async (
   };
 };
 
+const getMainDashboardFirstSectionSummary = async ({
+  serviceProviderCompany,
+  serviceProviderBranch,
+}: {
+  serviceProviderCompany: string;
+  serviceProviderBranch: string;
+}) => {
+  const queryForServiceProviderEngineersCount = {};
+  const queryForOngoingOrderCount = {};
+  if (serviceProviderCompany) {
+    queryForServiceProviderEngineersCount[
+      'currentState.serviceProviderCompany'
+    ] = new mongoose.Types.ObjectId(serviceProviderCompany);
+
+    queryForOngoingOrderCount['postBiddingProcess.serviceProviderCompany'] =
+      new mongoose.Types.ObjectId(serviceProviderCompany);
+  } else if (serviceProviderBranch) {
+    queryForServiceProviderEngineersCount[
+      'currentState.serviceProviderBranch'
+    ] = new mongoose.Types.ObjectId(serviceProviderBranch);
+    queryForOngoingOrderCount['postBiddingProcess.serviceProviderBranch'] =
+      new mongoose.Types.ObjectId(serviceProviderBranch);
+  }
+  const serviceProviderEngineersCount =
+    await ServiceProviderEngineer.countDocuments(
+      queryForServiceProviderEngineersCount,
+    );
+  const ongoingOrderCount = await Invoice.countDocuments(
+    queryForOngoingOrderCount,
+  );
+  return {
+    serviceProviderEngineersCount,
+    collectedBills: 0,
+    ongoingOrderCount,
+  };
+};
+
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
   editServiceProviderCompany,
@@ -338,4 +376,5 @@ export const serviceProviderCompanyServices = {
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
+  getMainDashboardFirstSectionSummary,
 };
