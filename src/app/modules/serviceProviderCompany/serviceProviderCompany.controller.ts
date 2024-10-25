@@ -171,7 +171,7 @@ const getAllMembersForServiceProviderCompany: RequestHandler = catchAsync(
     });
   },
 );
-const getMainDashboardFirstSectionSummery: RequestHandler = catchAsync(
+const getMainDashboardFirstSectionSummary: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     checkUserAccessApi({ auth, accessUsers: 'all' });
@@ -193,7 +193,7 @@ const getMainDashboardFirstSectionSummery: RequestHandler = catchAsync(
       );
     }
     const result =
-      await serviceProviderCompanyServices.getMainDashboardFirstSectionSummery({
+      await serviceProviderCompanyServices.getMainDashboardFirstSectionSummary({
         serviceProviderCompany,
         serviceProviderBranch,
       });
@@ -215,5 +215,5 @@ export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
-  getMainDashboardFirstSectionSummery, // Service Provider CXO/Branch manager Main dashboard screen
+  getMainDashboardFirstSectionSummary, // Service Provider CXO/Branch manager Main dashboard screen
 };

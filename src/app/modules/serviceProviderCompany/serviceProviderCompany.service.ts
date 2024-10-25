@@ -332,7 +332,7 @@ const getAllMembersForServiceProviderCompany = async (
   };
 };
 
-const getMainDashboardFirstSectionSummery = async ({
+const getMainDashboardFirstSectionSummary = async ({
   serviceProviderCompany,
   serviceProviderBranch,
 }: {
@@ -364,6 +364,7 @@ const getMainDashboardFirstSectionSummery = async ({
   );
   return {
     serviceProviderEngineersCount,
+    collectedBills: 0,
     ongoingOrderCount,
   };
 };
@@ -375,5 +376,5 @@ export const serviceProviderCompanyServices = {
   getServiceProviderCompanyBy_id,
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
-  getMainDashboardFirstSectionSummery,
+  getMainDashboardFirstSectionSummary,
 };
