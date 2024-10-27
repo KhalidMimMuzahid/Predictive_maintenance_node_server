@@ -389,9 +389,9 @@ const getAllFaq = async () => {
 
   return faqs;
 };
-const editFaq = async (extraDataId: string, faqData: Partial<TFaq>) => {
+const editFaq = async (faqId: string, faqData: Partial<TFaq>) => {
   const updatedFaq = await ExtraData.findOneAndUpdate(
-    { _id: extraDataId, type: 'faq' },
+    { _id: faqId, type: 'faq' },
     {
       $set: {
         'faq.title': faqData.title,
@@ -412,9 +412,9 @@ const editFaq = async (extraDataId: string, faqData: Partial<TFaq>) => {
   return updatedFaq;
 };
 
-const deleteFaq = async (extraDataId: string) => {
+const deleteFaq = async (faqId: string) => {
   const deletedFaq = await ExtraData.findOneAndDelete({
-    _id: extraDataId,
+    _id: faqId,
     type: 'faq',
   });
 

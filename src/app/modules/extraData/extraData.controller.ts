@@ -334,12 +334,12 @@ const editFaq: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
 
-  const extraDataId: string = req?.query?.extraDataId as string;
+  const faqId: string = req?.query?.faqId as string;
 
   const { title, type, answer } = req.body as TFaq;
 
-  if (!extraDataId) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'extraData ID is required');
+  if (!faqId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'FAQ id is required');
   }
 
   if (!title || !type || !answer) {
@@ -357,7 +357,7 @@ const editFaq: RequestHandler = catchAsync(async (req, res) => {
     );
   }
 
-  const result = await extraDataServices.editFaq(extraDataId, {
+  const result = await extraDataServices.editFaq(faqId, {
     title,
     type,
     answer,
@@ -376,13 +376,13 @@ const deleteFaq: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
 
-  const extraDataId: string = req.query.extraDataId as string;
+  const faqId: string = req.query.faqId as string;
 
-  if (!extraDataId) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'extraData Id is required');
+  if (!faqId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'FAQ id is required');
   }
 
-  const deletedFaq = await extraDataServices.deleteFaq(extraDataId);
+  const deletedFaq = await extraDataServices.deleteFaq(faqId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
