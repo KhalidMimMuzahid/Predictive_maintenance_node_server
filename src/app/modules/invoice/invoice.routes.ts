@@ -34,4 +34,9 @@ router.get(
   invoiceController.getTotalInvoiceSummary,
 );
 
+router.get(
+  '/get-total-invoice-comparison-for-chart',
+  invoiceController.getTotalInvoiceComparisonForChart,
+);
+
 export const invoiceRoutes = router;

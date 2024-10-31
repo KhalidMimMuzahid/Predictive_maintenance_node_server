@@ -574,6 +574,10 @@ const getTotalReservationForChart: RequestHandler = catchAsync(
     const kpiStatus2: TReservationStatus = req?.query
       ?.kpiStatus2 as TReservationStatus;
 
+    if (kpiStatus1 === kpiStatus2) {
+      throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
+    }
+
     [kpiStatus1, kpiStatus2].forEach((status) => {
       if (!reservationStatusTypeArray.some((each) => each === status)) {
         throw new AppError(

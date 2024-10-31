@@ -11,6 +11,7 @@ import {
   TAdditionalProduct,
   TAssignedTaskType,
   TInspecting,
+  TInvoicePeriod,
 } from './invoice.interface';
 import { Invoice } from './invoice.model';
 import {
@@ -685,9 +686,6 @@ const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
-  console.log("Today's Date (Local):", today.toString());
-  console.log(endOfToday.toString());
-
   const todayTasksSummary = await InvoiceGroup.aggregate([
     {
       $match: {
@@ -773,6 +771,105 @@ const getTotalInvoiceSummary = async () => {
   };
 };
 
+const getTotalInvoiceComparisonForChart = async (
+  period: TInvoicePeriod,
+  kpiStatus1: string,
+  kpiStatus2: string,
+) => {
+  const today = new Date();
+  let timeFrame;
+
+  // Calculate time frame based on period type
+  if (period === 'monthly') {
+    timeFrame = Array.from({ length: 30 }, (_, i) => {
+      const day = new Date(today);
+      day.setDate(today.getDate() - i);
+      return {
+        period: day.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+        startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+        endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+      };
+    }).reverse();
+  } else if (period === 'weekly') {
+    timeFrame = Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(today);
+      day.setDate(today.getDate() - i);
+      return {
+        period: day.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        }),
+        startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+        endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+      };
+    }).reverse();
+  } else if (period === 'yearly') {
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+
+    timeFrame = Array.from({ length: 12 }, (_, i) => {
+      const monthOffset = currentMonth - 1 - i;
+      const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+      const month = ((monthOffset + 12) % 12) + 1;
+
+      const startOfDay = new Date(Date.UTC(year, month - 1, 1));
+      const endOfDay = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+      return {
+        period:
+          startOfDay.toLocaleString('en-US', { month: 'short' }) + ` ${year}`,
+        startOfDay,
+        endOfDay,
+      };
+    }).reverse();
+  }
+
+  const invoices = await Promise.all(
+    timeFrame.map(async (time) => {
+      // Fetch counts for each KPI status
+      const [totalInvoices, totalPaidInvoices, totalDueInvoices] =
+        await Promise.all([
+          Invoice.countDocuments({
+            createdAt: { $gte: time.startOfDay, $lte: time.endOfDay },
+          }),
+          Invoice.countDocuments({
+            createdAt: { $gte: time.startOfDay, $lte: time.endOfDay },
+            'additionalProducts.isPaid': true,
+          }),
+          Invoice.countDocuments({
+            createdAt: { $gte: time.startOfDay, $lte: time.endOfDay },
+            'additionalProducts.isPaid': false,
+          }),
+        ]);
+
+      // Map counts based on KPI statuses
+      const data = {
+        period: time.period,
+        [kpiStatus1]:
+          kpiStatus1 === 'totalInvoices'
+            ? totalInvoices
+            : kpiStatus1 === 'totalPaidInvoices'
+              ? totalPaidInvoices
+              : totalDueInvoices,
+        [kpiStatus2]:
+          kpiStatus2 === 'totalInvoices'
+            ? totalInvoices
+            : kpiStatus2 === 'totalPaidInvoices'
+              ? totalPaidInvoices
+              : totalDueInvoices,
+      };
+
+      return data;
+    }),
+  );
+
+  return invoices;
+};
+
 export const invoiceServices = {
   addAdditionalProduct,
   inspection,
@@ -782,4 +879,5 @@ export const invoiceServices = {
   getAllAssignedTasksByEngineer,
   getTodayTasksSummary,
   getTotalInvoiceSummary,
+  getTotalInvoiceComparisonForChart,
 };

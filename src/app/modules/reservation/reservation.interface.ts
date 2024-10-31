@@ -38,7 +38,7 @@ export type TReservationStatus =
   | 'ongoing' // when res req will be assigned to any team of engineers
   | 'completed' // when the res will  be completed
   | 'canceled'; // when res req will be canceled
-  // we have another status --> "expired" , we can generate this status in frontend by checking, if status is not completed and also the last date of schedule list is over
+// we have another status --> "expired" , we can generate this status in frontend by checking, if status is not completed and also the last date of schedule list is over
 
 export type TMachineType2 = 'washing-machine' | 'general-machine';
 export type TReservationRequest = {

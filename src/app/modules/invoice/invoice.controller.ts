@@ -5,11 +5,14 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
-import { assignedTaskTypeArray } from './invoice.const';
+
+//import { TPeriod } from '../reservation/reservation.interface';
+import { assignedTaskTypeArray, invoicePeriodTypeArray } from './invoice.const';
 import {
   TAdditionalProduct,
   TAssignedTaskType,
   TInspecting,
+  TInvoicePeriod,
 } from './invoice.interface';
 import { invoiceServices } from './invoice.services';
 
@@ -230,6 +233,60 @@ const getTotalInvoiceSummary: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({
+      auth,
+      accessUsers: ['showaAdmin'],
+    });
+
+    const period: TInvoicePeriod = req?.query?.period as TInvoicePeriod;
+
+    const kpiStatus1: string = req?.query.kpiStatus1 as string;
+    const kpiStatus2: string = req?.query.kpiStatus2 as string;
+
+    if (!invoicePeriodTypeArray.includes(period)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `Period type must be any of ${invoicePeriodTypeArray.join(', ')}`,
+      );
+    }
+
+    const allowedKpiStatuses = [
+      'totalInvoices',
+      'totalPaidInvoices',
+      'totalDueInvoices',
+    ];
+
+    if (kpiStatus1 === kpiStatus2) {
+      throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
+    }
+
+    [kpiStatus1, kpiStatus2].forEach((status) => {
+      if (!allowedKpiStatuses.includes(status)) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          `Status type must be any of ${allowedKpiStatuses.join(', ')}`,
+        );
+      }
+    });
+
+    const result = await invoiceServices.getTotalInvoiceComparisonForChart(
+      period,
+      kpiStatus1,
+      kpiStatus2,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Total invoice data retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const invoiceController = {
   addAdditionalProducts, //service provider app->rservation->maintenance->details
   inspection, //service provider app->rservation->maintenance
@@ -239,4 +296,5 @@ export const invoiceController = {
   getAllAssignedTasksByEngineer, //service provider app->rservation->maintenance->assigned task
   getTodayTasksSummary, //service provider app->Team->Member Details->User detaisls-tasks
   getTotalInvoiceSummary,
+  getTotalInvoiceComparisonForChart,
 };

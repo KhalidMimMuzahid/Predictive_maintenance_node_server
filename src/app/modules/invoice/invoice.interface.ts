@@ -89,6 +89,8 @@ export type TInspection = {
   observation?: string;
 };
 
+export type TInvoicePeriod = 'weekly' | 'monthly' | 'yearly';
+
 export type TInvoiceStatus = 'ongoing' | 'completed' | 'canceled'; // last three status of reservationRequest Model status, you can see the reservationRequest Model
 export type TAssignedTaskType =
   | 'all'

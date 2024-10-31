@@ -864,6 +864,230 @@ const getDashboardScreenAnalyzingForServiceProviderCompany = async (
   };
 };
 
+// const getDashboardScreenAnalyzingForServiceProviderCompany = async (
+//   serviceProviderCompanyId: string,
+// ) => {
+//   const serviceProviderCompany = await ServiceProviderCompany.findById(
+//     serviceProviderCompanyId,
+//   );
+
+//   if (!serviceProviderCompany) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       'Service provider company not found',
+//     );
+//   }
+
+//   const serviceProviderCompanyObjectId = new mongoose.Types.ObjectId(
+//     serviceProviderCompanyId,
+//   );
+
+//   const calculatePercentageProgress = (
+//     current: number,
+//     previous: number,
+//   ): number => {
+//     if (previous === 0) return current > 0 ? 100 : 0;
+//     return ((current - previous) / current) * 100;
+//   };
+
+//   const today = new Date();
+//   const last30DaysAgo = new Date(today);
+//   last30DaysAgo.setDate(today.getDate() - 30);
+//   const secondLast30DaysAgo = new Date(last30DaysAgo);
+//   secondLast30DaysAgo.setDate(last30DaysAgo.getDate() - 30);
+
+//   const totalOverallData = await ReservationRequestGroup.aggregate([
+//     {
+//       $match: {
+//         'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+//       },
+//     },
+//     {
+//       $group: {
+//         _id: null,
+//         totalRequests: { $sum: 1 },
+//         liveRequests: {
+//           $sum: {
+//             $cond: [
+//               {
+//                 $and: [
+//                   { $lt: ['$biddingDate.startDate', today] },
+//                   {
+//                     $or: [
+//                       { $gt: ['$biddingDate.endDate', today] },
+//                       { $not: ['$biddingDate.endDate'] },
+//                     ],
+//                   },
+//                 ],
+//               },
+//               1,
+//               0,
+//             ],
+//           },
+//         },
+//         bidedRequests: {
+//           $sum: { $cond: [{ $gt: ['$allBids', []] }, 1, 0] },
+//         },
+//         ongoingRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'ongoing'] }, 1, 0] },
+//         },
+//         completedRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'completed'] }, 1, 0] },
+//         },
+//         canceledRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'canceled'] }, 1, 0] },
+//         },
+//       },
+//     },
+//   ]);
+
+//   const totalOverallCounts = totalOverallData[0] || {};
+
+//   // Aggregations for last 30 days
+//   const last30DaysData = await ReservationRequestGroup.aggregate([
+//     {
+//       $match: {
+//         'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+//         createdAt: { $gte: last30DaysAgo, $lte: today },
+//       },
+//     },
+//     {
+//       $group: {
+//         _id: null,
+//         totalRequests: { $sum: 1 },
+//         liveRequests: {
+//           $sum: {
+//             $cond: [
+//               {
+//                 $and: [
+//                   { $lt: ['$biddingDate.startDate', today] },
+//                   {
+//                     $or: [
+//                       { $gt: ['$biddingDate.endDate', today] },
+//                       { $not: ['$biddingDate.endDate'] },
+//                     ],
+//                   },
+//                 ],
+//               },
+//               1,
+//               0,
+//             ],
+//           },
+//         },
+//         bidedRequests: {
+//           $sum: { $cond: [{ $gt: ['$allBids', []] }, 1, 0] },
+//         },
+//         ongoingRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'ongoing'] }, 1, 0] },
+//         },
+//         completedRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'completed'] }, 1, 0] },
+//         },
+//         canceledRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'canceled'] }, 1, 0] },
+//         },
+//       },
+//     },
+//   ]);
+
+//   const last30Data = last30DaysData[0] || {};
+
+//   // Aggregations for second last 30 days
+//   const secondLast30DaysData = await ReservationRequestGroup.aggregate([
+//     {
+//       $match: {
+//         'allBids.serviceProviderCompany': serviceProviderCompanyObjectId,
+//         createdAt: { $gte: secondLast30DaysAgo, $lte: last30DaysAgo },
+//       },
+//     },
+//     {
+//       $group: {
+//         _id: null,
+//         totalRequests: { $sum: 1 },
+//         liveRequests: {
+//           $sum: {
+//             $cond: [
+//               {
+//                 $and: [
+//                   { $lt: ['$biddingDate.startDate', last30DaysAgo] },
+//                   {
+//                     $or: [
+//                       { $gt: ['$biddingDate.endDate', last30DaysAgo] },
+//                       { $not: ['$biddingDate.endDate'] },
+//                     ],
+//                   },
+//                 ],
+//               },
+//               1,
+//               0,
+//             ],
+//           },
+//         },
+//         bidedRequests: {
+//           $sum: { $cond: [{ $gt: ['$allBids', []] }, 1, 0] },
+//         },
+//         ongoingRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'ongoing'] }, 1, 0] },
+//         },
+//         completedRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'completed'] }, 1, 0] },
+//         },
+//         canceledRequests: {
+//           $sum: { $cond: [{ $eq: ['$taskStatus', 'canceled'] }, 1, 0] },
+//         },
+//       },
+//     },
+//   ]);
+
+//   const secondLast30Data = secondLast30DaysData[0] || {};
+
+//   // Calculate progress percentages
+//   return {
+//     totalRequests: {
+//       count: totalOverallCounts.totalRequests || 0,
+//       progress: calculatePercentageProgress(
+//         last30Data.totalRequests || 0,
+//         secondLast30Data.totalRequests || 0,
+//       ),
+//     },
+//     live: {
+//       count: totalOverallCounts.liveRequests || 0,
+//       progress: calculatePercentageProgress(
+//         last30Data.liveRequests || 0,
+//         secondLast30Data.liveRequests || 0,
+//       ),
+//     },
+//     bided: {
+//       count: totalOverallCounts.bidedRequests || 0,
+//       progress: calculatePercentageProgress(
+//         last30Data.bidedRequests || 0,
+//         secondLast30Data.bidedRequests || 0,
+//       ),
+//     },
+//     ongoing: {
+//       count: totalOverallCounts.ongoingRequests || 0,
+//       progress: calculatePercentageProgress(
+//         last30Data.ongoingRequests || 0,
+//         secondLast30Data.ongoingRequests || 0,
+//       ),
+//     },
+//     completed: {
+//       count: totalOverallCounts.completedRequests || 0,
+//       progress: calculatePercentageProgress(
+//         last30Data.completedRequests || 0,
+//         secondLast30Data.completedRequests || 0,
+//       ),
+//     },
+//     canceled: {
+//       count: totalOverallCounts.canceledRequests || 0,
+//       progress: calculatePercentageProgress(
+//         last30Data.canceledRequests || 0,
+//         secondLast30Data.canceledRequests || 0,
+//       ),
+//     },
+//   };
+// };
+
 const getCompletedReservationRequestForServiceProviderCompany = async ({
   adminUserId,
   period,
@@ -1033,9 +1257,9 @@ const getTotalReservationForChart = async (
   kpiStatus2: TReservationStatus,
 ) => {
   // Check if both KPI statuses are the same
-  if (kpiStatus1 === kpiStatus2) {
-    throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
-  }
+  // if (kpiStatus1 === kpiStatus2) {
+  //   throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
+  // }
 
   let timeFrame;
 
