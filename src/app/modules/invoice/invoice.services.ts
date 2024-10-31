@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
@@ -775,62 +776,87 @@ const getTotalInvoiceComparisonForChart = async (
   period: TInvoicePeriod,
   kpiStatus1: string,
   kpiStatus2: string,
+  startDate?: Date,
+  endDate?: Date,
 ) => {
-  const today = new Date();
-  let timeFrame;
+  let timeFrame = [];
 
-  // Calculate time frame based on period type
-  if (period === 'monthly') {
-    timeFrame = Array.from({ length: 30 }, (_, i) => {
-      const day = new Date(today);
-      day.setDate(today.getDate() - i);
-      return {
-        period: day.toLocaleDateString('en-US', {
+  if (startDate && endDate) {
+    // Generate each day within the provided date range
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const currentDate = new Date(start);
+
+    while (currentDate <= end) {
+      const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
+
+      timeFrame.push({
+        period: startOfDay.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
         }),
-        startOfDay: new Date(day.setHours(0, 0, 0, 0)),
-        endOfDay: new Date(day.setHours(23, 59, 59, 999)),
-      };
-    }).reverse();
-  } else if (period === 'weekly') {
-    timeFrame = Array.from({ length: 7 }, (_, i) => {
-      const day = new Date(today);
-      day.setDate(today.getDate() - i);
-      return {
-        period: day.toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-        }),
-        startOfDay: new Date(day.setHours(0, 0, 0, 0)),
-        endOfDay: new Date(day.setHours(23, 59, 59, 999)),
-      };
-    }).reverse();
-  } else if (period === 'yearly') {
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1;
-
-    timeFrame = Array.from({ length: 12 }, (_, i) => {
-      const monthOffset = currentMonth - 1 - i;
-      const year = monthOffset < 0 ? currentYear - 1 : currentYear;
-      const month = ((monthOffset + 12) % 12) + 1;
-
-      const startOfDay = new Date(Date.UTC(year, month - 1, 1));
-      const endOfDay = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
-
-      return {
-        period:
-          startOfDay.toLocaleString('en-US', { month: 'short' }) + ` ${year}`,
         startOfDay,
         endOfDay,
-      };
-    }).reverse();
+      });
+
+      // Move to the next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  } else {
+    const today = new Date();
+
+    if (period === 'monthly') {
+      timeFrame = Array.from({ length: 30 }, (_, i) => {
+        const day = new Date(today);
+        day.setDate(today.getDate() - i);
+        return {
+          period: day.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          }),
+          startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+          endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+        };
+      }).reverse();
+    } else if (period === 'weekly') {
+      timeFrame = Array.from({ length: 7 }, (_, i) => {
+        const day = new Date(today);
+        day.setDate(today.getDate() - i);
+        return {
+          period: day.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }),
+          startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+          endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+        };
+      }).reverse();
+    } else if (period === 'yearly') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1;
+
+      timeFrame = Array.from({ length: 12 }, (_, i) => {
+        const monthOffset = currentMonth - 1 - i;
+        const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+        const month = ((monthOffset + 12) % 12) + 1;
+
+        const startOfDay = new Date(Date.UTC(year, month - 1, 1));
+        const endOfDay = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+        return {
+          period:
+            startOfDay.toLocaleString('en-US', { month: 'short' }) + ` ${year}`,
+          startOfDay,
+          endOfDay,
+        };
+      }).reverse();
+    }
   }
 
   const invoices = await Promise.all(
     timeFrame.map(async (time) => {
-      // Fetch counts for each KPI status
       const [totalInvoices, totalPaidInvoices, totalDueInvoices] =
         await Promise.all([
           Invoice.countDocuments({
@@ -846,8 +872,7 @@ const getTotalInvoiceComparisonForChart = async (
           }),
         ]);
 
-      // Map counts based on KPI statuses
-      const data = {
+      return {
         period: time.period,
         [kpiStatus1]:
           kpiStatus1 === 'totalInvoices'
@@ -862,13 +887,13 @@ const getTotalInvoiceComparisonForChart = async (
               ? totalPaidInvoices
               : totalDueInvoices,
       };
-
-      return data;
     }),
   );
 
   return invoices;
 };
+
+export default { getTotalInvoiceComparisonForChart };
 
 export const invoiceServices = {
   addAdditionalProduct,

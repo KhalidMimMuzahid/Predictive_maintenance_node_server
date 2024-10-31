@@ -235,53 +235,59 @@ const getTotalInvoiceSummary: RequestHandler = catchAsync(async (req, res) => {
 
 const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
   async (req, res) => {
-    const auth = req?.headers?.auth as unknown as TAuth;
-    checkUserAccessApi({
-      auth,
-      accessUsers: ['showaAdmin'],
-    });
+    const { period, kpiStatus1, kpiStatus2, startDate, endDate } = req.query;
 
-    const period: TInvoicePeriod = req?.query?.period as TInvoicePeriod;
+    // Check if either date range or period is provided
+    if (
+      (startDate && endDate && period) ||
+      (!startDate && !endDate && !period)
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'You must provide either a date range (startDate and endDate) or a period, but not both.',
+      );
+    }
 
-    const kpiStatus1: string = req?.query.kpiStatus1 as string;
-    const kpiStatus2: string = req?.query.kpiStatus2 as string;
-
-    if (!invoicePeriodTypeArray.includes(period)) {
+    if (period && !invoicePeriodTypeArray.includes(period as TInvoicePeriod)) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
         `Period type must be any of ${invoicePeriodTypeArray.join(', ')}`,
       );
     }
 
-    const allowedKpiStatuses = [
-      'totalInvoices',
-      'totalPaidInvoices',
-      'totalDueInvoices',
-    ];
-
     if (kpiStatus1 === kpiStatus2) {
-      throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'kpiStatus1 and kpiStatus2 cannot be the same.',
+      );
     }
 
-    [kpiStatus1, kpiStatus2].forEach((status) => {
-      if (!allowedKpiStatuses.includes(status)) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          `Status type must be any of ${allowedKpiStatuses.join(', ')}`,
-        );
-      }
-    });
+    const parsedPeriod = period as TInvoicePeriod;
+    const parsedStartDate = startDate
+      ? new Date(startDate as string)
+      : undefined;
+    const parsedEndDate = endDate ? new Date(endDate as string) : undefined;
+
+    if (parsedEndDate && parsedEndDate > new Date()) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'endDate cannot be a future date.',
+      );
+    }
 
     const result = await invoiceServices.getTotalInvoiceComparisonForChart(
-      period,
-      kpiStatus1,
-      kpiStatus2,
+      parsedPeriod,
+      kpiStatus1 as string,
+      kpiStatus2 as string,
+      parsedStartDate,
+      parsedEndDate,
     );
 
+    // Send response with the invoice comparison data
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'Total invoice data retrieved successfully',
+      message: 'Invoice comparison data retrieved successfully',
       data: result,
     });
   },
