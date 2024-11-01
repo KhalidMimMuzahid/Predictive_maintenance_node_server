@@ -4,8 +4,8 @@ import { z } from 'zod';
 export const createAddressValidationSchema = z.object({
   location: z
     .object({
-      latitude: z.number(),
-      longitude: z.number(),
+      latitude: z.string(),
+      longitude: z.string(),
     })
     .optional(),
   googleString: z.string().optional(),
