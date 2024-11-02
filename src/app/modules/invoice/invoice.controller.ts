@@ -237,7 +237,6 @@ const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
   async (req, res) => {
     const { period, kpiStatus1, kpiStatus2, startDate, endDate } = req.query;
 
-    // Check if either date range or period is provided
     if (
       (startDate && endDate && period) ||
       (!startDate && !endDate && !period)
@@ -248,10 +247,11 @@ const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
       );
     }
 
+    // Validate the provided period, if present
     if (period && !invoicePeriodTypeArray.includes(period as TInvoicePeriod)) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        `Period type must be any of ${invoicePeriodTypeArray.join(', ')}`,
+        `Period type must be one of: ${invoicePeriodTypeArray.join(', ')}.`,
       );
     }
 
@@ -262,7 +262,13 @@ const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
       );
     }
 
-    const parsedPeriod = period as TInvoicePeriod;
+    if (!kpiStatus1 || !kpiStatus2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Both kpiStatus1 and kpiStatus2 are required.',
+      );
+    }
+
     const parsedStartDate = startDate
       ? new Date(startDate as string)
       : undefined;
@@ -275,15 +281,14 @@ const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
       );
     }
 
-    const result = await invoiceServices.getTotalInvoiceComparisonForChart(
-      parsedPeriod,
-      kpiStatus1 as string,
-      kpiStatus2 as string,
-      parsedStartDate,
-      parsedEndDate,
-    );
+    const result = await invoiceServices.getTotalInvoiceComparisonForChart({
+      period: period as TInvoicePeriod,
+      kpiStatus1: kpiStatus1 as string,
+      kpiStatus2: kpiStatus2 as string,
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
+    });
 
-    // Send response with the invoice comparison data
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -292,6 +297,34 @@ const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
     });
   },
 );
+
+const addFeedbackByEngineer: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // Check user access
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
+
+  const { ratings, comment } = req.body;
+  const invoiceId: string = req.query.invoiceId as string;
+
+  const result = await invoiceServices.addFeedbackByEngineer({
+    invoiceId,
+    user: auth._id,
+
+    ratings,
+    comment,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Feedback added successfully',
+    data: result,
+  });
+});
 
 export const invoiceController = {
   addAdditionalProducts, //service provider app->rservation->maintenance->details
@@ -303,4 +336,5 @@ export const invoiceController = {
   getTodayTasksSummary, //service provider app->Team->Member Details->User detaisls-tasks
   getTotalInvoiceSummary,
   getTotalInvoiceComparisonForChart,
+  addFeedbackByEngineer,
 };

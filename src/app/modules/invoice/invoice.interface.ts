@@ -126,5 +126,10 @@ export type TInvoice = {
     comment: string;
   };
 
+  feedbackByEngineer?: {
+    ratings: number;
+    comment: string;
+  };
+
   isDeleted: TIsDeleted;
 };

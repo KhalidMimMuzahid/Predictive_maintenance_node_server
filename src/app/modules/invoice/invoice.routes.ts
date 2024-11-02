@@ -38,5 +38,9 @@ router.get(
   '/get-total-invoice-comparison-for-chart',
   invoiceController.getTotalInvoiceComparisonForChart,
 );
+router.post(
+  '/add-feedback-by-emgineer',
+  invoiceController.addFeedbackByEngineer,
+);
 
 export const invoiceRoutes = router;

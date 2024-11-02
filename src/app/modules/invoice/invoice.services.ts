@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import httpStatus from 'http-status';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+
 import AppError from '../../errors/AppError';
 import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
 import { ReservationRequest } from '../reservation/reservation.model';
@@ -772,22 +773,26 @@ const getTotalInvoiceSummary = async () => {
   };
 };
 
-const getTotalInvoiceComparisonForChart = async (
-  period: TInvoicePeriod,
-  kpiStatus1: string,
-  kpiStatus2: string,
-  startDate?: Date,
-  endDate?: Date,
-) => {
+const getTotalInvoiceComparisonForChart = async ({
+  period,
+  kpiStatus1,
+  kpiStatus2,
+  startDate,
+  endDate,
+}: {
+  period?: TInvoicePeriod;
+  kpiStatus1: string;
+  kpiStatus2: string;
+  startDate?: Date;
+  endDate?: Date;
+}) => {
   let timeFrame = [];
 
+  // Generate the timeframe based on the date range or period
   if (startDate && endDate) {
-    // Generate each day within the provided date range
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const currentDate = new Date(start);
+    const currentDate = new Date(startDate);
 
-    while (currentDate <= end) {
+    while (currentDate <= endDate) {
       const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
       const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
 
@@ -800,10 +805,9 @@ const getTotalInvoiceComparisonForChart = async (
         endOfDay,
       });
 
-      // Move to the next day
-      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
     }
-  } else {
+  } else if (period) {
     const today = new Date();
 
     if (period === 'monthly') {
@@ -893,7 +897,41 @@ const getTotalInvoiceComparisonForChart = async (
   return invoices;
 };
 
-export default { getTotalInvoiceComparisonForChart };
+const addFeedbackByEngineer = async ({
+  invoiceId,
+  ratings,
+  comment,
+  user,
+}: {
+  invoiceId: string;
+  ratings?: number;
+  comment?: string;
+  user: Types.ObjectId;
+}) => {
+  const invoice = await Invoice.findById(invoiceId);
+  if (!invoice) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'invoice not found');
+  }
+
+  const engineerExistsInThisTeam =
+    await isEngineerBelongsToThisTeamByReservation({
+      reservationRequest: invoice?.reservationRequest?.toString(),
+      user,
+    });
+  if (!engineerExistsInThisTeam) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'This is engineer has no right to add feedback in this reservation',
+    );
+  }
+
+  invoice.feedbackByEngineer = {
+    ratings: ratings ?? invoice.feedbackByEngineer?.ratings,
+    comment: comment ?? invoice.feedbackByEngineer?.comment,
+  };
+
+  return await invoice.save();
+};
 
 export const invoiceServices = {
   addAdditionalProduct,
@@ -905,4 +943,5 @@ export const invoiceServices = {
   getTodayTasksSummary,
   getTotalInvoiceSummary,
   getTotalInvoiceComparisonForChart,
+  addFeedbackByEngineer,
 };
