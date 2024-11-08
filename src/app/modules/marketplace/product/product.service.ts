@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../../errors/AppError';
 import { TAuth } from '../../../interface/error';
+import { addDays } from '../../../utils/addDays';
 import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
 import PredefinedValue from '../../predefinedValue/predefinedValue.model';
 import Order from '../order/order.model';
@@ -212,6 +213,7 @@ const editProduct = async ({
   }
   return updatedProduct;
 };
+
 const addReview = async ({
   reviewObject,
   user,
@@ -221,19 +223,105 @@ const addReview = async ({
   user: mongoose.Types.ObjectId;
   product: string;
 }) => {
-  const updatedProduct = await Product.findByIdAndUpdate(product, {
-    $push: {
-      'feedback.reviews': {
-        review: reviewObject?.review,
-        rate: reviewObject?.rate,
-        user,
+  const existingReview = await Product.findOne({
+    _id: product,
+    'feedback.reviews.user': user,
+  });
+
+  if (existingReview) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already reviewed this product,You can not review this product again',
+    );
+  }
+
+  const updatedProduct = await Product.findByIdAndUpdate(
+    product,
+    {
+      $push: {
+        'feedback.reviews': {
+          review: reviewObject.review,
+          rate: reviewObject.rate,
+          user,
+        },
       },
     },
-    // 'feedback.reviews': 5,
-  });
+    { new: true },
+  );
+
+  if (!updatedProduct) {
+    throw new Error('Product not found');
+  }
+
+  const totalReviews = updatedProduct.feedback.reviews.length;
+  const totalRating = updatedProduct.feedback.reviews.reduce(
+    (acc, review) => acc + review.rate,
+    0,
+  );
+  const averageRating = totalRating / totalReviews;
+
+  updatedProduct.feedback.rate = averageRating;
+  await updatedProduct.save();
 
   return updatedProduct;
 };
+
+// const addReview = async ({
+//   reviewObject,
+//   user,
+//   product,
+// }: {
+//   reviewObject: TReviewObject;
+//   user: mongoose.Types.ObjectId;
+//   product: string;
+// }) => {
+//   // First, update the review if it already exists for the user
+//   const updatedProductDoc = await Product.findOneAndUpdate(
+//     { _id: product, 'feedback.reviews.user': user },
+//     {
+//       $set: {
+//         'feedback.reviews.$.review': reviewObject.review,
+//         'feedback.reviews.$.rate': reviewObject.rate,
+//       },
+//     },
+//     { new: true },
+//   );
+
+//   // If the user hasn't reviewed yet, add the new review
+//   if (!updatedProductDoc) {
+//     await Product.findByIdAndUpdate(
+//       product,
+//       {
+//         $addToSet: {
+//           'feedback.reviews': {
+//             user,
+//             review: reviewObject.review,
+//             rate: reviewObject.rate,
+//           },
+//         },
+//       },
+//       { new: true },
+//     );
+//   }
+
+//   const productDoc = await Product.findById(product);
+//   if (!productDoc) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+//   }
+
+//   const totalReviews = productDoc.feedback.reviews.length;
+//   const totalRating = productDoc.feedback.reviews.reduce(
+//     (acc, review) => acc + review.rate,
+//     0,
+//   );
+//   const averageRating = totalRating / totalReviews;
+
+//   productDoc.feedback.rate = averageRating;
+//   await productDoc.save();
+
+//   return productDoc;
+// };
+
 const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQueries: any[] = [];
@@ -377,14 +465,12 @@ const getProductByProduct_id = async (productId: string) => {
 const getTopSalesProducts = async () => {
   const today = new Date();
 
-  // Define date range for the last 30 days
   const last30DaysAgo = new Date(today);
   last30DaysAgo.setDate(today.getDate() - 30);
 
   const secondLast30DaysAgo = new Date(last30DaysAgo);
   secondLast30DaysAgo.setDate(last30DaysAgo.getDate() - 30);
 
-  // Aggregation for last 30 days
   const last30DaysResults = await Order.aggregate([
     {
       $match: {
@@ -492,6 +578,117 @@ const getTopSalesProducts = async () => {
   return topProductsWithProgress;
 };
 
+const getTopBrands = async () => {
+  try {
+    const sixtyDaysAgo = addDays(-60);
+
+    const topBrands = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sixtyDaysAgo },
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'product',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      { $unwind: '$product' },
+
+      {
+        $replaceRoot: {
+          newRoot: { $mergeObjects: ['$product', '$$ROOT'] },
+        },
+      },
+
+      // Remove original productInfo array after merging
+      // { $project: { product: 0 } },
+
+      {
+        $group: {
+          _id: '$brand',
+          totalSold: { $sum: '$cost.quantity' },
+
+          brandDetails: {
+            $first: {
+              brandName: '$brand',
+              // brandLogo: { $arrayElemAt: ['$photos.photoUrl', 0] },
+            },
+          },
+        },
+      },
+      {
+        $sort: { totalSold: -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          brandName: '$brandDetails.brandName',
+          // totalSold: 1,
+        },
+      },
+      { $limit: 10 },
+    ]);
+
+    return topBrands;
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to fetch top brands',
+    );
+  }
+};
+
+const getRecommendedProduct = async () => {
+  const orderAggregation = await Order.aggregate([
+    {
+      $group: {
+        _id: '$product',
+        orderCount: { $sum: '$cost.quantity' },
+      },
+    },
+    {
+      $sort: { orderCount: -1 },
+    },
+    {
+      $limit: 200,
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'product',
+      },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $project: {
+        name: '$product.name',
+        photo: { $arrayElemAt: ['$product.photos.photoUrl', 0] },
+        price: '$product.salePrice',
+        rating: '$product.feedback.rate',
+        // orderCount: 1,
+      },
+    },
+    {
+      //$sort: { rating: -1 },
+      $sort: { orderCount: -1 },
+    },
+    {
+      $limit: 5,
+    },
+  ]);
+
+  return orderAggregation;
+};
+
 export const productServices = {
   createProduct,
   editProduct,
@@ -500,7 +697,8 @@ export const productServices = {
   getAllProductsCategoryWise,
   getAllProductsByShopDashboard,
   getAllProductsByShop,
-
   getProductByProduct_id,
   getTopSalesProducts,
+  getTopBrands,
+  getRecommendedProduct,
 };

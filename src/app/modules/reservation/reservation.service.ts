@@ -1251,16 +1251,15 @@ const getChartAnalyzing = async (
   return requests;
 };
 
-const getTotalReservationForChart = async (
-  period: TPeriod,
-  kpiStatus1: TReservationStatus,
-  kpiStatus2: TReservationStatus,
-) => {
-  // Check if both KPI statuses are the same
-  // if (kpiStatus1 === kpiStatus2) {
-  //   throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
-  // }
-
+const getTotalReservationForChart = async ({
+  period,
+  kpiStatus1,
+  kpiStatus2,
+}: {
+  period: TPeriod;
+  kpiStatus1: TReservationStatus;
+  kpiStatus2: TReservationStatus;
+}) => {
   let timeFrame;
 
   if (period === 'monthly') {

@@ -509,7 +509,12 @@ const getRecentSearchForCustomerApp: RequestHandler = catchAsync(
     const combinedData = await postServices.getRecentSearchForCustomerApp({
       searchQuery: searchQuery as string,
       action: action as 'posts' | 'people' | 'maintenance',
+      user: auth._id,
     });
+
+    if (!combinedData || combinedData.length === 0) {
+      throw new AppError(httpStatus.NOT_FOUND, 'No results found');
+    }
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -617,7 +622,11 @@ const getRecentSearchForSuperAdminWeb: RequestHandler = catchAsync(
     const combinedData = await postServices.getRecentSearchForSuperAdminWeb({
       searchQuery: searchQuery as string,
       action: action as 'posts' | 'people' | 'maintenance',
+      user: auth._id,
     });
+    if (!combinedData || combinedData.length === 0) {
+      throw new AppError(httpStatus.NOT_FOUND, 'No results found');
+    }
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -640,11 +649,11 @@ const getTopSellingProductsFromFeed: RequestHandler = catchAsync(
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 30);
 
-    const result = await postServices.getTopSellingProductsFromFeed(
+    const result = await postServices.getTopSellingProductsFromFeed({
       startDate,
       endDate,
       limit,
-    );
+    });
 
     // Send the response
     sendResponse(res, {

@@ -389,7 +389,13 @@ const getAllFaq = async () => {
 
   return faqs;
 };
-const editFaq = async (faqId: string, faqData: Partial<TFaq>) => {
+const editFaq = async ({
+  faqId,
+  faqData,
+}: {
+  faqId: string;
+  faqData: Partial<TFaq>;
+}) => {
   const updatedFaq = await ExtraData.findOneAndUpdate(
     { _id: faqId, type: 'faq' },
     {

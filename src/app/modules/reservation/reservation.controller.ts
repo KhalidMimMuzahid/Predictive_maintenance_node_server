@@ -574,8 +574,18 @@ const getTotalReservationForChart: RequestHandler = catchAsync(
     const kpiStatus2: TReservationStatus = req?.query
       ?.kpiStatus2 as TReservationStatus;
 
+    if (!kpiStatus1 || !kpiStatus2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Both kpiStatus1 and kpiStatus2 are required.',
+      );
+    }
+
     if (kpiStatus1 === kpiStatus2) {
-      throw new Error('kpiStatus1 and kpiStatus2 cannot be the same.');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'kpiStatus1 and kpiStatus2 cannot be the same.',
+      );
     }
 
     [kpiStatus1, kpiStatus2].forEach((status) => {
@@ -594,11 +604,11 @@ const getTotalReservationForChart: RequestHandler = catchAsync(
       );
     }
 
-    const result = await reservationServices.getTotalReservationForChart(
+    const result = await reservationServices.getTotalReservationForChart({
       period,
       kpiStatus1,
       kpiStatus2,
-    );
+    });
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

@@ -258,7 +258,10 @@ const getTotalSalesReport: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid date format');
   }
 
-  const result = await orderServices.getTotalSalesReport(startDate, endDate);
+  const result = await orderServices.getTotalSalesReport({
+    startDate,
+    endDate,
+  });
 
   // Send the response
   sendResponse(res, {
