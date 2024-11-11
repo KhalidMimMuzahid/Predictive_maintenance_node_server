@@ -35,6 +35,7 @@ const inspectionValidationSchema = z.object({
     .optional(),
   inspection: z
     .object({
+      inspectingTime: z.number().nonnegative(),
       serviceFee: z.number().nonnegative(),
       operatorInformation: z
         .object({
@@ -58,11 +59,17 @@ const inspectionValidationSchema = z.object({
           weightOfTheMachine: z.number().nonnegative(),
         })
         .optional(),
-      observation: z.string(),
+      // issues: z.string().optional(),
+      observation: z.string().optional(),
     })
     .optional(),
+});
+
+const inspectionReport = z.object({
+  issues: z.string(),
 });
 export const invoiceValidation = {
   addAdditionalProductValidationSchema,
   inspectionValidationSchema,
+  inspectionReport,
 };

@@ -136,7 +136,7 @@ const InspectionSchema = new Schema<TInspection>({
     required: true,
   },
   inspectingTime: {
-    type: [Number],
+    type: Number,
     required: true,
     validate: {
       validator: function (v: number[]) {
@@ -156,6 +156,10 @@ const InspectionSchema = new Schema<TInspection>({
   },
   machineEnvironment: {
     type: MachineEnvironmentSchema,
+    required: false,
+  },
+  issues: {
+    type: String,
     required: false,
   },
   observation: {

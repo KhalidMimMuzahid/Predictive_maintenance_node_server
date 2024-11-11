@@ -18,6 +18,7 @@ export type TInspecting = {
     }[];
   };
   inspection?: {
+    inspectingTime?: number;
     serviceFee?: number;
     operatorInformation?: {
       heightOfOperator: number; // in CM
@@ -66,7 +67,7 @@ export type TDocument = {
 export type TInspection = {
   isInspecting?: boolean;
   serviceProviderEngineer: Types.ObjectId; // objectId of ServiceProviderEngineer model
-  inspectingTime?: number[]; // time in minutes
+  inspectingTime?: number; // time in minutes
   serviceFee?: number;
   operatorInformation?: {
     heightOfOperator: number; // in CM
@@ -86,6 +87,7 @@ export type TInspection = {
     runningTimePerDay: number; // in hours
     weightOfTheMachine: number; // in KGs
   };
+  issues?: string;
   observation?: string;
 };
 

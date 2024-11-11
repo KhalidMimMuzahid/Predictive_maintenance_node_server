@@ -10,13 +10,17 @@ router.patch(
   validateRequest(invoiceValidation.addAdditionalProductValidationSchema),
   invoiceController.addAdditionalProducts,
 );
+router.patch('/start-inspection', invoiceController.startInspection);
+router.patch(
+  '/inspection-report',
+  validateRequest(invoiceValidation.inspectionReport),
+  invoiceController.inspectionReport,
+);
 router.patch(
   '/inspection',
-
   validateRequest(invoiceValidation.inspectionValidationSchema),
   invoiceController.inspection,
 );
-
 router.get('/get-all-invoices', invoiceController.getAllInvoices);
 router.get('/get-all-invoices-by-user', invoiceController.getAllInvoicesByUser);
 router.get(

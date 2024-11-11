@@ -121,6 +121,28 @@ const inspection = async ({
         'something went wrong, please try again',
       );
     }
+
+    const invoiceData = await Invoice.findOne({
+      reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+    });
+
+    if (invoiceData?.taskStatus !== 'ongoing') {
+      throw new AppError(httpStatus.BAD_REQUEST, 'reservation is not ongoing');
+    } else if (invoiceData?.inspection?.isInspecting !== true) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'first start inspection before adding product',
+      );
+    } else if (
+      invoiceData?.inspection?.isInspecting === true &&
+      invoiceData?.inspection?.serviceProviderEngineer?.toString() !==
+        serviceProviderEngineer?._id?.toString()
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'this reservation has already been inspected by other engineer in your team',
+      );
+    }
     const products = inspectingData?.additionalProducts?.products?.map(
       (product) => {
         return {
@@ -168,14 +190,19 @@ const inspection = async ({
     }
     if (inspectingData?.inspection) {
       updateObject['inspection'] = {
+        issues: invoiceData?.inspection?.issues,
+        isInspecting: false,
+        serviceProviderEngineer:
+          invoiceData?.inspection?.serviceProviderEngineer,
+
         ...inspectingData?.inspection,
-        serviceProviderEngineer: serviceProviderEngineer?._id,
-      };
-    } else {
-      updateObject['inspection'] = {
-        serviceProviderEngineer: serviceProviderEngineer?._id,
       };
     }
+    //  else {
+    //   updateObject['inspection'] = {
+    //     serviceProviderEngineer: serviceProviderEngineer?._id,
+    //   };
+    // }
 
     const updatedInvoice = await Invoice.findOneAndUpdate(
       {
@@ -198,6 +225,172 @@ const inspection = async ({
       //     },
       //   },
       // },
+    );
+
+    if (!updatedInvoice) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+    // const updatedReservationRequest =
+    //   await ReservationRequest.findByIdAndUpdate(reservationRequest, {
+    //     reasonOfReSchedule: rescheduleData?.reasonOfReSchedule,
+    //     $push: { 'schedule.schedules': new Date(rescheduleData.schedule) },
+    //   });
+    // return updatedReservationRequest;
+  } else {
+    // return error
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you are not in the team that has assigned in this reservation',
+    );
+  }
+};
+
+const startInspection = async ({
+  user,
+  reservationRequest,
+}: {
+  user: mongoose.Types.ObjectId;
+  reservationRequest: string;
+}) => {
+  const engineerExistsInThisTeam =
+    await isEngineerBelongsToThisTeamByReservation({
+      reservationRequest,
+      user: user,
+    });
+
+  if (engineerExistsInThisTeam) {
+    const serviceProviderEngineer = await ServiceProviderEngineer.findOne({
+      user,
+    });
+    if (!serviceProviderEngineer?._id) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const invoiceData = await Invoice.findOne({
+      reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+    });
+
+    if (invoiceData?.taskStatus !== 'ongoing') {
+      throw new AppError(httpStatus.BAD_REQUEST, 'reservation is not ongoing');
+    } else if (
+      invoiceData?.inspection?.isInspecting === true &&
+      invoiceData?.inspection?.serviceProviderEngineer?.toString() !==
+        serviceProviderEngineer?._id?.toString()
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'this reservation has already been inspected by other engineer in your team',
+      );
+    } else if (
+      invoiceData?.inspection?.isInspecting === true &&
+      invoiceData?.inspection?.serviceProviderEngineer?.toString() ===
+        serviceProviderEngineer?._id?.toString()
+    ) {
+      return null; // or, 'you have already started inspecting, just keep going';
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateObject: any = {
+      inspection: {
+        serviceProviderEngineer: serviceProviderEngineer?._id,
+        isInspecting: true,
+      },
+    };
+
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+      {
+        reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+        taskStatus: 'ongoing',
+      },
+      updateObject,
+    );
+
+    if (!updatedInvoice) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    return null; // or, 'you have successfully started inspecting';
+
+    // const updatedReservationRequest =
+    //   await ReservationRequest.findByIdAndUpdate(reservationRequest, {
+    //     reasonOfReSchedule: rescheduleData?.reasonOfReSchedule,
+    //     $push: { 'schedule.schedules': new Date(rescheduleData.schedule) },
+    //   });
+    // return updatedReservationRequest;
+  } else {
+    // return error
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you are not in the team that has assigned in this reservation',
+    );
+  }
+};
+
+const inspectionReport = async ({
+  user,
+  reservationRequest,
+  issues,
+}: {
+  user: mongoose.Types.ObjectId;
+  reservationRequest: string;
+  issues: string;
+}) => {
+  const engineerExistsInThisTeam =
+    await isEngineerBelongsToThisTeamByReservation({
+      reservationRequest,
+      user: user,
+    });
+
+  if (engineerExistsInThisTeam) {
+    const serviceProviderEngineer = await ServiceProviderEngineer.findOne({
+      user,
+    });
+    if (!serviceProviderEngineer?._id) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const invoiceData = await Invoice.findOne({
+      reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+    });
+
+    if (invoiceData?.taskStatus !== 'ongoing') {
+      throw new AppError(httpStatus.BAD_REQUEST, 'reservation is not ongoing');
+    } else if (invoiceData?.inspection?.isInspecting !== true) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'first start inspection before adding issues',
+      );
+    } else if (
+      invoiceData?.inspection?.isInspecting === true &&
+      invoiceData?.inspection?.serviceProviderEngineer?.toString() !==
+        serviceProviderEngineer?._id?.toString()
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'this reservation has already been inspected by other engineer in your team',
+      );
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateObject: any = {
+      'inspection.issues': issues,
+    };
+
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+      {
+        reservationRequest: new mongoose.Types.ObjectId(reservationRequest),
+        taskStatus: 'ongoing',
+      },
+      updateObject,
     );
 
     if (!updatedInvoice) {
@@ -759,6 +952,8 @@ const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
 export const invoiceServices = {
   addAdditionalProduct,
   inspection,
+  startInspection,
+  inspectionReport,
   changeStatusToCompleted,
   getAllInvoices,
   getAllInvoicesByUser,

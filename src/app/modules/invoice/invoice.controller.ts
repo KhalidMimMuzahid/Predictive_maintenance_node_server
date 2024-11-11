@@ -78,6 +78,68 @@ const inspection: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const startInspection: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
+
+  const reservationRequest: string = req?.query?.reservationRequest as string;
+
+  if (!reservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequest is required to start inspect reservation',
+    );
+  }
+  const result = await invoiceServices.startInspection({
+    user: auth?._id,
+    reservationRequest,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'inspection has started successfully',
+    data: result,
+  });
+});
+
+const inspectionReport: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
+
+  const reservationRequest: string = req?.query?.reservationRequest as string;
+
+  const issues: string = req?.body?.issues as string;
+  if (!reservationRequest) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'reservationRequest is required to start inspect reservation',
+    );
+  }
+  const result = await invoiceServices.inspectionReport({
+    user: auth?._id,
+    reservationRequest,
+    issues,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'inspection issues has updated successfully',
+    data: result,
+  });
+});
+
 const changeStatusToCompleted: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -215,6 +277,8 @@ const getTodayTasksSummary: RequestHandler = catchAsync(async (req, res) => {
 export const invoiceController = {
   addAdditionalProducts, //service provider app->rservation->maintenance->details
   inspection, //service provider app->rservation->maintenance
+  startInspection,
+  inspectionReport,
   changeStatusToCompleted,
   getAllInvoices, //service provider app->engineer app->Invoices->All invoices
   getAllInvoicesByUser, //service provider app ->engineer app->Invoices->All invoices
