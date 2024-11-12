@@ -237,7 +237,6 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
 
 const getAllReservationsByUser: RequestHandler = catchAsync(
   async (req, res) => {
-    // Extract values from the request
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     const user: string = req?.query?.user as string;
     const resType: TReservationStatus | 'all' = req?.query?.resType as
@@ -257,7 +256,6 @@ const getAllReservationsByUser: RequestHandler = catchAsync(
       accessUsers: 'all',
     });
 
-    // Validate resType
     if (
       !reservationStatusTypeArray.some((each) => each === resType) &&
       resType !== 'all'

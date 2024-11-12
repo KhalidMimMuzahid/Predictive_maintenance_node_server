@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import { users } from '../../../server';
 import AppError from '../../errors/AppError';
@@ -908,10 +909,10 @@ const editUserAddress = async ({
 
 const addNewAddress = async ({
   auth,
-  addresses,
+  address,
 }: {
   auth: TAuth;
-  addresses: { isDeleted?: boolean; address: TAddress }[];
+  address: TAddress;
 }) => {
   const userData = await User.findById(auth?._id?.toString()).select(
     '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
@@ -924,14 +925,14 @@ const addNewAddress = async ({
   // Function to add new addresses
   const addAddresses = (
     existingAddresses: { isDeleted: boolean; address: TAddress }[],
-    newAddresses: { isDeleted?: boolean; address: TAddress }[],
+    newAddress: TAddress,
   ): { isDeleted: boolean; address: TAddress }[] => {
     return [
       ...existingAddresses,
-      ...newAddresses.map((address) => ({
-        isDeleted: address.isDeleted ?? false,
-        address: address.address,
-      })),
+      {
+        isDeleted: false,
+        address: newAddress,
+      },
     ];
   };
 
@@ -943,7 +944,7 @@ const addNewAddress = async ({
       throw new AppError(httpStatus.BAD_REQUEST, 'Showa user not found');
     }
 
-    showaUserData.addresses = addAddresses(showaUserData.addresses, addresses);
+    showaUserData.addresses = addAddresses(showaUserData.addresses, address);
     await showaUserData.save();
   } else if (
     userData.role === 'serviceProviderAdmin' &&
@@ -961,7 +962,7 @@ const addNewAddress = async ({
 
     serviceProviderAdminData.addresses = addAddresses(
       serviceProviderAdminData.addresses,
-      addresses,
+      address,
     );
     await serviceProviderAdminData.save();
   } else if (
@@ -978,7 +979,7 @@ const addNewAddress = async ({
 
     serviceProviderBranchManagerData.addresses = addAddresses(
       serviceProviderBranchManagerData.addresses,
-      addresses,
+      address,
     );
     await serviceProviderBranchManagerData.save();
   } else if (
@@ -997,7 +998,7 @@ const addNewAddress = async ({
 
     serviceProviderEngineerData.addresses = addAddresses(
       serviceProviderEngineerData.addresses,
-      addresses,
+      address,
     );
     await serviceProviderEngineerData.save();
   } else {
@@ -1007,7 +1008,7 @@ const addNewAddress = async ({
     );
   }
 
-  return { success: true };
+  return null;
 };
 
 export const userServices = {

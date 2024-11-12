@@ -5,6 +5,7 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
+import { TAddress } from '../common/common.interface';
 import { userServices } from './user.service';
 
 const signIn: RequestHandler = catchAsync(async (req, res) => {
@@ -241,15 +242,11 @@ const addNewAddress: RequestHandler = catchAsync(async (req, res) => {
     accessUsers: 'all',
   });
 
-  const { addresses } = req.body;
-
-  if (!addresses || !Array.isArray(addresses)) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid address data provided');
-  }
+  const address = req.body as TAddress;
 
   const result = await userServices.addNewAddress({
     auth,
-    addresses,
+    address,
   });
 
   // Send response
