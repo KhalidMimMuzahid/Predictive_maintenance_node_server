@@ -1,7 +1,10 @@
 import express, { Router } from 'express';
 
 import validateRequest from '../../middlewares/validateRequest';
-import { updateAddressValidationSchema } from '../common/common.validation';
+import {
+  createAddressValidationSchema,
+  updateAddressValidationSchema,
+} from '../common/common.validation';
 import { userControllers } from './user.controller';
 import { editUserValidationSchema } from './user.validation';
 import { serviceProviderBranchManagerRoutes } from './usersModule/branchManager/branchManager.routes';
@@ -54,6 +57,12 @@ router.patch(
   '/edit-user-address',
   validateRequest(updateAddressValidationSchema),
   userControllers.editUserAddress,
+);
+
+router.post(
+  '/add-new-address',
+  validateRequest(createAddressValidationSchema),
+  userControllers.addNewAddress,
 );
 
 // End --------------------------------- XXXXX ----------------------------

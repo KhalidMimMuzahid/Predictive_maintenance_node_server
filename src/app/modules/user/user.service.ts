@@ -906,6 +906,110 @@ const editUserAddress = async ({
   return true;
 };
 
+const addNewAddress = async ({
+  auth,
+  addresses,
+}: {
+  auth: TAuth;
+  addresses: { isDeleted?: boolean; address: TAddress }[];
+}) => {
+  const userData = await User.findById(auth?._id?.toString()).select(
+    '_id role showaUser serviceProviderAdmin serviceProviderBranchManager serviceProviderEngineer',
+  );
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
+  }
+
+  // Function to add new addresses
+  const addAddresses = (
+    existingAddresses: { isDeleted: boolean; address: TAddress }[],
+    newAddresses: { isDeleted?: boolean; address: TAddress }[],
+  ): { isDeleted: boolean; address: TAddress }[] => {
+    return [
+      ...existingAddresses,
+      ...newAddresses.map((address) => ({
+        isDeleted: address.isDeleted ?? false,
+        address: address.address,
+      })),
+    ];
+  };
+
+  if (userData.role === 'showaUser' && userData?.showaUser) {
+    const showaUserData = await ShowaUser.findById(
+      userData.showaUser.toString(),
+    );
+    if (!showaUserData) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Showa user not found');
+    }
+
+    showaUserData.addresses = addAddresses(showaUserData.addresses, addresses);
+    await showaUserData.save();
+  } else if (
+    userData.role === 'serviceProviderAdmin' &&
+    userData?.serviceProviderAdmin
+  ) {
+    const serviceProviderAdminData = await ServiceProviderAdmin.findById(
+      userData.serviceProviderAdmin.toString(),
+    );
+    if (!serviceProviderAdminData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Service provider admin not found',
+      );
+    }
+
+    serviceProviderAdminData.addresses = addAddresses(
+      serviceProviderAdminData.addresses,
+      addresses,
+    );
+    await serviceProviderAdminData.save();
+  } else if (
+    userData.role === 'serviceProviderBranchManager' &&
+    userData?.serviceProviderBranchManager
+  ) {
+    const serviceProviderBranchManagerData =
+      await ServiceProviderBranchManager.findById(
+        userData.serviceProviderBranchManager.toString(),
+      );
+    if (!serviceProviderBranchManagerData) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Branch Manager not found');
+    }
+
+    serviceProviderBranchManagerData.addresses = addAddresses(
+      serviceProviderBranchManagerData.addresses,
+      addresses,
+    );
+    await serviceProviderBranchManagerData.save();
+  } else if (
+    userData.role === 'serviceProviderEngineer' &&
+    userData?.serviceProviderEngineer
+  ) {
+    const serviceProviderEngineerData = await ServiceProviderEngineer.findById(
+      userData.serviceProviderEngineer.toString(),
+    );
+    if (!serviceProviderEngineerData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'ServiceProviderEngineer not found',
+      );
+    }
+
+    serviceProviderEngineerData.addresses = addAddresses(
+      serviceProviderEngineerData.addresses,
+      addresses,
+    );
+    await serviceProviderEngineerData.save();
+  } else {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Invalid role for adding new address',
+    );
+  }
+
+  return { success: true };
+};
+
 export const userServices = {
   signIn,
   getUserBy_id,
@@ -917,4 +1021,5 @@ export const userServices = {
   unfollowUser,
   editUserProfile,
   editUserAddress,
+  addNewAddress,
 };

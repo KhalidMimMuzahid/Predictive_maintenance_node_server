@@ -294,7 +294,22 @@ const getRecommendedProduct: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Recommended products fetched successfully',
+    message: 'Recommended products retrieved successfully',
+    data: result,
+  });
+});
+
+const getFlashSaleProducts: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const result = await productServices.getFlashSaleProducts();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Flash sale products retrieved successfully',
     data: result,
   });
 });
@@ -311,4 +326,5 @@ export const productController = {
   getTopSalesProducts,
   getTopBrands,
   getRecommendedProduct,
+  getFlashSaleProducts,
 };

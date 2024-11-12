@@ -237,31 +237,53 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
 
 const getAllReservationsByUser: RequestHandler = catchAsync(
   async (req, res) => {
-    // const { uid } = req.params;
+    // Extract values from the request
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     const user: string = req?.query?.user as string;
+    const resType: TReservationStatus | 'all' = req?.query?.resType as
+      | TReservationStatus
+      | 'all';
 
     if (!user) {
-      //
       throw new AppError(
         httpStatus.BAD_REQUEST,
         `user is required to get the reservations for this user`,
       );
     }
+
+    // Check user access
     checkUserAccessApi({
       auth,
-      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+      accessUsers: 'all',
     });
-    const results = await reservationServices.getAllReservationsByUser(user);
-    // send response
+
+    // Validate resType
+    if (
+      !reservationStatusTypeArray.some((each) => each === resType) &&
+      resType !== 'all'
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `Status type must be one of ${reservationStatusTypeArray.join(
+          ', ',
+        )}, or 'all'`,
+      );
+    }
+
+    const results = await reservationServices.getAllReservationsByUser({
+      user,
+      resType,
+    });
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'reservation request are retrieved successfully',
+      message: 'Reservation requests are retrieved successfully',
       data: results,
     });
   },
 );
+
 const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
   // const { uid } = req.params;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;

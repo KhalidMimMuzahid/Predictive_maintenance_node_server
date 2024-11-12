@@ -214,58 +214,6 @@ const editProduct = async ({
   return updatedProduct;
 };
 
-const addReview = async ({
-  reviewObject,
-  user,
-  product,
-}: {
-  reviewObject: TReviewObject;
-  user: mongoose.Types.ObjectId;
-  product: string;
-}) => {
-  const existingReview = await Product.findOne({
-    _id: product,
-    'feedback.reviews.user': user,
-  });
-
-  if (existingReview) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'You have already reviewed this product,You can not review this product again',
-    );
-  }
-
-  const updatedProduct = await Product.findByIdAndUpdate(
-    product,
-    {
-      $push: {
-        'feedback.reviews': {
-          review: reviewObject.review,
-          rate: reviewObject.rate,
-          user,
-        },
-      },
-    },
-    { new: true },
-  );
-
-  if (!updatedProduct) {
-    throw new Error('Product not found');
-  }
-
-  const totalReviews = updatedProduct.feedback.reviews.length;
-  const totalRating = updatedProduct.feedback.reviews.reduce(
-    (acc, review) => acc + review.rate,
-    0,
-  );
-  const averageRating = totalRating / totalReviews;
-
-  updatedProduct.feedback.rate = averageRating;
-  await updatedProduct.save();
-
-  return updatedProduct;
-};
-
 // const addReview = async ({
 //   reviewObject,
 //   user,
@@ -321,6 +269,68 @@ const addReview = async ({
 
 //   return productDoc;
 // };
+
+const addReview = async ({
+  reviewObject,
+  user,
+  product,
+}: {
+  reviewObject: TReviewObject;
+  user: mongoose.Types.ObjectId;
+  product: string;
+}) => {
+  const existingReview = await Product.findOne({
+    _id: product,
+    'feedback.reviews.user': user,
+  });
+
+  if (existingReview) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already reviewed this product. You cannot review this product again.',
+    );
+  }
+
+  await Product.findByIdAndUpdate(
+    product,
+    {
+      $push: {
+        'feedback.reviews': {
+          review: reviewObject.review,
+          rate: reviewObject.rate,
+          user,
+        },
+      },
+    },
+    { new: true },
+  );
+
+  const updatedProduct = await Product.findById(product);
+
+  if (!updatedProduct) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+  }
+
+  const totalReviews = updatedProduct.feedback.reviews.length;
+  if (totalReviews === 0) {
+    updatedProduct.feedback.rate = 0;
+  } else {
+    const totalRating = updatedProduct.feedback.reviews.reduce(
+      (acc, review) => acc + review.rate,
+      0,
+    );
+    const averageRating = totalRating / totalReviews;
+
+    updatedProduct.feedback.rate = averageRating;
+  }
+
+  // updatedProduct.stockManagement.soldCount =
+  //   updatedProduct.stockManagement.soldCount || 0;
+
+  await updatedProduct.save();
+
+  return updatedProduct;
+};
 
 const getAllProducts = async (filterQuery: Partial<TProductFilter>) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -644,7 +654,7 @@ const getTopBrands = async () => {
 };
 
 const getRecommendedProduct = async () => {
-  const orderAggregation = await Order.aggregate([
+  const recommendedProduct = await Order.aggregate([
     {
       $group: {
         _id: '$product',
@@ -655,7 +665,7 @@ const getRecommendedProduct = async () => {
       $sort: { orderCount: -1 },
     },
     {
-      $limit: 200,
+      $limit: 100, //we are counting here most 100 ordered products
     },
     {
       $lookup: {
@@ -673,20 +683,57 @@ const getRecommendedProduct = async () => {
         name: '$product.name',
         photo: { $arrayElemAt: ['$product.photos.photoUrl', 0] },
         price: '$product.salePrice',
-        rating: '$product.feedback.rate',
-        // orderCount: 1,
+        rate: '$product.feedback.rate',
+        orderCount: 1,
       },
     },
     {
-      //$sort: { rating: -1 },
-      $sort: { orderCount: -1 },
+      $sort: { rate: -1 },
+      //$sort: { orderCount: -1 },
     },
     {
-      $limit: 5,
+      $limit: 10,
     },
   ]);
 
-  return orderAggregation;
+  return recommendedProduct;
+};
+
+const getFlashSaleProducts = async () => {
+  return await Product.aggregate([
+    {
+      $match: {
+        $expr: { $lt: ['$salePrice', '$regularPrice'] },
+      },
+    },
+
+    {
+      $project: {
+        productId: '$_id',
+        name: 1,
+        regularPrice: 1,
+        salePrice: 1,
+        photo: { $arrayElemAt: ['$photos', 0] },
+        rate: '$feedback.rate',
+        soldCount: '$stockManagement.soldCount',
+        discount: {
+          $multiply: [
+            {
+              $divide: [
+                { $subtract: ['$regularPrice', '$salePrice'] },
+                '$regularPrice',
+              ],
+            },
+            100,
+          ],
+        },
+      },
+    },
+    {
+      $sort: { discount: -1 },
+    },
+    { $limit: 10 },
+  ]);
 };
 
 export const productServices = {
@@ -701,4 +748,5 @@ export const productServices = {
   getTopSalesProducts,
   getTopBrands,
   getRecommendedProduct,
+  getFlashSaleProducts,
 };

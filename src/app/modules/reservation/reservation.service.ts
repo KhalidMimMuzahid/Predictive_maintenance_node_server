@@ -478,8 +478,35 @@ const getSignedUrl = async (fileKey: string, fileType: string) => {
   return { url };
 };
 
-const getAllReservationsByUser = async (user: string) => {
-  const reservations = await ReservationRequest.find({ user }).populate([
+// const getAllReservationsByUser = async (user: string) => {
+//   const reservations = await ReservationRequest.find({ user }).populate([
+//     { path: 'machine', options: { strictPopulate: false } },
+//     {
+//       path: 'reservationRequestGroup',
+//       populate: {
+//         path: 'postBiddingProcess.serviceProviderCompany',
+//         options: { strictPopulate: false },
+//       },
+//     },
+//   ]);
+
+//   return reservations;
+// };
+
+const getAllReservationsByUser = async ({
+  user,
+  resType,
+}: {
+  user: string;
+  resType: TReservationStatus | 'all';
+}) => {
+  const query: { user: string; status?: TReservationStatus } = { user };
+
+  if (resType !== 'all') {
+    query.status = resType;
+  }
+
+  const reservations = await ReservationRequest.find(query).populate([
     { path: 'machine', options: { strictPopulate: false } },
     {
       path: 'reservationRequestGroup',
@@ -492,6 +519,7 @@ const getAllReservationsByUser = async (user: string) => {
 
   return reservations;
 };
+
 const getAllReservationsByServiceProviderCompany = async (
   serviceProviderCompany: string,
 ) => {
