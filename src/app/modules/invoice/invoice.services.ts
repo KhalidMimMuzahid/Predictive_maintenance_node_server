@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import httpStatus from 'http-status';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+
 import AppError from '../../errors/AppError';
 import { InvoiceGroup } from '../invoiceGroup/invoiceGroup.model';
+import { ReservationRequest } from '../reservation/reservation.model';
 import { ReservationRequestGroup } from '../reservationGroup/reservationGroup.model';
 import { TeamOfEngineers } from '../teamOfEngineers/teamOfEngineers.model';
 import { User } from '../user/user.model';
@@ -10,6 +13,7 @@ import {
   TAdditionalProduct,
   TAssignedTaskType,
   TInspecting,
+  TInvoicePeriod,
 } from './invoice.interface';
 import { Invoice } from './invoice.model';
 import {
@@ -17,7 +21,6 @@ import {
   isEngineerBelongsToThisTeamByInvoiceGroup,
   isEngineerBelongsToThisTeamByReservation,
 } from './invoice.utils';
-import { ReservationRequest } from '../reservation/reservation.model';
 
 const addAdditionalProduct = async ({
   user,
@@ -883,9 +886,6 @@ const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
-  // console.log("Today's Date (Local):", today.toString());
-  // console.log(endOfToday.toString());
-
   const todayTasksSummary = await InvoiceGroup.aggregate([
     {
       $match: {
@@ -954,6 +954,183 @@ const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
   };
 };
 
+const getTotalInvoiceSummary = async () => {
+  const totalInvoices = await Invoice.countDocuments();
+
+  const totalPaidInvoices = await Invoice.countDocuments({
+    'additionalProducts.isPaid': true,
+  });
+
+  const totalDueInvoices = await Invoice.countDocuments({
+    'additionalProducts.isPaid': false,
+  });
+  return {
+    totalInvoices,
+    totalPaidInvoices,
+    totalDueInvoices,
+  };
+};
+
+const getTotalInvoiceComparisonForChart = async ({
+  period,
+  kpiStatus1,
+  kpiStatus2,
+  startDate,
+  endDate,
+}: {
+  period?: TInvoicePeriod;
+  kpiStatus1: string;
+  kpiStatus2: string;
+  startDate?: Date;
+  endDate?: Date;
+}) => {
+  let timeFrame = [];
+
+  // Generate the timeframe based on the date range or period
+  if (startDate && endDate) {
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
+
+      timeFrame.push({
+        period: startOfDay.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+        startOfDay,
+        endOfDay,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+    }
+  } else if (period) {
+    const today = new Date();
+
+    if (period === 'monthly') {
+      timeFrame = Array.from({ length: 30 }, (_, i) => {
+        const day = new Date(today);
+        day.setDate(today.getDate() - i);
+        return {
+          period: day.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          }),
+          startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+          endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+        };
+      }).reverse();
+    } else if (period === 'weekly') {
+      timeFrame = Array.from({ length: 7 }, (_, i) => {
+        const day = new Date(today);
+        day.setDate(today.getDate() - i);
+        return {
+          period: day.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }),
+          startOfDay: new Date(day.setHours(0, 0, 0, 0)),
+          endOfDay: new Date(day.setHours(23, 59, 59, 999)),
+        };
+      }).reverse();
+    } else if (period === 'yearly') {
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1;
+
+      timeFrame = Array.from({ length: 12 }, (_, i) => {
+        const monthOffset = currentMonth - 1 - i;
+        const year = monthOffset < 0 ? currentYear - 1 : currentYear;
+        const month = ((monthOffset + 12) % 12) + 1;
+
+        const startOfDay = new Date(Date.UTC(year, month - 1, 1));
+        const endOfDay = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+        return {
+          period:
+            startOfDay.toLocaleString('en-US', { month: 'short' }) + ` ${year}`,
+          startOfDay,
+          endOfDay,
+        };
+      }).reverse();
+    }
+  }
+
+  const invoices = await Promise.all(
+    timeFrame.map(async (time) => {
+      const [totalInvoices, totalPaidInvoices, totalDueInvoices] =
+        await Promise.all([
+          Invoice.countDocuments({
+            createdAt: { $gte: time.startOfDay, $lte: time.endOfDay },
+          }),
+          Invoice.countDocuments({
+            createdAt: { $gte: time.startOfDay, $lte: time.endOfDay },
+            'additionalProducts.isPaid': true,
+          }),
+          Invoice.countDocuments({
+            createdAt: { $gte: time.startOfDay, $lte: time.endOfDay },
+            'additionalProducts.isPaid': false,
+          }),
+        ]);
+
+      return {
+        period: time.period,
+        [kpiStatus1]:
+          kpiStatus1 === 'totalInvoices'
+            ? totalInvoices
+            : kpiStatus1 === 'totalPaidInvoices'
+              ? totalPaidInvoices
+              : totalDueInvoices,
+        [kpiStatus2]:
+          kpiStatus2 === 'totalInvoices'
+            ? totalInvoices
+            : kpiStatus2 === 'totalPaidInvoices'
+              ? totalPaidInvoices
+              : totalDueInvoices,
+      };
+    }),
+  );
+
+  return invoices;
+};
+
+const addFeedbackByEngineer = async ({
+  invoiceId,
+  ratings,
+  comment,
+  user,
+}: {
+  invoiceId: string;
+  ratings?: number;
+  comment?: string;
+  user: Types.ObjectId;
+}) => {
+  const invoice = await Invoice.findById(invoiceId);
+  if (!invoice) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'invoice not found');
+  }
+
+  const engineerExistsInThisTeam =
+    await isEngineerBelongsToThisTeamByReservation({
+      reservationRequest: invoice?.reservationRequest?.toString(),
+      user,
+    });
+  if (!engineerExistsInThisTeam) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'This is engineer has no right to add feedback in this reservation',
+    );
+  }
+
+  invoice.feedbackByEngineer = {
+    ratings: ratings ?? invoice.feedbackByEngineer?.ratings,
+    comment: comment ?? invoice.feedbackByEngineer?.comment,
+  };
+
+  return await invoice.save();
+};
+
 export const invoiceServices = {
   addAdditionalProduct,
   inspection,
@@ -964,4 +1141,7 @@ export const invoiceServices = {
   getAllInvoicesByUser,
   getAllAssignedTasksByEngineer,
   getTodayTasksSummary,
+  getTotalInvoiceSummary,
+  getTotalInvoiceComparisonForChart,
+  addFeedbackByEngineer,
 };

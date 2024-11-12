@@ -36,6 +36,8 @@ router.get(
   productController.getProductByProduct_id,
 );
 router.get('/get-top-sales-product', productController.getTopSalesProducts);
+router.get('/get-top-brands', productController.getTopBrands);
+router.get('/get-recommended-product', productController.getRecommendedProduct);
+router.get('/get-flash-sale-products', productController.getFlashSaleProducts);
 
 export const productRoutes = router;
-//

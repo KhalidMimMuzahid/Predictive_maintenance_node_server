@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import AppError from '../../../errors/AppError';
@@ -1085,12 +1086,17 @@ const getAllPostsByUser = async ({
 const getRecentSearchForCustomerApp = async ({
   searchQuery,
   action,
+  user,
 }: {
   searchQuery: string;
   action: TSearchType;
+  user: Types.ObjectId;
 }) => {
   if (searchQuery.length < 2) {
-    throw new Error('Search query must contain at least 2 characters');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Search query must contain at least 2 characters',
+    );
   }
 
   let result = [];
@@ -1259,6 +1265,268 @@ const getRecentSearchForCustomerApp = async ({
       ]);
       break;
 
+    case 'people':
+      result = await User.aggregate([
+        {
+          $lookup: {
+            from: 'showausers',
+            localField: 'showaUser',
+            foreignField: '_id',
+            as: 'showaUser',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceprovideradmins',
+            localField: 'serviceProviderAdmin',
+            foreignField: '_id',
+            as: 'serviceProviderAdmin',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceproviderbranchmanagers',
+            localField: 'serviceProviderBranchManager',
+            foreignField: '_id',
+            as: 'serviceProviderBranchManager',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceproviderengineers',
+            localField: 'serviceProviderEngineer',
+            foreignField: '_id',
+            as: 'serviceProviderEngineer',
+          },
+        },
+        {
+          $unwind: { path: '$showaUser', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $unwind: {
+            path: '$serviceProviderAdmin',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$serviceProviderBranchManager',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$serviceProviderEngineer',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $match: {
+            $or: [
+              {
+                'showaUser.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'showaUser.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderAdmin.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderAdmin.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderBranchManager.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderBranchManager.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderEngineer.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderEngineer.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            role: 1,
+            status: 1,
+            bio: 1,
+            website: 1,
+            fullName: {
+              firstName: {
+                $cond: {
+                  if: { $eq: ['$role', 'showaUser'] },
+                  then: '$showaUser.name.firstName',
+                  else: {
+                    $cond: {
+                      if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                      then: '$serviceProviderAdmin.name.firstName',
+                      else: {
+                        $cond: {
+                          if: {
+                            $eq: ['$role', 'serviceProviderBranchManager'],
+                          },
+                          then: '$serviceProviderBranchManager.name.firstName',
+                          else: {
+                            $cond: {
+                              if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                              then: '$serviceProviderEngineer.name.firstName',
+                              else: null,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              lastName: {
+                $cond: {
+                  if: { $eq: ['$role', 'showaUser'] },
+                  then: '$showaUser.name.lastName',
+                  else: {
+                    $cond: {
+                      if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                      then: '$serviceProviderAdmin.name.lastName',
+                      else: {
+                        $cond: {
+                          if: {
+                            $eq: ['$role', 'serviceProviderBranchManager'],
+                          },
+                          then: '$serviceProviderBranchManager.name.lastName',
+                          else: {
+                            $cond: {
+                              if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                              then: '$serviceProviderEngineer.name.lastName',
+                              else: null,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            photoUrl: {
+              $cond: {
+                if: { $eq: ['$role', 'showaUser'] },
+                then: '$showaUser.photoUrl',
+                else: {
+                  $cond: {
+                    if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                    then: '$serviceProviderAdmin.photoUrl',
+                    else: {
+                      $cond: {
+                        if: { $eq: ['$role', 'serviceProviderBranchManager'] },
+                        then: '$serviceProviderBranchManager.photoUrl',
+                        else: {
+                          $cond: {
+                            if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                            then: '$serviceProviderEngineer.photoUrl',
+                            else: null,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            coverPhotoUrl: {
+              $cond: {
+                if: { $eq: ['$role', 'showaUser'] },
+                then: '$showaUser.coverPhotoUrl',
+                else: {
+                  $cond: {
+                    if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                    then: '$serviceProviderAdmin.coverPhotoUrl',
+                    else: {
+                      $cond: {
+                        if: { $eq: ['$role', 'serviceProviderBranchManager'] },
+                        then: '$serviceProviderBranchManager.coverPhotoUrl',
+                        else: {
+                          $cond: {
+                            if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                            then: '$serviceProviderEngineer.coverPhotoUrl',
+                            else: null,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            addresses: {
+              $cond: {
+                if: { $eq: ['$role', 'showaUser'] },
+                then: '$showaUser.addresses',
+                else: {
+                  $cond: {
+                    if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                    then: '$serviceProviderAdmin.addresses',
+                    else: {
+                      $cond: {
+                        if: { $eq: ['$role', 'serviceProviderBranchManager'] },
+                        then: '$serviceProviderBranchManager.addresses',
+                        else: {
+                          $cond: {
+                            if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                            then: '$serviceProviderEngineer.addresses',
+                            else: null,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            isFollowing: {
+              $cond: {
+                if: { $in: [user, { $ifNull: ['$followings', []] }] },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+      ]);
+
+      break;
+
+      return result;
+
     case 'maintenance':
       result = await ServiceProviderCompany.find({
         companyName: { $regex: searchQuery, $options: 'i' },
@@ -1275,7 +1543,7 @@ const getRecentSearchForCustomerApp = async ({
       break;
 
     default:
-      throw new Error('Invalid search action');
+      throw new AppError(httpStatus.BAD_REQUEST, 'Invalid search action');
   }
 
   return result;
@@ -1335,9 +1603,11 @@ const hidePost = async ({ postId }: { postId: string; auth: TAuth }) => {
 const getRecentSearchForSuperAdminWeb = async ({
   searchQuery,
   action,
+  user,
 }: {
   searchQuery: string;
   action: TSearchType;
+  user: Types.ObjectId;
 }) => {
   if (searchQuery.length < 2) {
     throw new Error('Search query must contain at least 2 characters');
@@ -1509,6 +1779,268 @@ const getRecentSearchForSuperAdminWeb = async ({
       ]);
       break;
 
+    case 'people':
+      result = await User.aggregate([
+        {
+          $lookup: {
+            from: 'showausers',
+            localField: 'showaUser',
+            foreignField: '_id',
+            as: 'showaUser',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceprovideradmins',
+            localField: 'serviceProviderAdmin',
+            foreignField: '_id',
+            as: 'serviceProviderAdmin',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceproviderbranchmanagers',
+            localField: 'serviceProviderBranchManager',
+            foreignField: '_id',
+            as: 'serviceProviderBranchManager',
+          },
+        },
+        {
+          $lookup: {
+            from: 'serviceproviderengineers',
+            localField: 'serviceProviderEngineer',
+            foreignField: '_id',
+            as: 'serviceProviderEngineer',
+          },
+        },
+        {
+          $unwind: { path: '$showaUser', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $unwind: {
+            path: '$serviceProviderAdmin',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$serviceProviderBranchManager',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$serviceProviderEngineer',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $match: {
+            $or: [
+              {
+                'showaUser.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'showaUser.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderAdmin.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderAdmin.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderBranchManager.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderBranchManager.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderEngineer.name.firstName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+              {
+                'serviceProviderEngineer.name.lastName': {
+                  $regex: searchQuery,
+                  $options: 'i',
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            role: 1,
+            status: 1,
+            bio: 1,
+            website: 1,
+            fullName: {
+              firstName: {
+                $cond: {
+                  if: { $eq: ['$role', 'showaUser'] },
+                  then: '$showaUser.name.firstName',
+                  else: {
+                    $cond: {
+                      if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                      then: '$serviceProviderAdmin.name.firstName',
+                      else: {
+                        $cond: {
+                          if: {
+                            $eq: ['$role', 'serviceProviderBranchManager'],
+                          },
+                          then: '$serviceProviderBranchManager.name.firstName',
+                          else: {
+                            $cond: {
+                              if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                              then: '$serviceProviderEngineer.name.firstName',
+                              else: null,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              lastName: {
+                $cond: {
+                  if: { $eq: ['$role', 'showaUser'] },
+                  then: '$showaUser.name.lastName',
+                  else: {
+                    $cond: {
+                      if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                      then: '$serviceProviderAdmin.name.lastName',
+                      else: {
+                        $cond: {
+                          if: {
+                            $eq: ['$role', 'serviceProviderBranchManager'],
+                          },
+                          then: '$serviceProviderBranchManager.name.lastName',
+                          else: {
+                            $cond: {
+                              if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                              then: '$serviceProviderEngineer.name.lastName',
+                              else: null,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            photoUrl: {
+              $cond: {
+                if: { $eq: ['$role', 'showaUser'] },
+                then: '$showaUser.photoUrl',
+                else: {
+                  $cond: {
+                    if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                    then: '$serviceProviderAdmin.photoUrl',
+                    else: {
+                      $cond: {
+                        if: { $eq: ['$role', 'serviceProviderBranchManager'] },
+                        then: '$serviceProviderBranchManager.photoUrl',
+                        else: {
+                          $cond: {
+                            if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                            then: '$serviceProviderEngineer.photoUrl',
+                            else: null,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            coverPhotoUrl: {
+              $cond: {
+                if: { $eq: ['$role', 'showaUser'] },
+                then: '$showaUser.coverPhotoUrl',
+                else: {
+                  $cond: {
+                    if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                    then: '$serviceProviderAdmin.coverPhotoUrl',
+                    else: {
+                      $cond: {
+                        if: { $eq: ['$role', 'serviceProviderBranchManager'] },
+                        then: '$serviceProviderBranchManager.coverPhotoUrl',
+                        else: {
+                          $cond: {
+                            if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                            then: '$serviceProviderEngineer.coverPhotoUrl',
+                            else: null,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            addresses: {
+              $cond: {
+                if: { $eq: ['$role', 'showaUser'] },
+                then: '$showaUser.addresses',
+                else: {
+                  $cond: {
+                    if: { $eq: ['$role', 'serviceProviderAdmin'] },
+                    then: '$serviceProviderAdmin.addresses',
+                    else: {
+                      $cond: {
+                        if: { $eq: ['$role', 'serviceProviderBranchManager'] },
+                        then: '$serviceProviderBranchManager.addresses',
+                        else: {
+                          $cond: {
+                            if: { $eq: ['$role', 'serviceProviderEngineer'] },
+                            then: '$serviceProviderEngineer.addresses',
+                            else: null,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            isFollowing: {
+              $cond: {
+                if: { $in: [user, { $ifNull: ['$followings', []] }] },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+      ]);
+
+      break;
+
+      return result;
+
     case 'maintenance':
       result = await ServiceProviderCompany.find({
         companyName: { $regex: searchQuery, $options: 'i' },
@@ -1531,69 +2063,15 @@ const getRecentSearchForSuperAdminWeb = async ({
   return result;
 };
 
-// const getTopSellingProducts = async (
-//   startDate: Date,
-//   endDate: Date,
-//   limit: number = 10,
-// ) => {
-//   const topSellingProducts = await Order.aggregate([
-//     {
-//       $match: {
-//         createdAt: { $gte: startDate, $lte: endDate },
-//         'paidStatus.isPaid': true, // Only include paid orders
-//       },
-//     },
-//     {
-//       $unwind: '$product', // Unwind to process each product in the order
-//     },
-//     {
-//       $group: {
-//         _id: '$product', // Group by product ID
-//         // totalQuantity: { $sum: '$cost.quantity' }, // Sum the quantities sold
-//         // totalRevenue: { $sum: '$cost.totalAmount' }, // Sum total revenue for each product
-//       },
-//     },
-//     {
-//       $lookup: {
-//         from: 'products', // Reference the products collection
-//         localField: '_id',
-//         foreignField: '_id',
-//         as: 'productDetails',
-//       },
-//     },
-//     {
-//       $unwind: '$productDetails', // Unwind to get product details
-//     },
-//     {
-//       $project: {
-//         _id: 1,
-//         // totalQuantity: 1,
-//         // totalRevenue: 1,
-//         'productDetails.name': 1,
-//         'productDetails.regularPrice': 1,
-//         'productDetails.salePrice': 1,
-//         'productDetails.stockManagement.availableStock': 1,
-//         'productDetails.photos': {
-//           $arrayElemAt: ['$productDetails.photos', 0],
-//         },
-//       },
-//     },
-//     {
-//       $sort: { totalQuantity: -1 }, // Sort by total quantity sold in descending order
-//     },
-//     {
-//       $limit: limit, // Apply the dynamic limit
-//     },
-//   ]);
-
-//   return topSellingProducts;
-// };
-
-const getTopSellingProductsFromFeed = async (
-  startDate: Date,
-  endDate: Date,
-  limit: number = 10,
-) => {
+const getTopSellingProductsFromFeed = async ({
+  startDate,
+  endDate,
+  limit = 10,
+}: {
+  startDate: Date;
+  endDate: Date;
+  limit?: number;
+}) => {
   const topSellingProducts = await Order.aggregate([
     {
       $match: {

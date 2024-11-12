@@ -91,6 +91,8 @@ export type TInspection = {
   observation?: string;
 };
 
+export type TInvoicePeriod = 'weekly' | 'monthly' | 'yearly';
+
 export type TInvoiceStatus = 'ongoing' | 'completed' | 'canceled'; // last three status of reservationRequest Model status, you can see the reservationRequest Model
 export type TAssignedTaskType =
   | 'all'
@@ -122,6 +124,11 @@ export type TInvoice = {
 
   // we nee feedbackBy engineer
   feedbackByUser?: {
+    ratings: number;
+    comment: string;
+  };
+
+  feedbackByEngineer?: {
     ratings: number;
     comment: string;
   };

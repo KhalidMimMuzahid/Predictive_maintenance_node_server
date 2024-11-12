@@ -67,8 +67,13 @@ export type TCoupon = {
   subscription: Types.ObjectId; // _id of subscription model
   expireIn: Date;
 };
+export type TFaq = {
+  title: string;
+  type: 'app' | 'service' | 'security';
+  answer: string;
+};
 export type TExtraData = {
-  type: 'deleteUser' | 'feedback' | 'inviteMember' | 'coupon' | 'more';
+  type: 'deleteUser' | 'feedback' | 'inviteMember' | 'coupon' | 'faq' | 'more';
   deleteUser?: TDeleteUser;
   //   more?: {
   //     //
@@ -76,4 +81,5 @@ export type TExtraData = {
   feedback?: TFeedback;
   inviteMember?: TInviteMember;
   coupon?: TCoupon;
+  faq?: TFaq;
 };

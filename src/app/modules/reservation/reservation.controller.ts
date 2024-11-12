@@ -237,31 +237,51 @@ const uploadRequestImage: RequestHandler = catchAsync(async (req, res) => {
 
 const getAllReservationsByUser: RequestHandler = catchAsync(
   async (req, res) => {
-    // const { uid } = req.params;
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     const user: string = req?.query?.user as string;
+    const resType: TReservationStatus | 'all' = req?.query?.resType as
+      | TReservationStatus
+      | 'all';
 
     if (!user) {
-      //
       throw new AppError(
         httpStatus.BAD_REQUEST,
         `user is required to get the reservations for this user`,
       );
     }
+
+    // Check user access
     checkUserAccessApi({
       auth,
-      accessUsers: ['showaAdmin', 'showaSubAdmin'],
+      accessUsers: 'all',
     });
-    const results = await reservationServices.getAllReservationsByUser(user);
-    // send response
+
+    if (
+      !reservationStatusTypeArray.some((each) => each === resType) &&
+      resType !== 'all'
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `Status type must be one of ${reservationStatusTypeArray.join(
+          ', ',
+        )}, or 'all'`,
+      );
+    }
+
+    const results = await reservationServices.getAllReservationsByUser({
+      user,
+      resType,
+    });
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'reservation request are retrieved successfully',
+      message: 'Reservation requests are retrieved successfully',
       data: results,
     });
   },
 );
+
 const getAllReservationsCount: RequestHandler = catchAsync(async (req, res) => {
   // const { uid } = req.params;
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -574,6 +594,20 @@ const getTotalReservationForChart: RequestHandler = catchAsync(
     const kpiStatus2: TReservationStatus = req?.query
       ?.kpiStatus2 as TReservationStatus;
 
+    if (!kpiStatus1 || !kpiStatus2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Both kpiStatus1 and kpiStatus2 are required.',
+      );
+    }
+
+    if (kpiStatus1 === kpiStatus2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'kpiStatus1 and kpiStatus2 cannot be the same.',
+      );
+    }
+
     [kpiStatus1, kpiStatus2].forEach((status) => {
       if (!reservationStatusTypeArray.some((each) => each === status)) {
         throw new AppError(
@@ -590,11 +624,11 @@ const getTotalReservationForChart: RequestHandler = catchAsync(
       );
     }
 
-    const result = await reservationServices.getTotalReservationForChart(
+    const result = await reservationServices.getTotalReservationForChart({
       period,
       kpiStatus1,
       kpiStatus2,
-    );
+    });
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

@@ -6,7 +6,7 @@ import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
 import sendResponse from '../../utils/sendResponse';
-import { TFeedback, TInviteMember } from './extraData.interface';
+import { TFaq, TFeedback, TInviteMember } from './extraData.interface';
 import { extraDataServices } from './extraData.service';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
@@ -251,6 +251,120 @@ const uploadPhoto: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const createFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const { title, type, answer } = req.body as TFaq;
+
+  // Validate required fields
+  if (!title || !type || !answer) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Title, type, and answer are required',
+    );
+  }
+
+  const allowedTypes = ['app', 'service', 'security'];
+  if (!allowedTypes.includes(type)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `FAQ type must be one of the following: ${allowedTypes.join(', ')}`,
+    );
+  }
+
+  const result = await extraDataServices.createFaq({
+    title,
+    type,
+    answer,
+  });
+
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED, // Use 201 for created resources
+    success: true,
+    message: 'FAQ has been created successfully',
+    data: result,
+  });
+});
+
+const getAllFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const result = await extraDataServices.getAllFaq();
+
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'FAQs retrieved successfully',
+    data: result,
+  });
+});
+
+const editFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const faqId: string = req?.query?.faqId as string;
+  const { title, type, answer } = req.body as TFaq;
+
+  if (!faqId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'FAQ id is required');
+  }
+
+  if (!title || !type || !answer) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Title, FAQ type, and answer are required',
+    );
+  }
+
+  const allowedTypes = ['app', 'service', 'security'];
+  if (!allowedTypes.includes(type)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `FAQ type must be one of the following: ${allowedTypes.join(', ')}`,
+    );
+  }
+
+  const faqData: Partial<TFaq> = { title, type, answer };
+
+  const result = await extraDataServices.editFaq({
+    faqId,
+    faqData,
+  });
+
+  // Send the response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'FAQ has been updated successfully',
+    data: result,
+  });
+});
+
+const deleteFaq: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const faqId: string = req.query.faqId as string;
+
+  if (!faqId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'FAQ id is required');
+  }
+
+  const deletedFaq = await extraDataServices.deleteFaq(faqId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'FAQ has been deleted successfully',
+    data: deletedFaq,
+  });
+});
+
 export const extraDataController = {
   deleteMyAccount,
   addFeedback,
@@ -262,4 +376,8 @@ export const extraDataController = {
   reviewFeedback,
   sendIotDataAiServer,
   uploadPhoto,
+  createFaq,
+  getAllFaq,
+  editFaq,
+  deleteFaq,
 };

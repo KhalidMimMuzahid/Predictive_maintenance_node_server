@@ -5,11 +5,14 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
-import { assignedTaskTypeArray } from './invoice.const';
+
+//import { TPeriod } from '../reservation/reservation.interface';
+import { assignedTaskTypeArray, invoicePeriodTypeArray } from './invoice.const';
 import {
   TAdditionalProduct,
   TAssignedTaskType,
   TInspecting,
+  TInvoicePeriod,
 } from './invoice.interface';
 import { invoiceServices } from './invoice.services';
 
@@ -274,6 +277,117 @@ const getTodayTasksSummary: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalInvoiceSummary: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await invoiceServices.getTotalInvoiceSummary();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Total invoice summary retrieved successfully',
+    data: result,
+  });
+});
+
+const getTotalInvoiceComparisonForChart: RequestHandler = catchAsync(
+  async (req, res) => {
+    const { period, kpiStatus1, kpiStatus2, startDate, endDate } = req.query;
+
+    if (
+      (startDate && endDate && period) ||
+      (!startDate && !endDate && !period)
+    ) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'You must provide either a date range (startDate and endDate) or a period, but not both.',
+      );
+    }
+
+    // Validate the provided period, if present
+    if (period && !invoicePeriodTypeArray.includes(period as TInvoicePeriod)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `Period type must be one of: ${invoicePeriodTypeArray.join(', ')}.`,
+      );
+    }
+
+    if (kpiStatus1 === kpiStatus2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'kpiStatus1 and kpiStatus2 cannot be the same.',
+      );
+    }
+
+    if (!kpiStatus1 || !kpiStatus2) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Both kpiStatus1 and kpiStatus2 are required.',
+      );
+    }
+
+    const parsedStartDate = startDate
+      ? new Date(startDate as string)
+      : undefined;
+    const parsedEndDate = endDate ? new Date(endDate as string) : undefined;
+
+    if (parsedEndDate && parsedEndDate > new Date()) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'endDate cannot be a future date.',
+      );
+    }
+
+    const result = await invoiceServices.getTotalInvoiceComparisonForChart({
+      period: period as TInvoicePeriod,
+      kpiStatus1: kpiStatus1 as string,
+      kpiStatus2: kpiStatus2 as string,
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
+    });
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Invoice comparison data retrieved successfully',
+      data: result,
+    });
+  },
+);
+
+const addFeedbackByEngineer: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // Check user access
+  checkUserAccessApi({
+    auth,
+    accessUsers: ['serviceProviderEngineer'],
+  });
+
+  const { ratings, comment } = req.body;
+  const invoiceId: string = req.query.invoiceId as string;
+
+  const result = await invoiceServices.addFeedbackByEngineer({
+    invoiceId,
+    user: auth._id,
+
+    ratings,
+    comment,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Feedback added successfully',
+    data: result,
+  });
+});
+
 export const invoiceController = {
   addAdditionalProducts, //service provider app->rservation->maintenance->details
   inspection, //service provider app->rservation->maintenance
@@ -284,4 +398,7 @@ export const invoiceController = {
   getAllInvoicesByUser, //service provider app ->engineer app->Invoices->All invoices
   getAllAssignedTasksByEngineer, //service provider app->rservation->maintenance->assigned task
   getTodayTasksSummary, //service provider app->Team->Member Details->User detaisls-tasks
+  getTotalInvoiceSummary,
+  getTotalInvoiceComparisonForChart,
+  addFeedbackByEngineer,
 };

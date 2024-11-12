@@ -1,6 +1,8 @@
 import express, { Router } from 'express';
 
+import validateRequest from '../../middlewares/validateRequest';
 import { walletControllers } from './wallet.controller';
+import { WalletValidationSchema } from './wallet.validation';
 
 const router: Router = express.Router();
 
@@ -15,5 +17,10 @@ router.get('/get-my-mb-transaction', walletControllers.getMyMBTransaction);
 router.get('/get-recent-mb-transfer', walletControllers.getRecentMBTransfer);
 router.post('/add-card', walletControllers.addCardToMyWallet);
 router.delete('/delete-card', walletControllers.deleteCardFromMyWallet);
+router.patch(
+  '/edit-wallet',
+  validateRequest(WalletValidationSchema),
+  walletControllers.editWallet,
+);
 
 export const walletRoutes = router;

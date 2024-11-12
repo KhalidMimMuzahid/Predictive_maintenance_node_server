@@ -183,6 +183,30 @@ const deleteCardFromMyWallet: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const editWallet: RequestHandler = catchAsync(async (req, res) => {
+  const auth = req.headers.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const walletId: string = req?.query?.walletId as string;
+  const { stripeCustomerId } = req.body;
+
+  const updateData = {
+    ...(stripeCustomerId && { stripeCustomerId }),
+  };
+
+  const results = await walletServices.editWallet({
+    walletId: new Types.ObjectId(walletId),
+    updateData,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Wallet updated successfully',
+    data: results,
+  });
+});
+
 export const walletControllers = {
   addTransfer,
   fetchCustomerCards,
@@ -195,4 +219,5 @@ export const walletControllers = {
   getRecentMBTransfer,
   addCardToMyWallet, //(Maintenance Service Provider)
   deleteCardFromMyWallet, //(Maintenance Service Provider)
+  editWallet,
 };

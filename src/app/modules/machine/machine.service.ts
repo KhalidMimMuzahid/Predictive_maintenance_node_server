@@ -14,11 +14,11 @@ import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurc
 import { checkMachineData } from './machine.utils';
 
 import { Request } from 'express';
-import { TAddress } from '../common/common.interface';
 import { timeDifference } from '../../utils/timeDifference';
 import { AI } from '../ai/ai.model';
-import { ReservationRequest } from '../reservation/reservation.model';
 import { aiServices } from '../ai/ai.service';
+import { TAddress } from '../common/common.interface';
+import { ReservationRequest } from '../reservation/reservation.model';
 // implement usages of purchased subscription  ; only for machine
 const addNonConnectedMachineInToDB = async ({
   subscriptionPurchased,
@@ -1347,10 +1347,13 @@ const machinePerformanceModelWise = async () => {
   return machineModelNamePerformanceArray;
 };
 
-const editMachine = async (
-  machineId: Types.ObjectId,
-  updatedData: Partial<TMachine>,
-) => {
+const editMachine = async ({
+  machineId,
+  updatedData,
+}: {
+  machineId: Types.ObjectId;
+  updatedData: Partial<TMachine>;
+}) => {
   const editableFields = [
     'name',
     'brand',

@@ -445,10 +445,15 @@ const editMachine: RequestHandler = catchAsync(async (req, res) => {
     );
   }
 
-  const result = await machineServices.editMachine(
-    new Types.ObjectId(machine_id as string),
-    updatedMachineData,
-  );
+  // const result = await machineServices.editMachine(
+  //  { new Types.ObjectId(machine_id as string),
+  //   updatedMachineData,}
+  // );
+
+  const result = await machineServices.editMachine({
+    machineId: new Types.ObjectId(machine_id as string),
+    updatedData: updatedMachineData,
+  });
 
   // Send response
   sendResponse(res, {

@@ -221,7 +221,13 @@ const getAllOrders = async () => {
   return orders;
 };
 
-const getTotalSalesReport = async (startDate: Date, endDate: Date) => {
+const getTotalSalesReport = async ({
+  startDate,
+  endDate,
+}: {
+  startDate: Date;
+  endDate: Date;
+}) => {
   const startYear = startDate.getFullYear();
   const startMonth = startDate.getMonth();
   const endYear = endDate.getFullYear();

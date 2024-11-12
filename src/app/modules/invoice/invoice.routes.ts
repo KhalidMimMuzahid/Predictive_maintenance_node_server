@@ -33,5 +33,18 @@ router.patch(
 );
 
 router.get('/get-today-tasks-summary', invoiceController.getTodayTasksSummary);
+router.get(
+  '/get-total-invoice-summary',
+  invoiceController.getTotalInvoiceSummary,
+);
+
+router.get(
+  '/get-total-invoice-comparison-for-chart',
+  invoiceController.getTotalInvoiceComparisonForChart,
+);
+router.post(
+  '/add-feedback-by-emgineer',
+  invoiceController.addFeedbackByEngineer,
+);
 
 export const invoiceRoutes = router;

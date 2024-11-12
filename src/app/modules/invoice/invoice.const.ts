@@ -1,4 +1,8 @@
-import { TAssignedTaskType, TInvoiceStatus } from './invoice.interface';
+import {
+  TAssignedTaskType,
+  TInvoicePeriod,
+  TInvoiceStatus,
+} from './invoice.interface';
 
 export const invoiceStatusArray: TInvoiceStatus[] = [
   'ongoing',
@@ -12,4 +16,10 @@ export const assignedTaskTypeArray: TAssignedTaskType[] = [
   'schedule',
   'pending',
   'completed',
+];
+
+export const invoicePeriodTypeArray: TInvoicePeriod[] = [
+  'weekly',
+  'monthly',
+  'yearly',
 ];

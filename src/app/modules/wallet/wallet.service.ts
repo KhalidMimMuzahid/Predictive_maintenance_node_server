@@ -337,6 +337,28 @@ const deleteCardFromMyWallet = async ({
   return updatedWallet;
 };
 
+const editWallet = async ({
+  walletId,
+  updateData,
+}: {
+  walletId: Types.ObjectId;
+  updateData: { stripeCustomerId?: string };
+}) => {
+  const wallet = await Wallet.findOneAndUpdate(
+    {
+      _id: walletId,
+    },
+    { $set: updateData },
+    { new: true },
+  );
+
+  if (!wallet) {
+    throw new Error('Wallet not found');
+  }
+
+  return wallet;
+};
+
 export const walletServices = {
   addTransfer,
   fetchCustomerCards,
@@ -349,4 +371,5 @@ export const walletServices = {
   getRecentMBTransfer,
   addCardToMyWallet,
   deleteCardFromMyWallet,
+  editWallet,
 };

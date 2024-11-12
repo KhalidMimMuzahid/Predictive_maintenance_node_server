@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import mongoose, { Schema } from 'mongoose';
+import { IsDeletedSchema } from '../common/common.model';
+import { PostBiddingProcessSchema } from '../reservationGroup/reservationGroup.model';
 import {
   TAdditionalProduct,
   TDocument,
   TInspection,
   TInvoice,
 } from './invoice.interface';
-import { PostBiddingProcessSchema } from '../reservationGroup/reservationGroup.model';
-import { IsDeletedSchema } from '../common/common.model';
 
 const AdditionalProductsSchema = new Schema({
   products: [
@@ -212,7 +212,24 @@ export const InvoiceSchema: Schema = new Schema<TInvoice>(
 
     feedbackByUser: {
       type: new Schema({
-        ratings: { type: Number, required: true },
+        ratings: {
+          type: Number,
+          required: true,
+          min: [0, 'Minimum rating is 0.'],
+          max: [5, 'Maximum rating is 5.'],
+        },
+        comment: { type: String, required: true },
+      }),
+      required: false,
+    },
+    feedbackByEngineer: {
+      type: new Schema({
+        ratings: {
+          type: Number,
+          required: true,
+          min: [0, 'Minimum rating is 0.'],
+          max: [5, 'Maximum rating is 5.'],
+        },
         comment: { type: String, required: true },
       }),
       required: false,

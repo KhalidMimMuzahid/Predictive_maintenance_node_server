@@ -252,22 +252,64 @@ const getProductByProduct_id: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getTopSalesProducts: RequestHandler = catchAsync(async (req, res) => {
-  const auth = req.headers?.auth as unknown as TAuth;
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  // Checking user access permission
   checkUserAccessApi({ auth, accessUsers: 'all' });
 
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 30); // Last 30 days
-  const endDate = new Date();
+  const result = await productServices.getTopSalesProducts();
 
-  const result = await productServices.getTopSalesProducts(startDate, endDate);
-
-  // Send the response
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Top sales products have been retrieved successfully',
+    message: 'Top sales products fetched successfully',
+    data: result,
+  });
+});
+
+const getTopBrands: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const result = await productServices.getTopBrands();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Top brands retrieved successfully',
+    data: result,
+  });
+});
+
+const getRecommendedProduct: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const result = await productServices.getRecommendedProduct();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Recommended products retrieved successfully',
+    data: result,
+  });
+});
+
+const getFlashSaleProducts: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const result = await productServices.getFlashSaleProducts();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Flash sale products retrieved successfully',
     data: result,
   });
 });
@@ -282,4 +324,7 @@ export const productController = {
   getAllProductsByShop, //service provider app->shop company->
   getProductByProduct_id, //customer app->marketplace->product details
   getTopSalesProducts,
+  getTopBrands,
+  getRecommendedProduct,
+  getFlashSaleProducts,
 };

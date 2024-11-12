@@ -5,6 +5,7 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
+import { TAddress } from '../common/common.interface';
 import { userServices } from './user.service';
 
 const signIn: RequestHandler = catchAsync(async (req, res) => {
@@ -177,14 +178,14 @@ const editUserProfile: RequestHandler = catchAsync(async (req, res) => {
     auth,
     accessUsers: 'all',
   });
-const user_id = req?.query?.user as string;
-const {
-  user,
-  showaUser,
-  serviceProviderAdmin,
-  serviceProviderBranchManager,
-  serviceProviderEngineer,
-} = req.body;
+  const user_id = req?.query?.user as string;
+  const {
+    user,
+    showaUser,
+    serviceProviderAdmin,
+    serviceProviderBranchManager,
+    serviceProviderEngineer,
+  } = req.body;
 
   const result = await userServices.editUserProfile({
     auth,
@@ -233,6 +234,30 @@ const editUserAddress: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const addNewAddress: RequestHandler = catchAsync(async (req, res) => {
+  const auth = req?.headers?.auth as unknown as TAuth;
+
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+
+  const address = req.body as TAddress;
+
+  const result = await userServices.addNewAddress({
+    auth,
+    address,
+  });
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'new address added successfully',
+    data: result,
+  });
+});
+
 export const userControllers = {
   signIn,
   getUserBy_id,
@@ -244,4 +269,5 @@ export const userControllers = {
   unfollowUser,
   editUserProfile,
   editUserAddress,
+  addNewAddress,
 };
