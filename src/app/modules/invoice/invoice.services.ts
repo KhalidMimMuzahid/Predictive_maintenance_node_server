@@ -233,6 +233,11 @@ const inspection = async ({
         'something went wrong, please try again',
       );
     } else {
+      // changing task status to completed
+      await changeStatusToCompleted({
+        user,
+        reservationRequest_id: reservationRequest,
+      });
       return null;
     }
     // const updatedReservationRequest =
@@ -878,8 +883,8 @@ const getTodayTasksSummary = async (user: mongoose.Types.ObjectId) => {
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
-  console.log("Today's Date (Local):", today.toString());
-  console.log(endOfToday.toString());
+  // console.log("Today's Date (Local):", today.toString());
+  // console.log(endOfToday.toString());
 
   const todayTasksSummary = await InvoiceGroup.aggregate([
     {

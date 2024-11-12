@@ -138,12 +138,12 @@ const InspectionSchema = new Schema<TInspection>({
   inspectingTime: {
     type: Number,
     required: true,
-    validate: {
-      validator: function (v: number[]) {
-        return v.every((time) => time >= 0); // Ensure all times are non-negative
-      },
-      message: () => `Inspecting time must be a non-negative number!`,
-    },
+    // validate: {
+    //   validator: function (v: number[]) {
+    //     return v.every((time) => time >= 0); // Ensure all times are non-negative
+    //   },
+    //   message: () => `Inspecting time must be a non-negative number!`,
+    // },
   },
 
   serviceFee: {
