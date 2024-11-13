@@ -23,7 +23,7 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'general machine must have washingMachine data',
+      'general machine must have generalMachine data',
     );
   }
 
@@ -53,4 +53,27 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
       }, '')}`,
     );
   }
+
+  const machineType =
+    payload?.category === 'washing-machine'
+      ? payload?.washingMachine?.type
+      : payload?.generalMachine?.type;
+  const machineTypes =
+    await predefinedValueServices.getAllMachineTypesCategoryWise({
+      category: payload?.category,
+    });
+  if (!machineTypes.some((each) => each === machineType)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `${payload?.category} type must be any of ${machineTypes.reduce(
+        (total, current) => {
+          total = total + `${current}, `;
+          return total;
+        },
+        '',
+      )}`,
+    );
+  }
+
+
 };

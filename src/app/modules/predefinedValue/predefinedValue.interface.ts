@@ -1,3 +1,5 @@
+import { TMachineCategory } from '../machine/machine.interface';
+
 export type TCategory = {
   category: string;
   subCategories: string[];
@@ -36,12 +38,18 @@ export type TBrands = {
   models?: string[];
 };
 export type TIssue = {
+  category: TMachineCategory; // machine type
+  type: string; // washing/general machine type
   brand: string;
   model: string;
   issues: string[];
 };
+export type TTypes = {
+  category: TMachineCategory; // machine type
+  types: string[]; // washing/general machine type
+};
 export type TMachine = {
-  types?: string[]; // type of washing machine
+  types?: TTypes[]; // type of washing/general machine
   brands?: TBrands[];
   issues?: TIssue[];
 };
@@ -59,5 +67,3 @@ export type TPredefinedValue = {
   reservationRequest?: TReservationRequest;
   machine?: TMachine;
 };
-
-

@@ -9,6 +9,7 @@ export type TCycleCount = {
   life: number;
   reservationPeriod: number;
 };
+export type TMachineCategory = 'washing-machine' | 'general-machine';
 export type TMachine = {
   machineNo: string; // "00001" / "00002" / "00003" ; this machineNo is for only this user; for this user machineNo will start from "00001"
   healthStatus: {
@@ -19,7 +20,7 @@ export type TMachine = {
   thermalScore?: number;
   energyScore?: number;
   cycleCount?: TCycleCount;
-  category: 'washing-machine' | 'general-machine'; // why those two type ???????
+  category: TMachineCategory;
   name: string;
   issues?: TIssue[];
   // address?: TAddress;
@@ -29,10 +30,11 @@ export type TMachine = {
   generalMachine?: {
     homeName?: string; //  ??????
     homeType?: string; // ?????? "Mansion" | "Apartment" | "others"
+    type: string; // general machine types, like TV, Fridge, AC etc.
   };
   // type: string; //
   washingMachine?: {
-    type: string; // like Dish washing machine, Pallet washing machine, Container washing machine
+    type: string; // washing machine types, like Dish washing machine, Pallet washing machine, Container washing machine
   };
   brand: string; // as mentioned in figma; brand name of the machine
   model: string; // as mentioned in figma; model name of the machine

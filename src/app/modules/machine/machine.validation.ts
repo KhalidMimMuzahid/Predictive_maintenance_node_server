@@ -19,6 +19,7 @@ export const createMachineValidationSchema = z.object({
     .object({
       homeName: z.string(),
       homeType: z.string(),
+      type: z.string(),
     })
     .optional(),
   washingMachine: z

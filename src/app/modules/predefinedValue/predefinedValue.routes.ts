@@ -78,6 +78,10 @@ router.post(
   predefinedValueController.addMachineModelName,
 );
 router.post('/add-machine-issue', predefinedValueController.addMachineIssue);
+router.post(
+  '/add-general-or-washing-machine-type',
+  predefinedValueController.addGeneralOrWashingMachineType,
+);
 
 router.get(
   '/get-all-machine-brands',
@@ -86,6 +90,10 @@ router.get(
 router.get(
   '/get-all-machine-issues-brand-and-model-wise',
   predefinedValueController.getAllMachineIssuesBrandAndModelWise,
+);
+router.get(
+  '/get-all-machine-types-category-wise',
+  predefinedValueController.getAllMachineTypesCategoryWise,
 );
 
 

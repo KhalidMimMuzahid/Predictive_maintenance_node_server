@@ -11,6 +11,7 @@ import {
   TShop,
   TBrands,
   TIssue,
+  TTypes,
 } from './predefinedValue.interface';
 const CategorySchema = new Schema<TCategory>({
   category: String,
@@ -57,7 +58,16 @@ const ReservationRequestSchema = new Schema<TReservationRequest>({
   issues: [String],
 });
 const machineSchema = new Schema<TMachine>({
-  types: [String],
+  types: [
+    new Schema<TTypes>({
+      category: {
+        type: String,
+        enum: ['washing-machine', 'general-machine'],
+        required: true,
+      },
+      types: [String],
+    }),
+  ],
   brands: [
     new Schema<TBrands>({
       brand: String,
@@ -66,9 +76,27 @@ const machineSchema = new Schema<TMachine>({
   ],
   issues: [
     new Schema<TIssue>({
-      brand: String,
-      model: String,
-      issues: [String],
+      category: {
+        type: String,
+        enum: ['washing-machine', 'general-machine'],
+        required: true,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
+      brand: {
+        type: String,
+        required: true,
+      },
+      model: {
+        type: String,
+        required: true,
+      },
+      issues: {
+        type: [String],
+        required: true,
+      },
     }),
   ],
 });

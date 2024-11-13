@@ -6,6 +6,7 @@ import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { predefinedValueServices } from './predefinedValue.service';
+import { TMachineCategory } from '../machine/machine.interface';
 
 const addProductCategories: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -167,18 +168,27 @@ const addMachineIssue: RequestHandler = catchAsync(async (req, res) => {
 
   // we are checking the permission of this api
   checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
-
+  const category: TMachineCategory = req?.query?.category as TMachineCategory;
+  const type: string = req?.query?.type as string;
   const brandName: string = req?.query?.brandName as string;
   const modelName: string = req?.query?.modelName as string;
   const issue: string = req?.query?.issue as string;
 
-  if (!brandName || !modelName || !issue) {
+  if (!category || !type || !brandName || !modelName || !issue) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'brand, model and issue Name are required to add machine issue model wise',
+      'category, type, brand, model and issue Name are required to add machine issue model wise',
+    );
+  }
+  if (category !== 'general-machine' && category !== 'washing-machine') {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category must be any of general-machine or washing-machine',
     );
   }
   const result = await predefinedValueServices.addMachineIssue({
+    category: category,
+    type: type?.toLowerCase(),
     brandName: brandName?.toLowerCase(),
     modelName: modelName.toLowerCase(),
     issue: issue?.toLowerCase(),
@@ -191,6 +201,42 @@ const addMachineIssue: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const addGeneralOrWashingMachineType: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+    const type: string = req?.query?.type as string;
+
+    if (!category || !type) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category and type are required to add machine specific type',
+      );
+    }
+    if (category !== 'general-machine' && category !== 'washing-machine') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of general-machine or washing-machine',
+      );
+    }
+    const result = await predefinedValueServices.addGeneralOrWashingMachineType(
+      {
+        category: category,
+        type: type?.toLowerCase(),
+      },
+    );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'machine type has added successfully',
+      data: result,
+    });
+  },
+);
 const addReservationRequestStatus: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -452,15 +498,49 @@ const getAllMachineIssuesBrandAndModelWise: RequestHandler = catchAsync(
     });
   },
 );
+const getAllMachineTypesCategoryWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({
+      auth,
+      accessUsers: 'all',
+    });
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+
+    if (category !== 'general-machine' && category !== 'washing-machine') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of general-machine or washing-machine',
+      );
+    }
+    const result = await predefinedValueServices.getAllMachineTypesCategoryWise(
+      {
+        category,
+      },
+    );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'machine types have retrieved successfully',
+      data: result,
+    });
+  },
+);
 
 export const predefinedValueController = {
   addProductCategories,
   addProductSubCategories,
   addShopCategories,
+
   addIotSectionName,
+
   addMachineBrandName,
   addMachineModelName,
   addMachineIssue,
+  addGeneralOrWashingMachineType,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
@@ -474,4 +554,5 @@ export const predefinedValueController = {
   getIotSectionNames,
   getMachineBrands,
   getAllMachineIssuesBrandAndModelWise,
+  getAllMachineTypesCategoryWise,
 };

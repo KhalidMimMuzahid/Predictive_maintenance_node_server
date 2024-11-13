@@ -92,6 +92,7 @@ export const MachineSchema: Schema = new Schema<TMachine>(
     generalMachine: {
       homeName: { type: String },
       homeType: { type: String },
+      type: { type: String },
     },
     washingMachine: {
       type: { type: String },
