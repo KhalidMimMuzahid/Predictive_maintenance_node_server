@@ -13,32 +13,18 @@ const sendIotDataToAIServer = async () => {
     {
       sensorModulesAttached: { $ne: [] },
     },
-    { sensorModulesAttached: 1 },
+    {
+      sensorModulesAttached: 1,
+      category: 1,
+      'generalMachine.type': 1,
+      'washingMachine.type': 1,
+      model: 1,
+      brand: 1,
+    },
   );
 
   const allMachineIotData = await Promise.all(
     allMachines?.map(async (machine) => {
-      // const allIots = await SensorModuleAttached.find(
-      //   {
-      //     _id: {
-      //       $in: machine?.sensorModulesAttached,
-      //     },
-      //   },
-      //   { sensorData: { $slice: [-10, 10] } },
-      // ).select('sectionName moduleType');
-
-      // 66f10d21fc6780b871b15f7c
-      // 1173087
-      // const allIots = await SensorModuleAttached.find(
-      //   {
-      //     _id: {
-      //       $in: machine?.sensorModulesAttached,
-      //     },
-      //     'sensorData.createdAt': { $gte: filterDate },
-      //   },
-      //   // { sensorData: 1, sectionName: 1, moduleType: 1 },
-      // ).select('sectionName moduleType');
-
       const allIots = await SensorModuleAttached.aggregate([
         {
           $match: {
@@ -74,6 +60,13 @@ const sendIotDataToAIServer = async () => {
       ]);
       return {
         _id: machine?._id,
+        category: machine?.category,
+        type:
+          machine?.category === 'general-machine'
+            ? machine?.generalMachine?.type || 'unknown'
+            : machine?.washingMachine?.type || 'unknown',
+        brand: machine?.brand,
+        model: machine?.model as string,
         sensorModulesAttached: allIots,
       };
     }),
@@ -83,6 +76,11 @@ const sendIotDataToAIServer = async () => {
   await Promise.all(
     allMachineIotData?.map(async (machine) => {
       const _id = machine?._id;
+      const category = machine?.category;
+      const type = machine?.type;
+      const brand = machine?.brand;
+      const model = machine?.model;
+
       const sensorModulesAttached = machine?.sensorModulesAttached?.map(
         (sensorModule) => {
           const sensorModuleData =
@@ -108,13 +106,16 @@ const sendIotDataToAIServer = async () => {
       );
       if (machine && sensorModulesAttached?.length > 0)
         try {
-          await fetch(`http://13.112.8.235/predict?machine=${_id}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+          await fetch(
+            `http://13.112.8.235/predict?machine=${_id?.toString()}&category=${category}&type=${type}&brand=${brand}&model=${model}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ sensorModulesAttached }),
             },
-            body: JSON.stringify({ sensorModulesAttached }),
-          });
+          );
 
           // const data = await res.json()
 

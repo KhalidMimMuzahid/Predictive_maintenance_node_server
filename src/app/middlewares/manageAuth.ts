@@ -20,6 +20,7 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
       pathname?.endsWith('invited-member-by-id') ||
       pathname?.endsWith('invited-member-by-email') ||
       pathname?.endsWith('machine-health-status') ||
+      pathname?.endsWith('get-all-sensor-section-wise-by-machine') ||
       pathname?.endsWith('get-thresholds') ||
       pathname?.endsWith('get-ai-data') ||
       pathname?.endsWith('delete-my-account')
