@@ -241,7 +241,12 @@ const getAllAssignedTasksByEngineer: RequestHandler = catchAsync(
       );
     }
     const result = await invoiceServices.getAllAssignedTasksByEngineer({
-      status,
+      status:
+        status === 'inspection'
+          ? 'pending'
+          : status === 'pending'
+            ? 'inspection'
+            : status,
       user: auth?._id,
     });
     // send response

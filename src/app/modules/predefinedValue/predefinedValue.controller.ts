@@ -475,17 +475,21 @@ const getAllMachineIssuesBrandAndModelWise: RequestHandler = catchAsync(
       auth,
       accessUsers: 'all',
     });
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+    const type: string = req?.query?.type as string;
     const brandName: string = req?.query?.brandName as string;
     const modelName: string = req?.query?.modelName as string;
 
-    if (!brandName || !modelName) {
+    if (!category || !type || !brandName || !modelName) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'brand and model  Name are required to get machine all issue model wise',
+        'category, type, brand, model Name are required to get all machine issue model wise',
       );
     }
     const result =
       await predefinedValueServices.getAllMachineIssuesBrandAndModelWise({
+        category,
+        type,
         brandName,
         modelName,
       });

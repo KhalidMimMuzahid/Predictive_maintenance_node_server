@@ -761,9 +761,13 @@ const getMachineBrands = async () => {
 };
 
 const getAllMachineIssuesBrandAndModelWise = async ({
+  category,
+  type,
   brandName,
   modelName,
 }: {
+  category: TMachineCategory;
+  type: string;
   brandName: string;
   modelName: string;
 }) => {
@@ -783,6 +787,8 @@ const getAllMachineIssuesBrandAndModelWise = async ({
     },
     {
       $match: {
+        category: category,
+        type: type,
         brand: brandName,
         model: modelName,
       },
