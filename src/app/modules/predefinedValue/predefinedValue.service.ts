@@ -165,11 +165,101 @@ const addIotSectionName = async (sectionName: string) => {
       type: 'sensorModuleAttached',
       sensorModuleAttached: {
         sectionNames: [sectionName],
+        sectionNames2: [],
       },
     };
 
     const createdNewSections = await PredefinedValue.create(newSections);
     if (!createdNewSections) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  }
+};
+const addIotSectionName2 = async ({
+  category,
+  type,
+  sectionName,
+}: {
+  category: TMachineCategory;
+  type: string;
+  sectionName: string;
+}) => {
+  const previousSectionNames2 = await PredefinedValue.findOne(
+    {
+      type: 'sensorModuleAttached',
+    },
+    { 'sensorModuleAttached.sectionNames2': 1 },
+  );
+
+  let isDifferentCategoryAndType = false;
+  if (previousSectionNames2) {
+    const sectionNamesList =
+      previousSectionNames2?.sensorModuleAttached?.sectionNames2?.map(
+        (each) => {
+          if (each?.category === category && each?.type === type) {
+            const sectionNamesList =
+              each?.sectionNames?.map((each) => each) || [];
+
+            if (
+              sectionNamesList?.findIndex((each) => each === sectionName) !== -1
+            ) {
+              throw new AppError(
+                httpStatus.BAD_REQUEST,
+                `sectionName cannot be duplicated in a single model`,
+              );
+            } else {
+              each?.sectionNames?.push(sectionName);
+              return each;
+            }
+          } else {
+            // that means its a different brand and model
+            isDifferentCategoryAndType = true;
+            return each;
+          }
+        },
+      ) || [];
+    if (isDifferentCategoryAndType || sectionNamesList?.length === 0) {
+      sectionNamesList?.push({
+        category: category,
+        type: type,
+        sectionNames: [sectionName],
+      });
+    }
+    previousSectionNames2.sensorModuleAttached.sectionNames2 = sectionNamesList;
+    const updatedPreviousIOTsectionNamesList =
+      await previousSectionNames2.save();
+    if (!updatedPreviousIOTsectionNamesList) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Something went wrong, please try again',
+      );
+    } else {
+      return null;
+    }
+  } else {
+    const newIOTsectionNamesList: TPredefinedValue = {
+      type: 'sensorModuleAttached',
+      sensorModuleAttached: {
+        sectionNames: [],
+        sectionNames2: [
+          {
+            category: category,
+            type: type,
+            sectionNames: [sectionName],
+          },
+        ],
+      },
+    };
+    const createdIOTsectionNamesList = await PredefinedValue.create(
+      newIOTsectionNamesList,
+    );
+
+    if (!createdIOTsectionNamesList) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
         'Something went wrong, please try again',
@@ -722,6 +812,38 @@ const getIotSectionNames = async () => {
 
   // return x;
 };
+
+const getIotSectionNames2 = async ({
+  category,
+  type,
+}: {
+  category: TMachineCategory;
+  type: string;
+}) => {
+  const iotSectionNamesList = await PredefinedValue.aggregate([
+    {
+      $match: {
+        type: 'sensorModuleAttached',
+      },
+    },
+    {
+      $unwind: '$sensorModuleAttached.sectionNames2',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$sensorModuleAttached.sectionNames2',
+      },
+    },
+    {
+      $match: {
+        category: category,
+        type: type,
+      },
+    },
+  ]);
+
+  return iotSectionNamesList[0]?.sectionNames || [];
+};
 const getProductCategories = async () => {
   const productCategories = await PredefinedValue.findOne(
     {
@@ -832,6 +954,7 @@ export const predefinedValueServices = {
   addShopCategories,
 
   addIotSectionName,
+  addIotSectionName2,
   addMachineBrandName,
   addMachineModelName,
   addMachineIssue,
@@ -847,6 +970,7 @@ export const predefinedValueServices = {
   getProductCategories,
   getShopCategories,
   getIotSectionNames,
+  getIotSectionNames2,
   getMachineBrands,
   getAllMachineIssuesBrandAndModelWise,
   getAllMachineTypesCategoryWise,

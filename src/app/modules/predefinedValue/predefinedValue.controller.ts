@@ -105,7 +105,43 @@ const addIotSectionName: RequestHandler = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'product category has added successfully',
+    message: 'IOT section name has added successfully',
+    data: result,
+  });
+});
+
+const addIotSectionName2: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const category: TMachineCategory = req?.query?.category as TMachineCategory;
+  const type: string = req?.query?.type as string;
+  const sectionName: string = req?.query?.sectionName as string;
+  if (!category || !type || !sectionName) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category, type and   const sectionNames are required to add machine issue model wise',
+    );
+  }
+  if (category !== 'general-machine' && category !== 'washing-machine') {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category must be any of general-machine or washing-machine',
+    );
+  }
+
+  const result = await predefinedValueServices.addIotSectionName2({
+    category: category,
+    type: type?.toLowerCase(),
+    sectionName: sectionName?.toLowerCase(),
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'IOT section name has added successfully',
     data: result,
   });
 });
@@ -447,6 +483,37 @@ const getIotSectionNames: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getIotSectionNames2: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({
+    auth,
+    accessUsers: 'all',
+  });
+  const category: TMachineCategory = req?.query?.category as TMachineCategory;
+  const type: string = req?.query?.type as string;
+
+  if (!category || !type) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category and type names are required to get all machine issue model wise',
+    );
+  }
+  const result = await predefinedValueServices.getIotSectionNames2({
+    category,
+    type,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'IOT section names have retrieved successfully',
+    data: result,
+  });
+});
+
 const getMachineBrands: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
@@ -540,6 +607,7 @@ export const predefinedValueController = {
   addShopCategories,
 
   addIotSectionName,
+  addIotSectionName2,
 
   addMachineBrandName,
   addMachineModelName,
@@ -556,6 +624,7 @@ export const predefinedValueController = {
   getProductCategories,
   getShopCategories,
   getIotSectionNames,
+  getIotSectionNames2,
   getMachineBrands,
   getAllMachineIssuesBrandAndModelWise,
   getAllMachineTypesCategoryWise,

@@ -16,9 +16,15 @@ export type TMarketplace = {
   product?: TProduct;
   shop?: TShop;
 };
+export type TSectionName = {
+  category: TMachineCategory; // machine type
+  type: string; // washing/general machine type
+  sectionNames: string[];
+};
 
 export type TSensorModuleAttached = {
   sectionNames?: string[];
+  sectionNames2?: TSectionName[];
 };
 export type TCustomer = {
   occupation?: string[];

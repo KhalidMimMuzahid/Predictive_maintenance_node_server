@@ -35,9 +35,17 @@ router.post(
   '/add-iot-section-name',
   predefinedValueController.addIotSectionName,
 );
+router.post(
+  '/add-iot-section-name2',
+  predefinedValueController.addIotSectionName2,
+);
 router.get(
   '/get-iot-section-names',
   predefinedValueController.getIotSectionNames,
+);
+router.get(
+  '/get-iot-section-names2',
+  predefinedValueController.getIotSectionNames2,
 );
 
 //  reservationRequest ---------------******---------------

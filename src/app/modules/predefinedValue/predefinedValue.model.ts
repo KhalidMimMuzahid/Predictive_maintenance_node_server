@@ -12,6 +12,7 @@ import {
   TBrands,
   TIssue,
   TTypes,
+  TSectionName,
 } from './predefinedValue.interface';
 const CategorySchema = new Schema<TCategory>({
   category: String,
@@ -38,6 +39,24 @@ const marketplaceSchema = new Schema<TMarketplace>({
 });
 const sensorModuleAttachedSchema = new Schema<TSensorModuleAttached>({
   sectionNames: [String],
+  sectionNames2: [
+    new Schema<TSectionName>({
+      category: {
+        type: String,
+        enum: ['washing-machine', 'general-machine'],
+        required: true,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
+
+      sectionNames: {
+        type: [String],
+        required: true,
+      },
+    }),
+  ],
 });
 const customerSchema = new Schema<TCustomer>({
   occupation: [String],
