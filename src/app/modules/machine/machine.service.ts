@@ -935,6 +935,9 @@ const machineHealthStatus = async ({
   });
 
   machineData.issues = newIssues;
+  req.io.emit(`machine=${machine?.toString()}&category=issues`, {
+    issues: newIssues,
+  });
   if (machineHealthData?.operatingStatus) {
     machineData.operatingStatus = machineHealthData?.operatingStatus;
     req.io.emit(`machine=${machine?.toString()}&category=operatingStatus`, {

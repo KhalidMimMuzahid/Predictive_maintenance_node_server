@@ -777,7 +777,15 @@ const getAllAssignedTasksByEngineer = async ({
 
       {
         $match: {
-          taskStatus: 'ongoing',
+          $and: [
+            { taskStatus: 'ongoing' },
+            {
+              $or: [
+                { 'inspection.isInspecting': { $exists: false } },
+                { 'inspection.isInspecting': false },
+              ],
+            },
+          ],
         },
       },
 
