@@ -1,24 +1,25 @@
 import express, { Router } from 'express';
 import { sensorModuleAttachedControllers } from './sensorModuleAttached.controller';
-import validateRequest from '../../middlewares/validateRequest';
-import { sensorModuleAttachedValidation } from './sensorModuleAttached.validation';
 
 const router: Router = express.Router();
 
 router.post(
   '/add-sensor-module-attached',
-  validateRequest(
-    sensorModuleAttachedValidation.createSensorModuleAttachedSchema,
-  ),
+  // validateRequest(
+  //   sensorModuleAttachedValidation.createSensorModuleAttachedSchema,
+  // ),
   sensorModuleAttachedControllers.addSensorAttachedModule,
 );
 
 // -relocated-to-another-server
 // this endpoint is not used in this server
-router.patch('/add-sensor-data-relocated-to-another-server', sensorModuleAttachedControllers.addSensorData);
+router.patch(
+  '/add-sensor-data-relocated-to-another-server',
+  sensorModuleAttachedControllers.addSensorData,
+);
 
 router.get(
-  '/get-sensors-by-user',
+  '/get-sensor-module-attached-by-user',
   sensorModuleAttachedControllers.getAttachedSensorModulesByUser,
 );
 

@@ -54,7 +54,7 @@ export type TModuleType = 'module-1' | 'module-2' | 'module-3' | 'module-4';
 //   vibration: THealthStatus[];
 //   temperature: THealthStatus[];
 // };
-
+export type TAttachedWith = 'washingMachine' | 'generalMachine' | 'unAssigned';
 export type TSensorModuleAttached = {
   sensorModule: Types.ObjectId; // objectId of TSensor
   macAddress: string;
@@ -63,7 +63,7 @@ export type TSensorModuleAttached = {
   // healthStatuses: THealthStatuses;
   user: Types.ObjectId; // objectId of User model who purchase this sensor
   purpose?: string; // showa admin can set this value when it will be installed in the machine by showa admin/engineer
-  sectionName: TSectionName; // showa admin can set this value
+  sectionName?: TSectionName; // showa admin can set this value
   isSwitchedOn: boolean; // when the sensor is active then it's value is true
   moduleType: TModuleType;
   sensorData?: TModule[];

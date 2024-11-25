@@ -5,13 +5,16 @@ import { TAuth } from '../../interface/error';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import {
+  TAttachedWith,
   TModule,
-  TSensorModuleAttached,
   TSensorType,
 } from './sensorModuleAttached.interface';
 import AppError from '../../errors/AppError';
 import { Types } from 'mongoose';
-import { sensorTypeArray } from './sensorModuleAttached.const';
+import {
+  attachedWithArray,
+  sensorTypeArray,
+} from './sensorModuleAttached.const';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -27,15 +30,12 @@ const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
     );
   }
 
-  const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
-
-  sensorModuleAttached.user = auth._id;
-
   const result =
     await sensorAttachedModuleServices.addSensorAttachedModuleIntoDB({
       macAddress,
       subscriptionPurchased,
-      sensorModuleAttached,
+      user: auth?._id,
+      // sensorModuleAttached,
     });
   // send response
   sendResponse(res, {
@@ -77,15 +77,31 @@ const addSensorData: RequestHandler = catchAsync(async (req, res) => {
 const getAttachedSensorModulesByUser: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-    const result =
-      await sensorAttachedModuleServices.getAttachedSensorModulesByuser(
-        auth._id,
+
+    const attachedWith = req?.query?.attachedWith as TAttachedWith;
+    if (!attachedWithArray.some((each) => each === attachedWith)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `attachedWith must be any of ${attachedWithArray.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
       );
+    }
+
+    const result =
+      await sensorAttachedModuleServices.getAttachedSensorModulesByUser({
+        user: auth._id,
+        attachedWith,
+      });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'sensorModules are retrieved successfully',
+      message: 'sensorModulesAttached are retrieved successfully',
       data: result,
     });
   },

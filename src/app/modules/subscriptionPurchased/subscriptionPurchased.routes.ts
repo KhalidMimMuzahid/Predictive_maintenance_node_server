@@ -8,7 +8,7 @@ router.post(
   subscriptionPurchasedControllers.purchaseSubscription,
 );
 router.get(
-  '/get-my-all-subscriptions',
+  '/get-my-all-subscriptions', // all active subscriptions
   subscriptionPurchasedControllers.getAllMySubscriptions,
 );
 router.patch(

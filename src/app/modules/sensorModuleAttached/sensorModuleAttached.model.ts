@@ -55,8 +55,7 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
           timestamps: false,
         },
       ),
-
-      required: true,
+      required: false,
     },
 
     subscriptionPurchased: {

@@ -72,6 +72,7 @@ const packageSchema = z.object({
 // Define the zod schema for subscription
 const createSubscriptionSchema = z.object({
   subscriptionTitle: z.string(),
+  bannerUrl: z.string(),
   package: packageSchema,
   price: priceSchema,
   validity: z.number(),

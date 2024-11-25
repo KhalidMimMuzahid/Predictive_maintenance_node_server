@@ -3,6 +3,7 @@ import validateRequest from '../../middlewares/validateRequest';
 import { machineController } from './machine.controller';
 import { machineValidation } from './machine.validation';
 import { updateAddressValidationSchema } from '../common/common.validation';
+import { sensorModuleAttachedValidation } from '../sensorModuleAttached/sensorModuleAttached.validation';
 
 const router: Router = express.Router();
 
@@ -30,6 +31,9 @@ router.patch(
 
 router.patch(
   '/add-sensor-module-attached-to-machine',
+  validateRequest(
+    sensorModuleAttachedValidation.createSensorModuleAttachedSchema,
+  ),
   machineController.addSensorAttachedModuleInToMachine,
 );
 
@@ -40,6 +44,10 @@ router.put(
 
 router.get('/washing-machine/user', machineController.getMyWashingMachine);
 router.get('/general-machine/user', machineController.getMyGeneralMachine);
+router.get(
+  '/get-all-machines-list-by-user',
+  machineController.getAllMachinesListByUser,
+);
 router.get(
   '/general-machine/non-connected/user',
   machineController.getUserNonConnectedGeneralMachine,

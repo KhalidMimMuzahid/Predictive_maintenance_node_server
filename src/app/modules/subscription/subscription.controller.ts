@@ -16,6 +16,7 @@ const createSubscription: RequestHandler = catchAsync(async (req, res) => {
 
   const {
     subscriptionTitle,
+    bannerUrl,
     package: packageData,
     price,
     validity,
@@ -32,6 +33,7 @@ const createSubscription: RequestHandler = catchAsync(async (req, res) => {
 
   const subscriptionData: Partial<TSubscription> = {
     subscriptionTitle,
+    bannerUrl,
     package: {
       packageFor,
       showaUser: {

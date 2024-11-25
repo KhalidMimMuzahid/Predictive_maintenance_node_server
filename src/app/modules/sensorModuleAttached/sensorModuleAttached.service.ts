@@ -2,34 +2,32 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { SensorModule } from '../sensorModule/sensorModule.model';
 import {
+  TAttachedWith,
   TModule,
   TSensorModuleAttached,
   TSensorType,
 } from './sensorModuleAttached.interface';
 import { SensorModuleAttached } from './sensorModuleAttached.model';
-import {
-  validateSectionNamesData,
-  validateSensorData,
-} from './sensorModuleAttached.utils';
+import { validateSensorData } from './sensorModuleAttached.utils';
 import { Request } from 'express';
 import mongoose from 'mongoose';
 import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 import { TSubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.interface';
-import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 
 const addSensorAttachedModuleIntoDB = async ({
   macAddress,
   subscriptionPurchased,
-  sensorModuleAttached,
+  user, // sensorModuleAttached,
 }: {
   macAddress: string;
   subscriptionPurchased: string;
-  sensorModuleAttached: Partial<TSensorModuleAttached>;
+  user: mongoose.Types.ObjectId;
+  // sensorModuleAttached: Partial<TSensorModuleAttached>;
 }) => {
   // ------------------- XXXX ------------ checking subscription start
   const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
     _id: new mongoose.Types.ObjectId(subscriptionPurchased),
-    user: sensorModuleAttached.user,
+    user: user,
   }).select('isActive usage expDate');
 
   if (!subscriptionPurchasedData) {
@@ -66,45 +64,46 @@ const addSensorAttachedModuleIntoDB = async ({
     );
   }
 
-  const isValid = await validateSectionNamesData({
-    moduleType: sensorModule?.moduleType,
-    sectionNamesData: sensorModuleAttached?.sectionName,
-  });
+  // const isValid = await validateSectionNamesData({
+  //   moduleType: sensorModule?.moduleType,
+  //   sectionNamesData: sensorModuleAttached?.sectionName,
+  // });
 
-  if (!isValid) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'section names data are not valid according to its module type',
-    );
-  }
+  // if (!isValid) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'section names data are not valid according to its module type',
+  //   );
+  // }
 
-  const sectionNames = await predefinedValueServices.getIotSectionNames();
+  // const sectionNames = await predefinedValueServices.getIotSectionNames();
 
-  sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {
-    const isSectionNameValid = sectionNames.some(
-      (each) => each === sectionName,
-    );
-    if (!isSectionNameValid) {
-      // throw error
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'section names must be pre defined',
-      );
-    }
-  });
-  sensorModuleAttached?.sectionName?.temperature?.forEach((sectionName) => {
-    const isSectionNameValid = sectionNames.some(
-      (each) => each === sectionName,
-    );
-    if (!isSectionNameValid) {
-      // throw error
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'section names must be pre defined',
-      );
-    }
-  });
-
+  // sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {
+  //   const isSectionNameValid = sectionNames.some(
+  //     (each) => each === sectionName,
+  //   );
+  //   if (!isSectionNameValid) {
+  //     // throw error
+  //     throw new AppError(
+  //       httpStatus.BAD_REQUEST,
+  //       'section names must be pre defined',
+  //     );
+  //   }
+  // });
+  // sensorModuleAttached?.sectionName?.temperature?.forEach((sectionName) => {
+  //   const isSectionNameValid = sectionNames.some(
+  //     (each) => each === sectionName,
+  //   );
+  //   if (!isSectionNameValid) {
+  //     // throw error
+  //     throw new AppError(
+  //       httpStatus.BAD_REQUEST,
+  //       'section names must be pre defined',
+  //     );
+  //   }
+  // });
+  const sensorModuleAttached: Partial<TSensorModuleAttached> = {};
+  sensorModuleAttached.user = user;
   sensorModuleAttached.sensorModule = sensorModule._id;
   sensorModuleAttached.macAddress = macAddress;
 
@@ -396,15 +395,137 @@ const addSensorDataInToDB = async ({
   return sensorData;
 };
 
-const getAttachedSensorModulesByuser = async (
-  userId: mongoose.Types.ObjectId,
-) => {
-  const sensors = await SensorModuleAttached.find({ user: userId })
-    .select(
-      'sensorModule isAttached machine macAddress user purpose sectionName isSwitchedOn currentSubscription moduleType createdAt',
-    )
-    .populate('machine');
-  return sensors;
+const getAttachedSensorModulesByUser = async ({
+  user,
+  attachedWith,
+}: {
+  user: mongoose.Types.ObjectId;
+  attachedWith: TAttachedWith;
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let result: any;
+  if (attachedWith === 'washingMachine') {
+    result = await SensorModuleAttached.aggregate([
+      {
+        $project: {
+          _id: 1,
+          user: 1,
+          macAddress: 1,
+          purpose: 1,
+          isSwitchedOn: 1,
+          moduleType: 1,
+          createdAt: 1,
+          machine: 1,
+        },
+      },
+      {
+        $match: {
+          user: user,
+          machine: { $exists: true },
+        },
+      },
+      {
+        $lookup: {
+          from: 'machines', // Name of the user collection
+          localField: 'machine',
+          foreignField: '_id',
+          as: 'machine',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          macAddress: 1,
+          purpose: 1,
+          // isSwitchedOn: 1,
+          moduleType: 1,
+          machine: { $arrayElemAt: ['$machine.category', 0] },
+        },
+      },
+      {
+        $match: {
+          machine: 'washing-machine',
+        },
+      },
+    ]);
+  } else if (attachedWith === 'generalMachine') {
+    result = await SensorModuleAttached.aggregate([
+      {
+        $project: {
+          _id: 1,
+          user: 1,
+          macAddress: 1,
+          purpose: 1,
+          isSwitchedOn: 1,
+          moduleType: 1,
+          createdAt: 1,
+          machine: 1,
+        },
+      },
+      {
+        $match: {
+          user: user,
+          machine: { $exists: true },
+        },
+      },
+      {
+        $lookup: {
+          from: 'machines', // Name of the user collection
+          localField: 'machine',
+          foreignField: '_id',
+          as: 'machine',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          macAddress: 1,
+          purpose: 1,
+          // isSwitchedOn: 1,
+          moduleType: 1,
+          machine: { $arrayElemAt: ['$machine.category', 0] },
+        },
+      },
+      {
+        $match: {
+          machine: 'general-machine',
+        },
+      },
+    ]);
+  } else if (attachedWith === 'unAssigned') {
+    result = await SensorModuleAttached.aggregate([
+      {
+        $project: {
+          _id: 1,
+          user: 1,
+          macAddress: 1,
+          purpose: 1,
+          isSwitchedOn: 1,
+          moduleType: 1,
+          createdAt: 1,
+          machine: 1,
+        },
+      },
+      {
+        $match: {
+          user: user,
+          machine: { $exists: false },
+        },
+      },
+
+      {
+        $project: {
+          _id: 1,
+          macAddress: 1,
+          purpose: 1,
+          // isSwitchedOn: 1,
+          moduleType: 1,
+        },
+      },
+    ]);
+  }
+
+  return result;
 };
 
 const getAttachedSensorModulesByMachine = async (
@@ -570,7 +691,7 @@ const getSensorModuleAttachedByMacAddress = async (macAddress: string) => {
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB, //  to do
   addSensorDataInToDB,
-  getAttachedSensorModulesByuser,
+  getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,
   getAllAttachedSensorModulesByMachine,
   getSensorDataFromDB,

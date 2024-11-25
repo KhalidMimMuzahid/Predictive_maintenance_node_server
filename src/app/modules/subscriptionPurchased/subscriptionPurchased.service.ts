@@ -101,6 +101,7 @@ const createSubscription = async ({
 const getAllMySubscriptions = async (userId: mongoose.Types.ObjectId) => {
   const purchases: TSubscriptionPurchased[] = await SubscriptionPurchased.find({
     user: userId,
+    isActive: true,
   }).populate({
     path: 'subscription',
     //select: 'subscriptionTitle package price validity features',
@@ -147,9 +148,7 @@ const renewSubscription = async ({
   return subscriptionPurchase;
 };
 
-const getAllSubscriptionPurchasedHistoryByUser = async (
-  userId: string,
-): Promise<{ subscriptions: TSubscriptionPurchased[] }> => {
+const getAllSubscriptionPurchasedHistoryByUser = async (userId: string) => {
   const subscriptions = await SubscriptionPurchased.find({
     user: new mongoose.Types.ObjectId(userId),
   }).populate('subscription');

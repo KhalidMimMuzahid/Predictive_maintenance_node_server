@@ -46,6 +46,7 @@ export type TPackage = {
 export type TSubscription = {
   // currentOffer: string  // the current offer can be changed by admin
   subscriptionTitle: string;
+  bannerUrl: string;
   package: TPackage;
   price: TPrice;
   validity: number;

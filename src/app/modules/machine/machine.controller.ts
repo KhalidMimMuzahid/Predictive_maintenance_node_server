@@ -9,7 +9,11 @@ import sendResponse from '../../utils/sendResponse';
 import { TAddress } from '../common/common.interface';
 import { TBiddingDate } from '../reservationGroup/reservationGroup.interface';
 import { TSensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.interface';
-import { TMachine, TMachineHealthStatus } from './machine.interface';
+import {
+  TMachine,
+  TMachineCategory,
+  TMachineHealthStatus,
+} from './machine.interface';
 import { machineServices } from './machine.service';
 
 const addSensorNonConnectedMachine: RequestHandler = catchAsync(
@@ -127,7 +131,7 @@ const addSensorModuleInToMachine: RequestHandler = catchAsync(
 const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-
+    checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
     const { machine_id, attachedSensorModuleAttached_id } = req.query;
 
     if (!machine_id || !attachedSensorModuleAttached_id) {
@@ -136,12 +140,16 @@ const addSensorAttachedModuleInToMachine: RequestHandler = catchAsync(
         'machine_id and attachedSensorModuleAttached_id must be provided to add sensor to machine',
       );
     }
+    const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
+
     const result =
-      await machineServices.addSensorAttachedModuleInToMachineIntoDB(
-        auth._id,
-        new Types.ObjectId(machine_id as string),
-        new Types.ObjectId(attachedSensorModuleAttached_id as string),
-      );
+      await machineServices.addSensorAttachedModuleInToMachineIntoDB({
+        machine_id: new Types.ObjectId(machine_id as string),
+        sensorModuleAttached_id: new Types.ObjectId(
+          attachedSensorModuleAttached_id as string,
+        ),
+        sensorModuleAttachedData: sensorModuleAttached,
+      });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -228,7 +236,30 @@ const getMyGeneralMachine: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
-
+const getAllMachinesListByUser: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+    if (category !== 'general-machine' && category !== 'washing-machine') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of general-machine or washing-machine',
+      );
+    }
+    const results = await machineServices.getAllMachinesListByUser({
+      user: auth?._id,
+      category,
+    });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all machines lists have been retrieved',
+      data: results,
+    });
+  },
+);
 const getUserConnectedMachine: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
   const results = await machineServices.getUserConnectedMachineService(
@@ -473,6 +504,7 @@ export const machineController = {
   updateMachinePackageStatus,
   getMyWashingMachine,
   getMyGeneralMachine,
+  getAllMachinesListByUser,
   getUserConnectedMachine,
   getUserNonConnectedGeneralMachine,
   getAllMachineBy_id, // its user_id

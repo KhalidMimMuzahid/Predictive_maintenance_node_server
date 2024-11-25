@@ -120,6 +120,11 @@ export const SubscriptionSchema: Schema = new Schema<TSubscription>(
   {
     subscriptionTitle: {
       type: String,
+      required: true,
+    },
+    bannerUrl: {
+      type: String,
+      required: true,
     },
     package: packageSchema,
     price: priceSchema,

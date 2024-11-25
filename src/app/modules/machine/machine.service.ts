@@ -1,4 +1,9 @@
-import { TIssue, TMachine, TMachineHealthStatus } from './machine.interface';
+import {
+  TIssue,
+  TMachine,
+  TMachineCategory,
+  TMachineHealthStatus,
+} from './machine.interface';
 import { Machine } from './machine.model';
 
 import httpStatus from 'http-status';
@@ -484,11 +489,15 @@ const addModuleToMachineInToDB = async ({
   }
 };
 
-const addSensorAttachedModuleInToMachineIntoDB = async (
-  user: Types.ObjectId,
-  machine_id: Types.ObjectId,
-  sensorModuleAttached_id: Types.ObjectId,
-) => {
+const addSensorAttachedModuleInToMachineIntoDB = async ({
+  machine_id,
+  sensorModuleAttached_id,
+  sensorModuleAttachedData,
+}: {
+  machine_id: Types.ObjectId;
+  sensorModuleAttached_id: Types.ObjectId;
+  sensorModuleAttachedData: Partial<TSensorModuleAttached>;
+}) => {
   const sensorModuleAttached = await SensorModuleAttached.findById(
     sensorModuleAttached_id,
   );
@@ -498,14 +507,64 @@ const addSensorAttachedModuleInToMachineIntoDB = async (
       'this sensor module has already been attached to machine',
     );
   }
+
+  // ---------------------XXXXXXXXXXXXX----------------------
+  const isValid = await validateSectionNamesData({
+    moduleType: sensorModuleAttached?.moduleType,
+    sectionNamesData: sensorModuleAttachedData?.sectionName,
+  });
+
+  if (!isValid) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'section names data are not valid according to its module type',
+    );
+  }
+
+  const sectionNames = await predefinedValueServices.getIotSectionNames();
+
+  sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {
+    const isSectionNameValid = sectionNames.some(
+      (each) => each === sectionName,
+    );
+    if (!isSectionNameValid) {
+      // throw error
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'section names must be pre defined',
+      );
+    }
+  });
+  sensorModuleAttached?.sectionName?.temperature?.forEach((sectionName) => {
+    const isSectionNameValid = sectionNames.some(
+      (each) => each === sectionName,
+    );
+    if (!isSectionNameValid) {
+      // throw error
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'section names must be pre defined',
+      );
+    }
+  });
+  // ---------------------XXXXXXXXXXXXX----------------------
+
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
     const updatedSensorModuleAttached =
-      await SensorModuleAttached.findByIdAndUpdate(sensorModuleAttached_id, {
-        isAttached: true,
-        machine: machine_id,
-      });
+      await SensorModuleAttached.findByIdAndUpdate(
+        sensorModuleAttached_id,
+        {
+          isAttached: true,
+          machine: machine_id,
+          sectionName: sensorModuleAttachedData?.sectionName,
+          purpose: sensorModuleAttachedData?.purpose,
+        },
+        {
+          new: true,
+        },
+      );
 
     if (!updatedSensorModuleAttached) {
       throw new AppError(
@@ -640,7 +699,19 @@ const getUserNonConnectedGeneralMachineService = async (
   });
   return machines;
 };
-
+const getAllMachinesListByUser = async ({
+  user,
+  category,
+}: {
+  user: mongoose.Types.ObjectId;
+  category: TMachineCategory;
+}) => {
+  const result = await Machine.find({
+    user,
+    category,
+  }).select('_id machineNo category name brand model');
+  return result;
+};
 const deleteMachineService = async (
   machineId: Types.ObjectId,
   userId: Types.ObjectId,
@@ -1394,6 +1465,7 @@ export const machineServices = {
   getUserConnectedMachineService,
   getMyGeneralMachineService,
   getUserNonConnectedGeneralMachineService,
+  getAllMachinesListByUser,
   getAllMachineBy_id,
   getAllSensorSectionWiseByMachine,
   getMachineBy_id,
