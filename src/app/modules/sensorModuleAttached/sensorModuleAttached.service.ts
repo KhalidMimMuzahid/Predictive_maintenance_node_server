@@ -439,7 +439,7 @@ const getAttachedSensorModulesByUser = async ({
           purpose: 1,
           // isSwitchedOn: 1,
           moduleType: 1,
-          machine: { $arrayElemAt: ['$machine.category', 0] },
+          machine: { $arrayElemAt: ['$machine.name', 0] },
         },
       },
       {
@@ -483,7 +483,7 @@ const getAttachedSensorModulesByUser = async ({
           purpose: 1,
           // isSwitchedOn: 1,
           moduleType: 1,
-          machine: { $arrayElemAt: ['$machine.category', 0] },
+          machine: { $arrayElemAt: ['$machine.name', 0] },
         },
       },
       {

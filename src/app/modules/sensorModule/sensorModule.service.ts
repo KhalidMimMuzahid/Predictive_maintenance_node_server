@@ -31,6 +31,14 @@ const getAllSensorModules = async (status: TStatus) => {
 
   return sensors;
 };
+const getSensorModuleByMacAddress = async (macAddress: string) => {
+  const sensor = await SensorModule.findOne({
+    macAddress,
+    status: 'in-stock',
+  });
+
+  return sensor;
+};
 const deleteSensorModule = async (macAddress: string) => {
   // const filterQuery: any = {};
   // if (status) filterQuery['status'] = status;
@@ -164,5 +172,6 @@ const deleteSensorModule = async (macAddress: string) => {
 export const sensorModuleServices = {
   addSensorModuleIntoDB,
   getAllSensorModules,
+  getSensorModuleByMacAddress,
   deleteSensorModule,
 };

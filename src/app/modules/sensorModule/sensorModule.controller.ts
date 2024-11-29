@@ -51,6 +51,33 @@ const getAllSensorModules: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getSensorModuleByMacAddress: RequestHandler = catchAsync(
+  async (req, res) => {
+    // take query parameter like in stock or sold-out etc
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const macAddress: string = req?.query?.macAddress as string;
+
+    if (!macAddress) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'macAddress is required to get sensor module',
+      );
+    }
+    const result =
+      await sensorModuleServices.getSensorModuleByMacAddress(macAddress);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: ' sensor modules are retrieved successfully',
+      data: result,
+    });
+  },
+);
 const deleteSensorModule: RequestHandler = catchAsync(async (req, res) => {
   // take query parameter like in stock or sold-out etc
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -77,5 +104,6 @@ const deleteSensorModule: RequestHandler = catchAsync(async (req, res) => {
 export const sensorModuleControllers = {
   addSensorModule,
   getAllSensorModules,
+  getSensorModuleByMacAddress,
   deleteSensorModule,
 };
