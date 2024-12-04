@@ -1,45 +1,144 @@
 import mongoose, { Schema } from 'mongoose';
 import { IsDeletedSchema } from '../common/common.model';
-import { TTransaction } from './transaction.interface';
+import {
+  TAddFund,
+  TBonus,
+  TFundTransfer,
+  TPayment,
+  TTransaction,
+  TWalletInterchange,
+  TWalletStatus,
+} from './transaction.interface';
 
-export const TransactionSchema: Schema = new Schema<TTransaction>(
+const BonusSchema: Schema<TBonus> = new Schema<TBonus>({
+  type: {
+    type: String,
+    enum: ['joiningBonus', 'referenceBonus'],
+  },
+  joiningBonus: Schema.Types.Mixed, // Replace with detailed schema if required
+  referenceBonus: Schema.Types.Mixed, // Replace with detailed schema if required
+});
+const WalletStatusSchema: Schema<TWalletStatus> = new Schema<TWalletStatus>(
   {
-    category: {
+    previous: {
+      balance: { type: Number },
+      point: { type: Number },
+      showaMB: { type: Number },
+    },
+    next: {
+      balance: { type: Number },
+      point: { type: Number },
+      showaMB: { type: Number },
+    },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const WalletInterchangeSchema: Schema<TWalletInterchange> =
+  new Schema<TWalletInterchange>(
+    {
+      type: {
+        type: String,
+        enum: ['pointToBalance', 'balanceToShowaMB'],
+      },
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      walletStatus: WalletStatusSchema,
+      pointToBalance: {
+        point: { type: Number },
+        balance: { type: Number },
+        transactionFee: { type: Number },
+      },
+      balanceToShowaMB: {
+        balance: { type: Number },
+        showaMB: { type: Number },
+        transactionFee: { type: Number },
+      },
+    },
+    {
+      timestamps: false,
+      _id: false,
+    },
+  );
+
+const PaymentSchema: Schema<TPayment> = new Schema<TPayment>(
+  {
+    type: {
       type: String,
-      enum: [
-        'joining-bonus',
-        'reference-bonus',
-        'package-purchase',
-        'send-money',
-        'fund-transfer',
-        'payment',
-        'mb-transfer',
-        'add-fund',
-      ],
+      enum: ['productPurchase', 'subscriptionPurchase'],
+    },
+    productPurchase: Schema.Types.Mixed,
+    subscriptionPurchase: Schema.Types.Mixed,
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const FundTransferSchema: Schema<TFundTransfer> = new Schema<TFundTransfer>({
+  requestType: {
+    type: String,
+    enum: ['send', 'receive'],
+  },
+  fundType: {
+    type: String,
+    enum: ['balance', 'point', 'showaMB'],
+  },
+  sender: {
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    walletStatus: WalletStatusSchema,
+  },
+  receiver: {
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    walletStatus: WalletStatusSchema,
+  },
+  amount: { type: Number },
+  transactionFee: { type: Number },
+});
+const AddFundSchema: Schema<TAddFund> = new Schema<TAddFund>({
+  source: {
+    type: String,
+    enum: ['bankAccount', 'card'],
+  },
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
+  amount: { type: Number },
+  card: {
+    stripeSessionId: { type: String },
+    walletStatus: {
+      previous: {
+        balance: { type: Number },
+        point: { type: Number },
+        showaMB: { type: Number },
+      },
+      next: {
+        balance: { type: Number },
+        point: { type: Number },
+        showaMB: { type: Number },
+      },
+    },
+  },
+  bankAccount: Schema.Types.Mixed, // Replace with detailed schema if required
+  transactionFee: { type: Number },
+});
+const TransactionSchema: Schema<TTransaction> = new Schema<TTransaction>(
+  {
+    type: {
+      type: String,
+      enum: ['walletInterchange', 'fundTransfer', 'payment', 'addFund'],
       required: true,
     },
-    transactionId: { type: String, required: true },
+    bonus: BonusSchema,
+    walletInterchange: WalletInterchangeSchema,
+    payment: PaymentSchema,
+    fundTransfer: FundTransferSchema,
+    addFund: AddFundSchema,
     status: {
       type: String,
-      enum: ['pending', 'success', 'failure'],
-      required: true,
+      enum: ['pending', 'completed', 'failed'],
+      default: 'pending',
     },
-    paymentMethod: {
-      type: String,
-      enum: ['showa-balance', 'showa-point', 'card', 'showa-mb'],
-      required: true,
-    },
-    from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    recipient: { type: Schema.Types.ObjectId, ref: 'User' },
-    referenceId: { type: Schema.Types.ObjectId, ref: 'User' },
-    netAmount: { type: Number, default: 0 },
-    transactionFee: { type: Number, default: 0 },
-    totalAmount: { type: Number, default: 0 },
-    isDeleted: {
-      type: IsDeletedSchema,
-      required: true,
-      default: { value: false },
-    },
+    isDeleted: IsDeletedSchema,
   },
   {
     timestamps: true,
