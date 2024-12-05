@@ -1,12 +1,12 @@
 import { createTransport } from 'nodemailer';
-const senderEmail = 'khalidmimm@gmail.com';
+const senderEmail = 'showa.developer@gmail.com';
 const transporter = createTransport({
   host: 'smtp.gmail.com', //'smtp.ethereal.email', //, //, //  smtp.gmail.com
   port: 465, //587, //, // 465
   secure: true, // true for port 465, false for other ports
   auth: {
     user: senderEmail,
-    pass: 'vrtq xrnj igqm gacg',
+    pass: 'oadw pgmk dojz kqfq',
   },
 });
 

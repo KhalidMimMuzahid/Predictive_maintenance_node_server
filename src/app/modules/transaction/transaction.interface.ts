@@ -76,7 +76,7 @@ export type TAddFund = {
 };
 export type TTransactionStatus = 'pending' | 'completed' | 'failed'; //  success or approved?? which sounds good?
 export type TTransaction = {
-  type: 'walletInterchange' | 'fundTransfer' | 'payment' | 'addFund';
+  type: 'bonus' | 'walletInterchange' | 'fundTransfer' | 'payment' | 'addFund';
   bonus?: TBonus;
   walletInterchange?: TWalletInterchange;
   payment?: TPayment;

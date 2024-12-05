@@ -10,14 +10,20 @@ import {
   TWalletStatus,
 } from './transaction.interface';
 
-const BonusSchema: Schema<TBonus> = new Schema<TBonus>({
-  type: {
-    type: String,
-    enum: ['joiningBonus', 'referenceBonus'],
+const BonusSchema: Schema<TBonus> = new Schema<TBonus>(
+  {
+    type: {
+      type: String,
+      enum: ['joiningBonus', 'referenceBonus'],
+    },
+    joiningBonus: Schema.Types.Mixed, // Replace with detailed schema if required
+    referenceBonus: Schema.Types.Mixed, // Replace with detailed schema if required
   },
-  joiningBonus: Schema.Types.Mixed, // Replace with detailed schema if required
-  referenceBonus: Schema.Types.Mixed, // Replace with detailed schema if required
-});
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
 const WalletStatusSchema: Schema<TWalletStatus> = new Schema<TWalletStatus>(
   {
     previous: {
@@ -76,56 +82,75 @@ const PaymentSchema: Schema<TPayment> = new Schema<TPayment>(
     _id: false,
   },
 );
-const FundTransferSchema: Schema<TFundTransfer> = new Schema<TFundTransfer>({
-  requestType: {
-    type: String,
-    enum: ['send', 'receive'],
+const FundTransferSchema: Schema<TFundTransfer> = new Schema<TFundTransfer>(
+  {
+    requestType: {
+      type: String,
+      enum: ['send', 'receive'],
+    },
+    fundType: {
+      type: String,
+      enum: ['balance', 'point', 'showaMB'],
+    },
+    sender: {
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      walletStatus: WalletStatusSchema,
+    },
+    receiver: {
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      walletStatus: WalletStatusSchema,
+    },
+    amount: { type: Number },
+    transactionFee: { type: Number },
   },
-  fundType: {
-    type: String,
-    enum: ['balance', 'point', 'showaMB'],
+
+  {
+    timestamps: false,
+    _id: false,
   },
-  sender: {
+);
+const AddFundSchema: Schema<TAddFund> = new Schema<TAddFund>(
+  {
+    source: {
+      type: String,
+      enum: ['bankAccount', 'card'],
+    },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
-    walletStatus: WalletStatusSchema,
-  },
-  receiver: {
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
-    walletStatus: WalletStatusSchema,
-  },
-  amount: { type: Number },
-  transactionFee: { type: Number },
-});
-const AddFundSchema: Schema<TAddFund> = new Schema<TAddFund>({
-  source: {
-    type: String,
-    enum: ['bankAccount', 'card'],
-  },
-  user: { type: Schema.Types.ObjectId, ref: 'User' },
-  amount: { type: Number },
-  card: {
-    stripeSessionId: { type: String },
-    walletStatus: {
-      previous: {
-        balance: { type: Number },
-        point: { type: Number },
-        showaMB: { type: Number },
-      },
-      next: {
-        balance: { type: Number },
-        point: { type: Number },
-        showaMB: { type: Number },
+    amount: { type: Number },
+    card: {
+      stripeSessionId: { type: String },
+      walletStatus: {
+        previous: {
+          balance: { type: Number },
+          point: { type: Number },
+          showaMB: { type: Number },
+        },
+        next: {
+          balance: { type: Number },
+          point: { type: Number },
+          showaMB: { type: Number },
+        },
       },
     },
+    bankAccount: Schema.Types.Mixed, // Replace with detailed schema if required
+    transactionFee: { type: Number },
   },
-  bankAccount: Schema.Types.Mixed, // Replace with detailed schema if required
-  transactionFee: { type: Number },
-});
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
 const TransactionSchema: Schema<TTransaction> = new Schema<TTransaction>(
   {
     type: {
       type: String,
-      enum: ['walletInterchange', 'fundTransfer', 'payment', 'addFund'],
+      enum: [
+        'bonus',
+        'walletInterchange',
+        'fundTransfer',
+        'payment',
+        'addFund',
+      ],
       required: true,
     },
     bonus: BonusSchema,

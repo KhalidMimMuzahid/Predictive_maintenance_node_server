@@ -521,6 +521,7 @@ const addSensorAttachedModuleInToMachineIntoDB = async ({
     );
   }
 
+  // here we need to get IOT section names with machine category and type
   const sectionNames = await predefinedValueServices.getIotSectionNames();
 
   sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {

@@ -11,25 +11,15 @@ router.post(
   '/add-product-sub-categories',
   predefinedValueController.addProductSubCategories,
 );
-
-
-
-
 router.post(
   '/add-shop-categories',
   predefinedValueController.addShopCategories,
 );
-
-
-
 router.get(
   '/get-product-all-categories',
   predefinedValueController.getProductCategories,
 );
-
-
 router.get('/get-shop-categories', predefinedValueController.getShopCategories);
-
 //  sensorModuleAttached ---------------******---------------
 router.post(
   '/add-iot-section-name',
@@ -38,6 +28,10 @@ router.post(
 router.post(
   '/add-iot-section-name2',
   predefinedValueController.addIotSectionName2,
+);
+router.delete(
+  '/delete-iot-section-name2',
+  predefinedValueController.deleteIotSectionNames2,
 );
 router.get(
   '/get-iot-section-names',
@@ -76,6 +70,11 @@ router.post(
 );
 
 // customer ---------------******---------------
+// wallet ---------------******---------------
+router.post(
+  '/set-transaction-fee-for-wallet',
+  predefinedValueController.setTransactionFeeForWallet,
+);
 //  machine ---------------******---------------
 router.post(
   '/add-machine-brand-name',

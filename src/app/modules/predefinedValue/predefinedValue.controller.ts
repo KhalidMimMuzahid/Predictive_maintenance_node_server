@@ -7,6 +7,8 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { predefinedValueServices } from './predefinedValue.service';
 import { TMachineCategory } from '../machine/machine.interface';
+import { TTransactionFeeType } from './predefinedValue.interface';
+import { transactionFeeTypesArray } from './predefinedValue.const';
 
 const addProductCategories: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -145,6 +147,41 @@ const addIotSectionName2: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const deleteIotSectionNames2: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+
+  const category: TMachineCategory = req?.query?.category as TMachineCategory;
+  const type: string = req?.query?.type as string;
+  const sectionName: string = req?.query?.sectionName as string;
+  if (!category || !type || !sectionName) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category, type and   const sectionNames are required to add machine issue model wise',
+    );
+  }
+  if (category !== 'general-machine' && category !== 'washing-machine') {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category must be any of general-machine or washing-machine',
+    );
+  }
+
+  const result = await predefinedValueServices.deleteIotSectionNames2({
+    category: category,
+    type: type?.toLowerCase(),
+    sectionName: sectionName?.toLowerCase(),
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'IOT section name has deleted successfully',
+    data: result,
+  });
+});
 
 const addMachineBrandName: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -264,6 +301,49 @@ const addGeneralOrWashingMachineType: RequestHandler = catchAsync(
         type: type?.toLowerCase(),
       },
     );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'machine type has added successfully',
+      data: result,
+    });
+  },
+);
+
+const setTransactionFeeForWallet: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const transactionFeeType: TTransactionFeeType = req?.query
+      ?.transactionFeeType as TTransactionFeeType;
+    const transactionFeeString: string = req?.query?.transactionFee as string;
+    const transactionFee: number = parseInt(transactionFeeString);
+
+    if (!transactionFee) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'transactionFee is required to set transaction fee',
+      );
+    }
+    if (!transactionFeeTypesArray.some((each) => each === transactionFeeType)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `transactionFeeType must be any of ${transactionFeeTypesArray.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+    const result = await predefinedValueServices.setTransactionFeeForWallet({
+      transactionFee,
+      transactionFeeType,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -608,11 +688,14 @@ export const predefinedValueController = {
 
   addIotSectionName,
   addIotSectionName2,
+  deleteIotSectionNames2,
 
   addMachineBrandName,
   addMachineModelName,
   addMachineIssue,
   addGeneralOrWashingMachineType,
+
+  setTransactionFeeForWallet,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,

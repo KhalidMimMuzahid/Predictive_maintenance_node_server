@@ -1,7 +1,11 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import PredefinedValue from './predefinedValue.model';
-import { TPredefinedValue } from './predefinedValue.interface';
+import {
+  TPredefinedValue,
+  TTransactionFeeType,
+  TWallet,
+} from './predefinedValue.interface';
 import mongoose from 'mongoose';
 import { TMachineCategory } from '../machine/machine.interface';
 
@@ -196,7 +200,7 @@ const addIotSectionName2 = async ({
     { 'sensorModuleAttached.sectionNames2': 1 },
   );
 
-  let isDifferentCategoryAndType = false;
+  let isDifferentCategoryAndType = true;
   if (previousSectionNames2) {
     const sectionNamesList =
       previousSectionNames2?.sensorModuleAttached?.sectionNames2?.map(
@@ -214,11 +218,11 @@ const addIotSectionName2 = async ({
               );
             } else {
               each?.sectionNames?.push(sectionName);
+              isDifferentCategoryAndType = false;
               return each;
             }
           } else {
             // that means its a different brand and model
-            isDifferentCategoryAndType = true;
             return each;
           }
         },
@@ -269,7 +273,35 @@ const addIotSectionName2 = async ({
     }
   }
 };
+const deleteIotSectionNames2 = async ({
+  category,
+  type,
+  sectionName,
+}: {
+  category: TMachineCategory;
+  type: string;
+  sectionName: string;
+}) => {
+  // Update operation
+  const result = await PredefinedValue.updateOne(
+    {
+      type: 'sensorModuleAttached', // Ensure we target the right type
+      'sensorModuleAttached.sectionNames2.category': category,
+      'sensorModuleAttached.sectionNames2.type': type,
+    },
+    {
+      $pull: {
+        'sensorModuleAttached.sectionNames2.$.sectionNames': sectionName,
+      },
+    },
+  );
 
+  if (result.modifiedCount === 0) {
+    throw new AppError(httpStatus.BAD_REQUEST, `no data found to delete`);
+  }
+
+  return null;
+};
 const addMachineBrandName = async (brandName: string) => {
   const previousMachineBrands = await PredefinedValue.findOne(
     {
@@ -546,6 +578,395 @@ const addGeneralOrWashingMachineType = async ({
   }
 };
 
+const setTransactionFeeForWallet = async ({
+  transactionFee,
+  transactionFeeType,
+}: {
+  transactionFee: number;
+  transactionFeeType: TTransactionFeeType;
+}) => {
+  const newPredefinedWalletForNew: TWallet = {
+    bonus: {
+      joiningBonus: {
+        amount: 0,
+      },
+      referenceBonus: {
+        amount: 0,
+      },
+    },
+    walletInterchange: {
+      pointToBalance: {
+        transactionFee: 0,
+      },
+      balanceToShowaMB: {
+        transactionFee: 0,
+      },
+    },
+    payment: {
+      productPurchase: {
+        transactionFee: 0,
+      },
+      subscriptionPurchase: {
+        transactionFee: 0,
+      },
+    },
+    fundTransfer: {
+      transactionFee: 0,
+    },
+    addFund: {
+      card: {
+        transactionFee: 0,
+      },
+      bankAccount: {
+        transactionFee: 0,
+      },
+    },
+  };
+
+  if (transactionFeeType === 'bonus-joiningBonus') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.bonus': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.bonus.joiningBonus.amount = transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.bonus.joiningBonus.amount = transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'bonus-referenceBonus') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.bonus': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.bonus.referenceBonus.amount = transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.bonus.referenceBonus.amount = transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'walletInterchange-pointToBalance') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.walletInterchange': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.walletInterchange.pointToBalance.transactionFee =
+        transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.walletInterchange.pointToBalance.transactionFee =
+        transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'walletInterchange-balanceToShowaMB') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.walletInterchange': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.walletInterchange.balanceToShowaMB.transactionFee =
+        transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.walletInterchange.balanceToShowaMB.transactionFee =
+        transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'fundTransfer') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.fundTransfer': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.fundTransfer.transactionFee = transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.fundTransfer.transactionFee = transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'payment-productPurchase') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.payment': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.payment.productPurchase.transactionFee =
+        transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.payment.productPurchase.transactionFee =
+        transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'payment-subscriptionPurchase') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.payment': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.payment.subscriptionPurchase.transactionFee =
+        transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.payment.subscriptionPurchase.transactionFee =
+        transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'addFund-card') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.addFund': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.addFund.card.transactionFee = transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.addFund.card.transactionFee = transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  } else if (transactionFeeType === 'addFund-bankAccount') {
+    const predefineValue = await PredefinedValue.findOne(
+      {
+        type: 'wallet',
+      },
+      { 'wallet.addFund': 1 },
+    );
+
+    if (predefineValue) {
+      predefineValue.wallet.addFund.bankAccount.transactionFee = transactionFee;
+
+      const updatedPredefineValue = await predefineValue.save();
+
+      if (!updatedPredefineValue) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    } else {
+      newPredefinedWalletForNew.addFund.bankAccount.transactionFee =
+        transactionFee;
+
+      const createdTransactionFee = await PredefinedValue.create({
+        type: 'wallet',
+        wallet: newPredefinedWalletForNew,
+      });
+      if (!createdTransactionFee) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Something went wrong, please try again',
+        );
+      } else {
+        return null;
+      }
+    }
+  }
+};
 const addReservationRequestStatus = async (status: string) => {
   const previousStatus = await PredefinedValue.findOne(
     {
@@ -955,10 +1376,14 @@ export const predefinedValueServices = {
 
   addIotSectionName,
   addIotSectionName2,
+  deleteIotSectionNames2,
+
   addMachineBrandName,
   addMachineModelName,
   addMachineIssue,
   addGeneralOrWashingMachineType,
+
+  setTransactionFeeForWallet,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,

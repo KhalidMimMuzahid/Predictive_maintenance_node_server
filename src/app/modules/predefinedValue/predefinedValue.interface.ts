@@ -59,17 +59,73 @@ export type TMachine = {
   brands?: TBrands[];
   issues?: TIssue[];
 };
+
+export type TBonus = {
+  joiningBonus?: {
+    amount: number; // flat discount
+  };
+  referenceBonus?: {
+    amount: number; // flat or percentage discounts
+  };
+};
+export type TWalletInterchange = {
+  pointToBalance?: {
+    transactionFee: number;
+  };
+  balanceToShowaMB?: {
+    transactionFee: number;
+  };
+};
+export type TPayment = {
+  productPurchase?: {
+    transactionFee: number;
+  };
+  subscriptionPurchase?: {
+    transactionFee: number;
+  };
+};
+export type TFundTransfer = {
+  transactionFee: number; //
+};
+
+export type TAddFund = {
+  card?: {
+    transactionFee: number;
+  };
+  bankAccount?: {
+    transactionFee: number;
+  };
+};
+export type TTransactionFeeType =
+  | 'bonus-joiningBonus'
+  | 'bonus-referenceBonus'
+  | 'walletInterchange-pointToBalance'
+  | 'walletInterchange-balanceToShowaMB'
+  | 'fundTransfer'
+  | 'payment-productPurchase'
+  | 'payment-subscriptionPurchase'
+  | 'addFund-card'
+  | 'addFund-bankAccount';
+export type TWallet = {
+  bonus?: TBonus;
+  walletInterchange?: TWalletInterchange;
+  payment?: TPayment;
+  fundTransfer?: TFundTransfer;
+  addFund?: TAddFund;
+};
 export type TPredefinedValue = {
   type:
     | 'marketplace'
     | 'sensorModuleAttached'
     | 'customer'
     | 'reservationRequest'
-    | 'machine';
+    | 'machine'
+    | 'wallet';
 
   marketplace?: TMarketplace;
   sensorModuleAttached?: TSensorModuleAttached;
   customer?: TCustomer;
   reservationRequest?: TReservationRequest;
   machine?: TMachine;
+  wallet?: TWallet;
 };

@@ -13,6 +13,12 @@ import {
   TIssue,
   TTypes,
   TSectionName,
+  TWallet,
+  TBonus,
+  TWalletInterchange,
+  TPayment,
+  TFundTransfer,
+  TAddFund,
 } from './predefinedValue.interface';
 const CategorySchema = new Schema<TCategory>({
   category: String,
@@ -119,6 +125,79 @@ const machineSchema = new Schema<TMachine>({
     }),
   ],
 });
+const BonusSchema: Schema<TBonus> = new Schema<TBonus>(
+  {
+    joiningBonus: {
+      amount: { type: Number },
+    },
+    referenceBonus: {
+      amount: { type: Number },
+    },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const WalletInterchangeSchema: Schema<TWalletInterchange> =
+  new Schema<TWalletInterchange>(
+    {
+      pointToBalance: {
+        transactionFee: { type: Number },
+      },
+      balanceToShowaMB: {
+        transactionFee: { type: Number },
+      },
+    },
+    {
+      timestamps: false,
+      _id: false,
+    },
+  );
+const PaymentSchema: Schema<TPayment> = new Schema<TPayment>(
+  {
+    productPurchase: {
+      transactionFee: { type: Number },
+    },
+    subscriptionPurchase: {
+      transactionFee: { type: Number },
+    },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const FundTransferSchema: Schema<TFundTransfer> = new Schema<TFundTransfer>(
+  {
+    transactionFee: { type: Number },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const AddFundSchema: Schema<TAddFund> = new Schema<TAddFund>(
+  {
+    card: {
+      transactionFee: { type: Number },
+    },
+    bankAccount: {
+      transactionFee: { type: Number },
+    },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const walletSchema = new Schema<TWallet>({
+  bonus: BonusSchema,
+  walletInterchange: WalletInterchangeSchema,
+  payment: PaymentSchema,
+  fundTransfer: FundTransferSchema,
+  addFund: AddFundSchema,
+});
 const predefinedValueSchema = new Schema<TPredefinedValue>(
   {
     type: {
@@ -129,6 +208,7 @@ const predefinedValueSchema = new Schema<TPredefinedValue>(
         'customer',
         'reservationRequest',
         'machine',
+        'wallet',
       ],
       required: true,
     },
@@ -137,6 +217,7 @@ const predefinedValueSchema = new Schema<TPredefinedValue>(
     reservationRequest: ReservationRequestSchema,
     customer: customerSchema,
     machine: machineSchema,
+    wallet: walletSchema,
   },
   {
     timestamps: true,
