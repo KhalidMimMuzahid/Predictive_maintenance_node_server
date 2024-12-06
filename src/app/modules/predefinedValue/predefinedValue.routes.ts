@@ -75,6 +75,10 @@ router.post(
   '/set-transaction-fee-for-wallet',
   predefinedValueController.setTransactionFeeForWallet,
 );
+router.get(
+  '/get-transaction-fee-for-wallet',
+  predefinedValueController.getTransactionFeeForWallet,
+);
 //  machine ---------------******---------------
 router.post(
   '/add-machine-brand-name',

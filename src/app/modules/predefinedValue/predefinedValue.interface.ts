@@ -97,6 +97,7 @@ export type TAddFund = {
   };
 };
 export type TTransactionFeeType =
+  | 'all' // this is only for getting all predefined value for wallet
   | 'bonus-joiningBonus'
   | 'bonus-referenceBonus'
   | 'walletInterchange-pointToBalance'

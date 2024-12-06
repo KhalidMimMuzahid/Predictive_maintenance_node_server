@@ -7,6 +7,7 @@ import { Wallet } from '../wallet/wallet.model';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { updateWallet } from '../wallet/wallet.utils';
+import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 const stripe = new Stripe(config.stripeSecretKey);
 const createStripeCheckoutSession = async ({
   user,
@@ -78,21 +79,6 @@ const webhookForStripe = async ({
   const updatedTransactionData: Record<string, any> = {};
   // Handle the event
   if (event.type === 'checkout.session.async_payment_succeeded') {
-    // update wallet data
-
-    const walletStatus: TWalletStatus = {
-      previous: {
-        balance: walletData?.balance,
-        point: walletData?.point,
-        showaMB: walletData?.showaMB,
-      },
-      next: {
-        balance: walletData?.balance + transactionData?.addFund?.amount,
-        point: walletData?.point,
-        showaMB: walletData?.showaMB,
-      },
-    };
-    updatedTransactionData['addFund.card.walletStatus'] = walletStatus;
     updatedTransactionData['status'] = 'completed';
   } else if (event.type === 'checkout.session.async_payment_failed') {
     updatedTransactionData['status'] = 'failed';
@@ -108,7 +94,31 @@ const webhookForStripe = async ({
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-
+    // in percentage
+    const transactionFeeRate =
+      (await predefinedValueServices.getTransactionFeeForWallet(
+        'addFund-card',
+      )) as number;
+    const transactionFee =
+      (transactionData?.addFund?.amount / 100) * transactionFeeRate;
+    updatedTransactionData['addFund.transactionFee'] = transactionFee;
+    // update wallet data
+    const walletStatus: TWalletStatus = {
+      previous: {
+        balance: walletData?.balance,
+        point: walletData?.point,
+        showaMB: walletData?.showaMB,
+      },
+      next: {
+        balance:
+          walletData?.balance +
+          transactionData?.addFund?.amount -
+          transactionFee,
+        point: walletData?.point,
+        showaMB: walletData?.showaMB,
+      },
+    };
+    updatedTransactionData['addFund.card.walletStatus'] = walletStatus;
     const updatedTransaction = await Transaction.findOneAndUpdate(
       {
         'addFund.card.stripeSessionId': session.id,
@@ -118,21 +128,28 @@ const webhookForStripe = async ({
         session,
       },
     );
-    if (updatedTransaction) {
-      walletData.balance =
-        walletData?.balance + transactionData?.addFund?.amount;
-      // const updatedWalletData = await walletData.save({ session });
-      const updatedWalletData = await updateWallet({
-        wallet: walletData?._id,
-        balance: transactionData?.addFund?.amount,
-        session: session,
-      });
+    if (event.type === 'checkout.session.async_payment_succeeded') {
+      if (updatedTransaction) {
+        // const updatedWalletData = await walletData.save({ session });
+        const updatedWalletData = await updateWallet({
+          wallet: walletData?._id,
+          balance: transactionData?.addFund?.amount - transactionFee,
+          session: session,
+        });
 
-      if (updatedWalletData) {
-        await session.commitTransaction();
-        await session.endSession();
-        // we should send mail to user email
-        return null;
+        if (updatedWalletData) {
+          await session.commitTransaction();
+          await session.endSession();
+          // we should send mail to user email
+          return null;
+        } else {
+          await session.abortTransaction();
+          await session.endSession();
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'something went wrong, please try again',
+          );
+        }
       } else {
         await session.abortTransaction();
         await session.endSession();
@@ -142,10 +159,8 @@ const webhookForStripe = async ({
         );
       }
     } else {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'something went wrong, please try again',
-      );
+      await session.commitTransaction();
+      await session.endSession();
     }
   } catch (error) {
     await session.abortTransaction();
@@ -157,7 +172,55 @@ const webhookForStripe = async ({
     );
   }
 };
+
+const walletInterchangePointToBalance = async ({
+  user,
+  point,
+}: {
+  user: Types.ObjectId;
+  point: number;
+}) => {
+  //
+  console.log({
+    user,
+    point,
+  });
+};
+
+const fundTransferBalanceSend = async ({
+  sender,
+  receiver,
+  balance,
+}: {
+  sender: Types.ObjectId;
+  receiver: Types.ObjectId;
+  balance: number;
+}) => {
+  console.log({
+    sender,
+    receiver,
+    balance,
+  });
+};
+const fundTransferShowaMBSend = async ({
+  sender,
+  receiver,
+  showaMB,
+}: {
+  sender: Types.ObjectId;
+  receiver: Types.ObjectId;
+  showaMB: number;
+}) => {
+  console.log({
+    sender,
+    receiver,
+    showaMB,
+  });
+};
 export const transactionServices = {
   createStripeCheckoutSession,
   webhookForStripe,
+  walletInterchangePointToBalance,
+  fundTransferBalanceSend,
+  fundTransferShowaMBSend,
 };

@@ -967,6 +967,46 @@ const setTransactionFeeForWallet = async ({
     }
   }
 };
+
+const getTransactionFeeForWallet = async (
+  transactionFeeType: TTransactionFeeType,
+) => {
+  const predefineValue = await PredefinedValue.findOne(
+    {
+      type: 'wallet',
+    },
+    { wallet: 1 },
+  );
+
+  if (transactionFeeType === 'all') {
+    return predefineValue.wallet;
+  } else if (transactionFeeType === 'bonus-joiningBonus') {
+    return predefineValue.wallet.bonus.joiningBonus.amount || 0;
+  } else if (transactionFeeType === 'bonus-referenceBonus') {
+    return predefineValue.wallet.bonus.referenceBonus.amount || 0;
+  } else if (transactionFeeType === 'walletInterchange-pointToBalance') {
+    return (
+      predefineValue.wallet.walletInterchange.pointToBalance.transactionFee || 0
+    );
+  } else if (transactionFeeType === 'walletInterchange-balanceToShowaMB') {
+    return (
+      predefineValue.wallet.walletInterchange.balanceToShowaMB.transactionFee ||
+      0
+    );
+  } else if (transactionFeeType === 'fundTransfer') {
+    return predefineValue.wallet.fundTransfer.transactionFee || 0;
+  } else if (transactionFeeType === 'payment-productPurchase') {
+    return predefineValue.wallet.payment.productPurchase.transactionFee || 0;
+  } else if (transactionFeeType === 'payment-subscriptionPurchase') {
+    return (
+      predefineValue.wallet.payment.subscriptionPurchase.transactionFee || 0
+    );
+  } else if (transactionFeeType === 'addFund-card') {
+    return predefineValue.wallet.addFund.card.transactionFee || 0;
+  } else if (transactionFeeType === 'addFund-bankAccount') {
+    return predefineValue.wallet.addFund.bankAccount.transactionFee || 0;
+  }
+};
 const addReservationRequestStatus = async (status: string) => {
   const previousStatus = await PredefinedValue.findOne(
     {
@@ -1384,6 +1424,7 @@ export const predefinedValueServices = {
   addGeneralOrWashingMachineType,
 
   setTransactionFeeForWallet,
+  getTransactionFeeForWallet,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,

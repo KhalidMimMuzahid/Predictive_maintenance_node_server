@@ -353,6 +353,41 @@ const setTransactionFeeForWallet: RequestHandler = catchAsync(
     });
   },
 );
+
+const getTransactionFeeForWallet: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+    // we are checking the permission of this api
+    checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+    const transactionFeeType: TTransactionFeeType = req?.query
+      ?.transactionFeeType as TTransactionFeeType;
+
+    if (!transactionFeeTypesArray.some((each) => each === transactionFeeType)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `transactionFeeType must be any of ${transactionFeeTypesArray.reduce(
+          (total, current) => {
+            total = total + `${current}, `;
+            return total;
+          },
+          '',
+        )}`,
+      );
+    }
+    const result =
+      await predefinedValueServices.getTransactionFeeForWallet(
+        transactionFeeType,
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'predefined value for wallet has retrieved successfully',
+      data: result,
+    });
+  },
+);
 const addReservationRequestStatus: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -696,6 +731,7 @@ export const predefinedValueController = {
   addGeneralOrWashingMachineType,
 
   setTransactionFeeForWallet,
+  getTransactionFeeForWallet,
 
   addReservationRequestStatus,
   addReservationRequestNearestLocation,
