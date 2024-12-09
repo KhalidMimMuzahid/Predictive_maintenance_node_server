@@ -725,6 +725,60 @@ const updateFundTransferBalanceReceiveStatus = async ({
     throw error;
   }
 };
+
+const getMyAllFundTransferRequests = async ({
+  user,
+  requestType,
+}: {
+  user: Types.ObjectId;
+  requestType: 'sent' | 'received';
+}) => {
+  if (requestType === 'received') {
+    // const transactions = await Transaction.find({
+    //   type: 'fundTransfer',
+    //   'fundTransfer.requestType': 'receive',
+    //   'fundTransfer.fundType': 'balance',
+    //   'fundTransfer.sender.user': user,
+    // });
+    const transactions = await Transaction.aggregate([
+      {
+        $match: {
+          type: 'fundTransfer',
+          'fundTransfer.requestType': 'receive',
+          'fundTransfer.fundType': 'balance',
+          'fundTransfer.sender.user': user,
+        },
+        // $lookup: {
+        //   from: 'user', // Name of the showaUser collection
+        //   localField: 'fundTransfer.receiver.user',
+        //   foreignField: '_id',
+        //   as: 'fundTransfer.receiver.user',
+        // },
+      },
+    ]);
+    return transactions;
+  } else if (requestType === 'sent') {
+    const transactions = await Transaction.aggregate([
+      {
+        $match: {
+          type: 'fundTransfer',
+          'fundTransfer.requestType': 'receive',
+          'fundTransfer.fundType': 'balance',
+          'fundTransfer.receiver.user': user,
+        },
+      },
+      // {
+      //   $lookup: {
+      //     from: 'users', // Name of the showaUser collection
+      //     localField: 'fundTransfer.receiver.user',
+      //     foreignField: '_id',
+      //     as: 'fundTransfer.receiver.user',
+      //   },
+      // },
+    ]);
+    return transactions;
+  }
+};
 export const transactionServices = {
   createStripeCheckoutSession,
   webhookForStripe,
@@ -733,4 +787,5 @@ export const transactionServices = {
   fundTransferShowaMBSend,
   fundTransferBalanceReceive,
   updateFundTransferBalanceReceiveStatus,
+  getMyAllFundTransferRequests,
 };

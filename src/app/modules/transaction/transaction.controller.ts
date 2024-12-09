@@ -213,6 +213,32 @@ const updateFundTransferBalanceReceiveStatus: RequestHandler = catchAsync(
     });
   },
 );
+
+const getMyAllFundTransferRequests: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const requestType = req?.query?.requestType as 'sent' | 'received';
+
+    if (requestType !== 'sent' && requestType !== 'received') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'requestType is required to get transaction request',
+      );
+    }
+    const result = await transactionServices.getMyAllFundTransferRequests({
+      user: auth?._id,
+      requestType,
+    });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'transaction has updated successfully',
+      data: result,
+    });
+  },
+);
 export const transactionControllers = {
   // getRecentTransfers,
   createStripeCheckoutSession,
@@ -222,4 +248,6 @@ export const transactionControllers = {
   fundTransferShowaMBSend,
   fundTransferBalanceReceive,
   updateFundTransferBalanceReceiveStatus,
+
+  getMyAllFundTransferRequests,
 };

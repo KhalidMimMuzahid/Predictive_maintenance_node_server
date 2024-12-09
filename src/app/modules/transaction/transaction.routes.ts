@@ -42,6 +42,10 @@ router.patch(
   '/update-fund-transfer-balance-receive-status',
   transactionControllers.updateFundTransferBalanceReceiveStatus,
 );
+router.get(
+  '/get-my-all-fund-transfer-requests',
+  transactionControllers.getMyAllFundTransferRequests,
+);
 
 export const transactionRoutes = router;
                                                                                          
