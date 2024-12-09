@@ -68,6 +68,7 @@ export type TBonus = {
     amount: number; // flat or percentage discounts
   };
 };
+
 export type TWalletInterchange = {
   pointToBalance?: {
     transactionFee: number;
@@ -84,6 +85,7 @@ export type TPayment = {
     transactionFee: number;
   };
 };
+
 export type TFundTransfer = {
   transactionFee: number; //
 };
@@ -107,6 +109,9 @@ export type TTransactionFeeType =
   | 'payment-subscriptionPurchase'
   | 'addFund-card'
   | 'addFund-bankAccount';
+  
+
+
 export type TWallet = {
   bonus?: TBonus;
   walletInterchange?: TWalletInterchange;

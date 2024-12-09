@@ -8,6 +8,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { updateWallet } from '../wallet/wallet.utils';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
+import PredefinedValue from '../predefinedValue/predefinedValue.model';
 const stripe = new Stripe(config.stripeSecretKey);
 const createStripeCheckoutSession = async ({
   user,
@@ -175,47 +176,539 @@ const webhookForStripe = async ({
 
 const walletInterchangePointToBalance = async ({
   user,
-  point,
+  point: interchangingPoint,
 }: {
   user: Types.ObjectId;
   point: number;
 }) => {
-  //
-  console.log({
-    user,
-    point,
-  });
+  const wallet = await Wallet.findOne({ user: user }).select(
+    'balance point showaMB',
+  );
+
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'wallet',
+    },
+    {
+      'wallet.walletInterchange.pointToBalance.transactionFee': 1,
+    },
+  );
+
+  if (interchangingPoint > wallet?.point) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'you have not enough points');
+  }
+
+  const pointToBalanceRate = 1 / 100; // cause 1 balance = 100 points
+  const balanceToBeAddedBeforeApplyingTransactionFee =
+    interchangingPoint * pointToBalanceRate;
+  // transactionFee in percentage
+  const transactionFeeRate =
+    predefinedValue?.wallet?.walletInterchange?.pointToBalance
+      ?.transactionFee || 0;
+  const transactionFee =
+    balanceToBeAddedBeforeApplyingTransactionFee * (transactionFeeRate / 100);
+
+  const balanceToBeAddedAfterApplyingTransactionFee =
+    balanceToBeAddedBeforeApplyingTransactionFee - transactionFee;
+
+  if (
+    transactionFee >
+    balanceToBeAddedAfterApplyingTransactionFee + wallet?.balance
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you have not enough balance as transaction fee',
+    );
+  }
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const isUpdated = await updateWallet({
+      wallet: wallet?._id,
+      balance: balanceToBeAddedAfterApplyingTransactionFee,
+      point: -interchangingPoint, // deducted from wallet
+      // showaMB:0,
+      session,
+    });
+    if (isUpdated) {
+      const createdTransactionArray = await Transaction.create(
+        [
+          {
+            type: 'walletInterchange',
+            walletInterchange: {
+              type: 'pointToBalance',
+              user: user,
+              walletStatus: {
+                previous: {
+                  balance: wallet?.balance,
+                  point: wallet?.point,
+                  showaMB: wallet?.showaMB,
+                },
+                next: {
+                  balance:
+                    wallet?.balance +
+                    balanceToBeAddedAfterApplyingTransactionFee,
+                  point: wallet?.point - interchangingPoint,
+                  showaMB: wallet?.showaMB,
+                },
+              },
+              pointToBalance: {
+                point: interchangingPoint,
+                balance: balanceToBeAddedBeforeApplyingTransactionFee,
+                transactionFee: transactionFee,
+              },
+            },
+            status: 'completed',
+          },
+        ],
+
+        { session },
+      );
+      const createdTransaction = createdTransactionArray[0];
+      if (!createdTransaction) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'something went wrong, please try again',
+        );
+      }
+      await session.commitTransaction();
+      await session.endSession();
+      return null;
+    } else {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 
 const fundTransferBalanceSend = async ({
   sender,
   receiver,
-  balance,
+  balance: sendingBalance,
 }: {
   sender: Types.ObjectId;
   receiver: Types.ObjectId;
   balance: number;
 }) => {
-  console.log({
-    sender,
-    receiver,
-    balance,
-  });
+  const senderWallet = await Wallet.findOne({ user: sender }).select(
+    'balance point showaMB',
+  );
+  const receiverWallet = await Wallet.findOne({ user: receiver }).select(
+    'balance point showaMB',
+  );
+
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'wallet',
+    },
+    {
+      'wallet.fundTransfer.transactionFee': 1,
+    },
+  );
+
+  // transactionFee in percentage
+  const transactionFeeRate =
+    predefinedValue?.wallet?.fundTransfer?.transactionFee || 0;
+  const transactionFee = sendingBalance * (transactionFeeRate / 100);
+  if (sendingBalance + transactionFee > senderWallet?.balance) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'you have not enough balance');
+  }
+  // const balanceToBeAddedAfterApplyingTransactionFee =
+  //   sendingBalance - transactionFee;
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const isUpdatedForSender = await updateWallet({
+      wallet: senderWallet?._id,
+      balance: -(sendingBalance + transactionFee),
+      // point: 0,
+      // showaMB:0,
+      session,
+    });
+    if (!isUpdatedForSender) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const isUpdatedForReceiver = await updateWallet({
+      wallet: receiverWallet?._id,
+      balance: sendingBalance,
+      // point: 0,
+      // showaMB:0,
+      session,
+    });
+    if (!isUpdatedForReceiver) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const createdTransactionArray = await Transaction.create(
+      [
+        {
+          type: 'fundTransfer',
+          fundTransfer: {
+            requestType: 'send',
+            fundType: 'balance',
+            sender: {
+              user: sender,
+              walletStatus: {
+                previous: {
+                  balance: senderWallet?.balance,
+                  point: senderWallet?.point,
+                  showaMB: senderWallet?.showaMB,
+                },
+                next: {
+                  balance:
+                    senderWallet?.balance - (sendingBalance + transactionFee),
+                  point: senderWallet?.point,
+                  showaMB: senderWallet?.showaMB,
+                },
+              },
+            },
+            receiver: {
+              user: receiver,
+              walletStatus: {
+                previous: {
+                  balance: receiverWallet?.balance,
+                  point: receiverWallet?.point,
+                  showaMB: receiverWallet?.showaMB,
+                },
+                next: {
+                  balance: receiverWallet?.balance + sendingBalance,
+                  point: receiverWallet?.point,
+                  showaMB: receiverWallet?.showaMB,
+                },
+              },
+            },
+            amount: sendingBalance,
+            transactionFee: transactionFee,
+          },
+          status: 'completed',
+        },
+      ],
+      { session },
+    );
+    const createdTransaction = createdTransactionArray[0];
+    if (!createdTransaction) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    await session.commitTransaction();
+    await session.endSession();
+    return null;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 const fundTransferShowaMBSend = async ({
   sender,
   receiver,
-  showaMB,
+  showaMB: sendingShowaMB,
 }: {
   sender: Types.ObjectId;
   receiver: Types.ObjectId;
   showaMB: number;
 }) => {
-  console.log({
-    sender,
-    receiver,
-    showaMB,
+  const senderWallet = await Wallet.findOne({ user: sender }).select(
+    'balance point showaMB',
+  );
+  const receiverWallet = await Wallet.findOne({ user: receiver }).select(
+    'balance point showaMB',
+  );
+
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'wallet',
+    },
+    {
+      'wallet.fundTransfer.transactionFee': 1,
+    },
+  );
+
+  if (sendingShowaMB > senderWallet?.showaMB) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'you have not enough showaMB');
+  }
+
+  // transactionFee in percentage
+  const equivalentBalanceFromShowaMB = sendingShowaMB * 100; // if 1 showaMB is equivalent to 100 yen
+  const transactionFeeRate =
+    predefinedValue?.wallet?.fundTransfer?.transactionFee || 0;
+  const transactionFee =
+    equivalentBalanceFromShowaMB * (transactionFeeRate / 100);
+
+  if (transactionFee > senderWallet?.balance) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you have not enough balance to send showaMB as transaction fee',
+    );
+  }
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const isUpdatedForSender = await updateWallet({
+      wallet: senderWallet?._id,
+      balance: -transactionFee,
+      // point: 0,
+      showaMB: -sendingShowaMB,
+      session,
+    });
+    if (!isUpdatedForSender) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const isUpdatedForReceiver = await updateWallet({
+      wallet: receiverWallet?._id,
+      // balance:0,
+      // point: 0,
+      showaMB: sendingShowaMB,
+      session,
+    });
+    if (!isUpdatedForReceiver) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const createdTransactionArray = await Transaction.create(
+      [
+        {
+          type: 'fundTransfer',
+          fundTransfer: {
+            requestType: 'send',
+            fundType: 'showaMB',
+            sender: {
+              user: sender,
+              walletStatus: {
+                previous: {
+                  balance: senderWallet?.balance,
+                  point: senderWallet?.point,
+                  showaMB: senderWallet?.showaMB,
+                },
+                next: {
+                  balance: senderWallet?.balance - transactionFee,
+                  point: senderWallet?.point,
+                  showaMB: senderWallet?.showaMB - sendingShowaMB,
+                },
+              },
+            },
+            receiver: {
+              user: receiver,
+              walletStatus: {
+                previous: {
+                  balance: receiverWallet?.balance,
+                  point: receiverWallet?.point,
+                  showaMB: receiverWallet?.showaMB,
+                },
+                next: {
+                  balance: receiverWallet?.balance,
+                  point: receiverWallet?.point,
+                  showaMB: receiverWallet?.showaMB + sendingShowaMB,
+                },
+              },
+            },
+            amount: sendingShowaMB,
+            transactionFee: transactionFee,
+          },
+          status: 'completed',
+        },
+      ],
+      { session },
+    );
+    const createdTransaction = createdTransactionArray[0];
+    if (!createdTransaction) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    await session.commitTransaction();
+    await session.endSession();
+    return null;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+};
+
+const fundTransferBalanceReceive = async ({
+  balance,
+  sender,
+  receiver,
+}: {
+  balance: number;
+  sender: Types.ObjectId;
+  receiver: Types.ObjectId;
+}) => {
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'wallet',
+    },
+    {
+      'wallet.fundTransfer.transactionFee': 1,
+    },
+  );
+  // transactionFee in percentage
+  const transactionFeeRate =
+    predefinedValue?.wallet?.fundTransfer?.transactionFee || 0;
+  const transactionFee = balance * (transactionFeeRate / 100);
+
+  const createdTransaction = await Transaction.create({
+    type: 'fundTransfer',
+    fundTransfer: {
+      requestType: 'receive',
+      fundType: 'balance',
+      sender: {
+        user: sender,
+        walletStatus: {},
+      },
+      receiver: {
+        user: receiver,
+        walletStatus: {},
+      },
+      amount: balance,
+      transactionFee: transactionFee,
+    },
+    status: 'pending',
   });
+
+  if (!createdTransaction) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'something we wrong, please try again',
+    );
+  }
+  return true;
+};
+
+const updateFundTransferBalanceReceiveStatus = async ({
+  transaction,
+  sender,
+}: {
+  transaction: Types.ObjectId;
+  sender: Types.ObjectId;
+}) => {
+  const transactionData = await Transaction.findOne({
+    _id: transaction,
+    type: 'fundTransfer',
+    status: 'pending',
+    'fundTransfer.requestType': 'receive',
+    'fundTransfer.fundType': 'balance',
+    'fundTransfer.sender.user': sender,
+  });
+  const senderData = transactionData?.fundTransfer?.sender;
+  const receiverData = transactionData?.fundTransfer?.receiver;
+
+  const senderWallet = await Wallet.findOne({ user: senderData?.user }).select(
+    'balance point showaMB',
+  );
+  const receiverWallet = await Wallet.findOne({
+    user: receiverData?.user,
+  }).select('balance point showaMB');
+  const sendingAmount = transactionData?.fundTransfer?.amount;
+  const transactionFee = transactionData?.fundTransfer?.transactionFee;
+  if (sendingAmount + transactionFee > senderWallet?.balance) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'you have not enough balance to transfer',
+    );
+  }
+  // accepting transactions by  donor
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const isUpdatedForSender = await updateWallet({
+      wallet: senderWallet?._id,
+      balance: -(sendingAmount + transactionFee),
+      // point: 0,
+      // showaMB:0,
+      session,
+    });
+    if (!isUpdatedForSender) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    const isUpdatedForReceiver = await updateWallet({
+      wallet: receiverWallet?._id,
+      balance: sendingAmount,
+      // point: 0,
+      // showaMB:0,
+      session,
+    });
+    if (!isUpdatedForReceiver) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+
+    const walletStatusForSender = {
+      previous: {
+        balance: senderWallet?.balance,
+        point: senderWallet?.point,
+        showaMB: senderWallet?.showaMB,
+      },
+      next: {
+        balance: senderWallet?.balance - (sendingAmount + transactionFee),
+        point: senderWallet?.point,
+        showaMB: senderWallet?.showaMB,
+      },
+    };
+
+    const walletStatusForReceiver = {
+      previous: {
+        balance: receiverWallet?.balance,
+        point: receiverWallet?.point,
+        showaMB: receiverWallet?.showaMB,
+      },
+      next: {
+        balance: receiverWallet?.balance + sendingAmount,
+        point: receiverWallet?.point,
+        showaMB: receiverWallet?.showaMB,
+      },
+    };
+    transactionData.fundTransfer.sender.walletStatus = walletStatusForSender;
+    transactionData.fundTransfer.receiver.walletStatus =
+      walletStatusForReceiver;
+    transactionData.status = 'completed';
+    const updatedTransactionData = await transactionData.save({ session });
+    if (!updatedTransactionData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    await session.commitTransaction();
+    await session.endSession();
+    return null;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 export const transactionServices = {
   createStripeCheckoutSession,
@@ -223,4 +716,6 @@ export const transactionServices = {
   walletInterchangePointToBalance,
   fundTransferBalanceSend,
   fundTransferShowaMBSend,
+  fundTransferBalanceReceive,
+  updateFundTransferBalanceReceiveStatus,
 };

@@ -150,7 +150,61 @@ const fundTransferShowaMBSend: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const fundTransferBalanceReceive: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const sender = req?.query?.sender as string; // from donor, I mean from whom this balance will be deducted
 
+    const balanceString = req?.query?.balance as string;
+    const balance: number = parseInt(balanceString) as number;
+
+    if (!balance || !sender) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'balance and sender are required to receive balance',
+      );
+    }
+    const result = await transactionServices.fundTransferBalanceReceive({
+      balance,
+      sender: new Types.ObjectId(sender),
+      receiver: auth?._id,
+    });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'requested for receiving balance successfully',
+      data: result,
+    });
+  },
+);
+
+const updateFundTransferBalanceReceiveStatus: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const transaction = req?.query?.transaction as string;
+    if (!transaction) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'transaction is required to receive balance',
+      );
+    }
+    const result =
+      await transactionServices.updateFundTransferBalanceReceiveStatus({
+        transaction: new Types.ObjectId(transaction),
+        sender: auth?._id,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'transaction has updated successfully',
+      data: result,
+    });
+  },
+);
 export const transactionControllers = {
   // getRecentTransfers,
   createStripeCheckoutSession,
@@ -158,4 +212,6 @@ export const transactionControllers = {
   walletInterchangePointToBalance,
   fundTransferBalanceSend,
   fundTransferShowaMBSend,
+  fundTransferBalanceReceive,
+  updateFundTransferBalanceReceiveStatus,
 };

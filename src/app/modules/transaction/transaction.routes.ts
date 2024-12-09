@@ -34,10 +34,14 @@ router.post(
   transactionControllers.fundTransferShowaMBSend,
 );
 
-// router.post(
-//   '/fund-transfer-balance-receive',
-//   transactionControllers.fundTransferBalanceReceive,
-// );
+router.post(
+  '/fund-transfer-balance-receive',
+  transactionControllers.fundTransferBalanceReceive,
+);
+router.patch(
+  '/update-fund-transfer-balance-receive-status',
+  transactionControllers.updateFundTransferBalanceReceiveStatus,
+);
 
 export const transactionRoutes = router;
                                                                                          

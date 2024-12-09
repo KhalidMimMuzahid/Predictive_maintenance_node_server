@@ -3,9 +3,9 @@ import { Wallet } from './wallet.model';
 
 export const updateWallet = async ({
   wallet,
-  balance,
-  point,
-  showaMB,
+  balance = 0,
+  point = 0,
+  showaMB = 0,
   session,
 }: {
   wallet: Types.ObjectId;
