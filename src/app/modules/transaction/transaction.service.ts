@@ -604,9 +604,11 @@ const fundTransferBalanceReceive = async ({
 const updateFundTransferBalanceReceiveStatus = async ({
   transaction,
   sender,
+  status,
 }: {
   transaction: Types.ObjectId;
   sender: Types.ObjectId;
+  status: 'completed' | 'failed';
 }) => {
   const transactionData = await Transaction.findOne({
     _id: transaction,
@@ -616,6 +618,19 @@ const updateFundTransferBalanceReceiveStatus = async ({
     'fundTransfer.fundType': 'balance',
     'fundTransfer.sender.user': sender,
   });
+
+  if (status === 'failed') {
+    transactionData.status = 'failed';
+    const updatedTransactionData = await transactionData.save();
+    if (!updatedTransactionData) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
+    return null;
+  }
+  // for status = 'completed'
   const senderData = transactionData?.fundTransfer?.sender;
   const receiverData = transactionData?.fundTransfer?.receiver;
 

@@ -185,16 +185,24 @@ const updateFundTransferBalanceReceiveStatus: RequestHandler = catchAsync(
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
     checkUserAccessApi({ auth, accessUsers: 'all' });
     const transaction = req?.query?.transaction as string;
+    const status = req?.query?.status as 'completed' | 'failed';
     if (!transaction) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
         'transaction is required to receive balance',
       );
     }
+    if (status !== 'completed' && status !== 'failed') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'status must be any of completed or failed',
+      );
+    }
     const result =
       await transactionServices.updateFundTransferBalanceReceiveStatus({
         transaction: new Types.ObjectId(transaction),
         sender: auth?._id,
+        status,
       });
     // send response
     sendResponse(res, {
