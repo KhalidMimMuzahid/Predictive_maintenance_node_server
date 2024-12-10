@@ -79,6 +79,7 @@ const webhookForStripe = async ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updatedTransactionData: Record<string, any> = {};
   // Handle the event
+
   if (event.type === 'checkout.session.async_payment_succeeded') {
     updatedTransactionData['status'] = 'completed';
   } else if (event.type === 'checkout.session.async_payment_failed') {
@@ -97,29 +98,32 @@ const webhookForStripe = async ({
     session.startTransaction();
     // in percentage
     const transactionFeeRate =
-      (await predefinedValueServices.getTransactionFeeForWallet(
+      ((await predefinedValueServices.getTransactionFeeForWallet(
         'addFund-card',
-      )) as number;
+      )) as number) || 0;
     const transactionFee =
       (transactionData?.addFund?.amount / 100) * transactionFeeRate;
     updatedTransactionData['addFund.transactionFee'] = transactionFee;
-    // update wallet data
-    const walletStatus: TWalletStatus = {
-      previous: {
-        balance: walletData?.balance,
-        point: walletData?.point,
-        showaMB: walletData?.showaMB,
-      },
-      next: {
-        balance:
-          walletData?.balance +
-          transactionData?.addFund?.amount -
-          transactionFee,
-        point: walletData?.point,
-        showaMB: walletData?.showaMB,
-      },
-    };
-    updatedTransactionData['addFund.card.walletStatus'] = walletStatus;
+    if (event.type === 'checkout.session.async_payment_succeeded') {
+      // update wallet data
+      const walletStatus: TWalletStatus = {
+        previous: {
+          balance: walletData?.balance,
+          point: walletData?.point,
+          showaMB: walletData?.showaMB,
+        },
+        next: {
+          balance:
+            walletData?.balance +
+            transactionData?.addFund?.amount -
+            transactionFee,
+          point: walletData?.point,
+          showaMB: walletData?.showaMB,
+        },
+      };
+      updatedTransactionData['addFund.card.walletStatus'] = walletStatus;
+    }
+
     const updatedTransaction = await Transaction.findOneAndUpdate(
       {
         'addFund.card.stripeSessionId': session.id,
