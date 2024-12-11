@@ -24,11 +24,7 @@ async function main() {
   try {
     const io = new Server(server, { cors: { origin: '*' } });
 
-    app.use(
-      '/api/v2/transaction2/webhook',
-      express.raw({ type: 'application/json' }),
-      transactionRoutes,
-    );
+    app.use('/api/v2/transaction2/webhook', transactionRoutes);
     //parsers
     app.use(express.json());
     app.use(cors());

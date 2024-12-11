@@ -79,10 +79,14 @@ const webhookForStripe = async ({
       // Verify the event using the raw body and the signature
       event = stripe.webhooks.constructEvent(bodyData, sig, endpointSecret);
     } catch (err) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        `Error of f__k:${err.message}`,
-      );
+      err.bodyData = bodyData;
+      err.sig = sig;
+      err.message = `Error of f__k:${err.message}`;
+      throw err;
+      // throw new AppError(
+      //   httpStatus.BAD_REQUEST,
+      //   `Error of f__k:${err.message}`,
+      // );
     }
 
 
