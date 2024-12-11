@@ -29,12 +29,20 @@ async function main() {
       if (pathname?.endsWith('webhook-for-stripe')) {
         express.raw({ type: 'application/json' })(req, res, next);
       } else {
-        express.json()(req, res, next);
+        // express.json()(req, res, next);
+
+        express.json()(req, res, (err) => {
+          if (err) return next(err); // Handle JSON parsing errors
+          cors()(req, res, (err) => {
+            if (err) return next(err); // Handle CORS errors
+            fileUpload()(req, res, next); // Proceed with fileUpload
+          });
+        });
       }
     });
-    app.use(cors());
-    // app.use(express.urlencoded({extended: true}))
-    app.use(fileUpload());
+    // app.use(cors());
+    // // app.use(express.urlencoded({extended: true}))
+    // app.use(fileUpload());
     io.on('connection', (socket) => {
       const socketId = socket?.id;
       // console.log(`${socket.id} socket just connected!`);
@@ -135,7 +143,7 @@ async function main() {
       //   // }
       // }
       res.status(200).json({
-        message: 'Welcome to Showa home version 2.0.14',
+        message: 'Welcome to Showa home version 2.0.15',
       });
     };
     app.use('/', showWelcome);
