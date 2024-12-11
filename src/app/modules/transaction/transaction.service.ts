@@ -68,7 +68,24 @@ const webhookForStripe = async ({
   const endpointSecret =
     'whsec_3230366b25d304594a4af2b572f02e6bb03a80953f7939a21746bc1306828872';
 
-  const event = stripe.webhooks.constructEvent(bodyData, sig, endpointSecret);
+
+    if (!sig) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'signature has missing');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let event: any;
+    try {
+      // Verify the event using the raw body and the signature
+      event = stripe.webhooks.constructEvent(bodyData, sig, endpointSecret);
+    } catch (err) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `Error of f__k:${err.message}`,
+      );
+    }
+
+
   const sessionForStripe = event.data.object as Stripe.Checkout.Session;
   const transactionData = await Transaction.findOne({
     'addFund.card.stripeSessionId': sessionForStripe.id,
