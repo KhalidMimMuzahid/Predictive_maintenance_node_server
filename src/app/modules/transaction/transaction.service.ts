@@ -180,7 +180,7 @@ const webhookForStripe = async ({
           await session.endSession();
           throw new AppError(
             httpStatus.BAD_REQUEST,
-            'something went wrong, please try again',
+            'something went wrong, please try again1',
           );
         }
       } else {
@@ -188,7 +188,7 @@ const webhookForStripe = async ({
         await session.endSession();
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          'something went wrong, please try again',
+          'something went wrong, please try again2',
         );
       }
     } else {
@@ -201,7 +201,7 @@ const webhookForStripe = async ({
     // throw error;
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'something went wrong, please try again',
+      'something went wrong, please try again3',
     );
   }
 };
