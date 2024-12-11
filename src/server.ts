@@ -7,12 +7,13 @@ import cors from 'cors';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFoundErrorHandler from './app/middlewares/notFOund';
 import router from './app/routes/index';
-const routerForStripeWebHook = express.Router();
+// const routerForStripeWebHook = express.Router();
 import { manageAuth } from './app/middlewares/manageAuth';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import fileUpload from 'express-fileupload';
-import { transactionControllers } from './app/modules/transaction/transaction.controller';
+// import { transactionControllers } from './app/modules/transaction/transaction.controller';
+import { transactionRoutes } from './app/modules/transaction/transaction.routes';
 // import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
 // import { CronJob } from 'cron';
 
@@ -23,10 +24,10 @@ async function main() {
   try {
     const io = new Server(server, { cors: { origin: '*' } });
 
-    routerForStripeWebHook.post(
-      '/api/v2/transaction/webhook-for-stripe',
+    app.use(
+      '/api/v2/transaction/webhook',
       express.raw({ type: 'application/json' }),
-      transactionControllers.webhookForStripe,
+      transactionRoutes,
     );
     //parsers
     app.use(express.json());
@@ -151,7 +152,7 @@ async function main() {
       //   // }
       // }
       res.status(200).json({
-        message: 'Welcome to Showa home version 2.0.18',
+        message: 'Welcome to Showa home version 2.0.19',
       });
     };
     app.use('/', showWelcome);
