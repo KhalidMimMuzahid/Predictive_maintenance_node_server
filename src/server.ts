@@ -25,7 +25,7 @@ async function main() {
     const io = new Server(server, { cors: { origin: '*' } });
 
     app.use(
-      '/api/v2/transaction/webhook',
+      '/api/v2/transaction2/webhook',
       express.raw({ type: 'application/json' }),
       transactionRoutes,
     );
