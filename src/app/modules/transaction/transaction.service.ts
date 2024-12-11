@@ -65,30 +65,28 @@ const webhookForStripe = async ({
   bodyData: any;
 }) => {
   // we must take this value in our .env file
-  const endpointSecret =
-    'whsec_3230366b25d304594a4af2b572f02e6bb03a80953f7939a21746bc1306828872';
+  const endpointSecret = 'whsec_2TQTCg5cfNXIAsXggHIlqqWhQga5DZFU';
+  // 'whsec_3230366b25d304594a4af2b572f02e6bb03a80953f7939a21746bc1306828872';
 
+  if (!sig) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'signature has missing');
+  }
 
-    if (!sig) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'signature has missing');
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let event: any;
-    try {
-      // Verify the event using the raw body and the signature
-      event = stripe.webhooks.constructEvent(bodyData, sig, endpointSecret);
-    } catch (err) {
-      err.bodyData = bodyData;
-      err.sig = sig;
-      err.message = `Error of f__k:${err.message}`;
-      throw err;
-      // throw new AppError(
-      //   httpStatus.BAD_REQUEST,
-      //   `Error of f__k:${err.message}`,
-      // );
-    }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let event: any;
+  try {
+    // Verify the event using the raw body and the signature
+    event = stripe.webhooks.constructEvent(bodyData, sig, endpointSecret);
+  } catch (err) {
+    err.bodyData = bodyData;
+    err.sig = sig;
+    err.message = `Error of f__k:${err.message}`;
+    throw err;
+    // throw new AppError(
+    //   httpStatus.BAD_REQUEST,
+    //   `Error of f__k:${err.message}`,
+    // );
+  }
 
   const sessionForStripe = event.data.object as Stripe.Checkout.Session;
   const transactionData = await Transaction.findOne({
