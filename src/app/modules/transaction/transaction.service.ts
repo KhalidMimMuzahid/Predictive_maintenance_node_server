@@ -79,8 +79,11 @@ const webhookForStripe = async ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updatedTransactionData: Record<string, any> = {};
   // Handle the event
-
-  if (event.type === 'checkout.session.async_payment_succeeded') {
+  //
+  if (
+    event.type === 'checkout.session.async_payment_succeeded' ||
+    event.type === 'checkout.session.completed'
+  ) {
     updatedTransactionData['status'] = 'completed';
   } else if (event.type === 'checkout.session.async_payment_failed') {
     updatedTransactionData['status'] = 'failed';
@@ -104,7 +107,10 @@ const webhookForStripe = async ({
     const transactionFee =
       (transactionData?.addFund?.amount / 100) * transactionFeeRate;
     updatedTransactionData['addFund.transactionFee'] = transactionFee;
-    if (event.type === 'checkout.session.async_payment_succeeded') {
+    if (
+      event.type === 'checkout.session.async_payment_succeeded' ||
+      event.type === 'checkout.session.completed'
+    ) {
       // update wallet data
       const walletStatus: TWalletStatus = {
         previous: {
@@ -133,7 +139,10 @@ const webhookForStripe = async ({
         session,
       },
     );
-    if (event.type === 'checkout.session.async_payment_succeeded') {
+    if (
+      event.type === 'checkout.session.async_payment_succeeded' ||
+      event.type === 'checkout.session.completed'
+    ) {
       if (updatedTransaction) {
         // const updatedWalletData = await walletData.save({ session });
         const updatedWalletData = await updateWallet({
