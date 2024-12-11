@@ -3,6 +3,7 @@ import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
 import cors from 'cors';
+import url from 'url';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFoundErrorHandler from './app/middlewares/notFOund';
 import router from './app/routes/index';
@@ -13,7 +14,7 @@ import fileUpload from 'express-fileupload';
 // import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
 // import { CronJob } from 'cron';
 
-const app: Application = express();
+export const app: Application = express();
 const server = createServer(app);
 export const users = new Map();
 async function main() {
@@ -21,7 +22,16 @@ async function main() {
     const io = new Server(server, { cors: { origin: '*' } });
 
     //parsers
-    app.use(express.json());
+    // app.use(express.json());
+    app.use((req, res, next) => {
+      const parsedUrl = url.parse(req?.url);
+      const pathname: string = parsedUrl?.pathname as string;
+      if (pathname?.endsWith('webhook-for-stripe')) {
+        express.raw({ type: 'application/json' })(req, res, next);
+      } else {
+        express.json()(req, res, next);
+      }
+    });
     app.use(cors());
     // app.use(express.urlencoded({extended: true}))
     app.use(fileUpload());
@@ -74,8 +84,11 @@ async function main() {
 
     app.use((req, res, next) => {
       req.io = io;
+
       next();
     });
+
+    // for this endpoint, webhook-for-stripe
 
     // application routes
     app.use('/api/v2', manageAuth, router);

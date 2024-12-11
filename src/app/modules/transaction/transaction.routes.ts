@@ -16,7 +16,7 @@ const router: Router = express.Router();
 router.post('/create-stripe-checkout-session', transactionControllers.createStripeCheckoutSession);
 router.post(
   '/webhook-for-stripe',
-  express.raw({ type: 'application/json' }),
+
   transactionControllers.webhookForStripe,
 );
 router.post(
