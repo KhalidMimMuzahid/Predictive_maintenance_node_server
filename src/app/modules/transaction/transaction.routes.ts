@@ -14,11 +14,11 @@ const router: Router = express.Router();
 
 // 'addFund-card'
 router.post('/create-stripe-checkout-session', transactionControllers.createStripeCheckoutSession);
-router.post(
-  '/webhook-for-stripe',
+// router.post(
+//   '/webhook-for-stripe',
 
-  transactionControllers.webhookForStripe,
-);
+//   transactionControllers.webhookForStripe,
+// );
 router.post(
   '/wallet-interchange-point-to-balance',
   transactionControllers.walletInterchangePointToBalance,

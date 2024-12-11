@@ -3,14 +3,16 @@ import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
 import cors from 'cors';
-import url from 'url';
+// import url from 'url';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFoundErrorHandler from './app/middlewares/notFOund';
 import router from './app/routes/index';
+const routerForStripeWebHook = express.Router();
 import { manageAuth } from './app/middlewares/manageAuth';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import fileUpload from 'express-fileupload';
+import { transactionControllers } from './app/modules/transaction/transaction.controller';
 // import { cronFunctions } from './app/utils/cronFunctions/cronFunctions';
 // import { CronJob } from 'cron';
 
@@ -21,28 +23,34 @@ async function main() {
   try {
     const io = new Server(server, { cors: { origin: '*' } });
 
+    routerForStripeWebHook.post(
+      '/api/v2/transaction/webhook-for-stripe',
+      express.raw({ type: 'application/json' }),
+      transactionControllers.webhookForStripe,
+    );
     //parsers
-    // app.use(express.json());
-    app.use((req, res, next) => {
-      const parsedUrl = url.parse(req?.url);
-      const pathname: string = parsedUrl?.pathname as string;
-      if (pathname?.endsWith('webhook-for-stripe')) {
-        express.raw({ type: 'application/json' })(req, res, next);
-      } else {
-        // express.json()(req, res, next);
+    app.use(express.json());
+    app.use(cors());
+    // app.use(express.urlencoded({extended: true}))
+    app.use(fileUpload());
+    // app.use((req, res, next) => {
+    //   const parsedUrl = url.parse(req?.url);
+    //   const pathname: string = parsedUrl?.pathname as string;
+    //   if (pathname?.endsWith('webhook-for-stripe')) {
+    //     express.raw({ type: 'application/json' })(req, res, next);
+    //   } else {
+    //     // express.json()(req, res, next);
 
-        express.json()(req, res, (err) => {
-          if (err) return next(err); // Handle JSON parsing errors
-          cors()(req, res, (err) => {
-            if (err) return next(err); // Handle CORS errors
-            fileUpload()(req, res, next); // Proceed with fileUpload
-          });
-        });
-      }
-    });
-    // app.use(cors());
-    // // app.use(express.urlencoded({extended: true}))
-    // app.use(fileUpload());
+    //     express.json()(req, res, (err) => {
+    //       if (err) return next(err); // Handle JSON parsing errors
+    //       cors()(req, res, (err) => {
+    //         if (err) return next(err); // Handle CORS errors
+    //         fileUpload()(req, res, next); // Proceed with fileUpload
+    //       });
+    //     });
+    //   }
+    // });
+
     io.on('connection', (socket) => {
       const socketId = socket?.id;
       // console.log(`${socket.id} socket just connected!`);
@@ -143,7 +151,7 @@ async function main() {
       //   // }
       // }
       res.status(200).json({
-        message: 'Welcome to Showa home version 2.0.15',
+        message: 'Welcome to Showa home version 2.0.18',
       });
     };
     app.use('/', showWelcome);
