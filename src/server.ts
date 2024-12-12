@@ -148,7 +148,7 @@ async function main() {
       //   // }
       // }
       res.status(200).json({
-        message: 'Welcome to Showa home version 2.0.22',
+        message: 'Welcome to Showa home version 2.0.28',
       });
     };
     app.use('/', showWelcome);
