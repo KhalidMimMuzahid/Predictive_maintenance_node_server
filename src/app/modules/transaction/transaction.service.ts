@@ -17,6 +17,11 @@ const createStripeCheckoutSession = async ({
   user: Types.ObjectId;
   amount: number;
 }) => {
+  const transactionFeeRate =
+    ((await predefinedValueServices.getTransactionFeeForWallet(
+      'addFund-card',
+    )) as number) || 0;
+  const transactionFee = (amount / 100) * transactionFeeRate;
   const addFundData: TAddFund = {
     source: 'card',
     card: {
@@ -24,8 +29,9 @@ const createStripeCheckoutSession = async ({
     },
     amount: amount,
     user: user,
-    transactionFee: 0,
+    transactionFee: transactionFee,
   };
+
   const transaction = await Transaction.create({
     type: 'addFund',
     addFund: addFundData,
@@ -119,12 +125,8 @@ const webhookForStripe = async ({
   try {
     session.startTransaction();
     // in percentage
-    const transactionFeeRate =
-      ((await predefinedValueServices.getTransactionFeeForWallet(
-        'addFund-card',
-      )) as number) || 0;
-    const transactionFee =
-      (transactionData?.addFund?.amount / 100) * transactionFeeRate;
+
+    const transactionFee = transactionData?.addFund?.transactionFee;
     updatedTransactionData['addFund.transactionFee'] = transactionFee;
     if (
       event.type === 'checkout.session.async_payment_succeeded' ||
