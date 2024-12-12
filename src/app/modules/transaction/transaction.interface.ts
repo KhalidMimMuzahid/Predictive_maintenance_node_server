@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { TIsDeleted } from '../common/common.interface';
+import { TPurchasedPrice } from '../subscriptionPurchased/subscriptionPurchased.interface';
 export type TWalletStatus = {
   previous: {
     balance: number; //
@@ -42,7 +43,9 @@ export type TPayment = {
     //
   };
   subscriptionPurchase?: {
-    //
+    user: Types.ObjectId;
+    subscriptionPurchased: Types.ObjectId;
+    price: TPurchasedPrice;
   };
 };
 export type TFundTransfer = {

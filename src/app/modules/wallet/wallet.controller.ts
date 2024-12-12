@@ -163,6 +163,22 @@ const addCardToMyWallet: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const getMyWallet: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req.headers.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+
+  const results = await walletServices.getMyWallet({
+    user: auth._id,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Card added to wallet successfully',
+    data: results,
+  });
+});
+
 const deleteCardFromMyWallet: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req.headers.auth as unknown as TAuth;
   checkUserAccessApi({ auth, accessUsers: 'all' });
@@ -218,7 +234,7 @@ export const walletControllers = {
   //   mbTransfer,
   //   getMyMBTransaction,
   //   getRecentMBTransfer}
-
+  getMyWallet,
   addCardToMyWallet, //(Maintenance Service Provider)
   deleteCardFromMyWallet, //(Maintenance Service Provider)
   editWallet,

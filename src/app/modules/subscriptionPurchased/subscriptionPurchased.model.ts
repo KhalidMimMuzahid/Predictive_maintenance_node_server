@@ -21,7 +21,7 @@ const usageSchema = new Schema<TUsage>({
 });
 
 // Define the price schema for TSubscriptionPurchased
-const purchasedPriceSchema = new Schema<TPurchasedPrice>({
+export const purchasedPriceSchema = new Schema<TPurchasedPrice>({
   tax: {
     type: Number,
     required: true,

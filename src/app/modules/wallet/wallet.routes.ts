@@ -15,6 +15,8 @@ const router: Router = express.Router();
 // router.post('/transfer-mb', walletControllers.mbTransfer);
 // router.get('/get-my-mb-transaction', walletControllers.getMyMBTransaction);
 // router.get('/get-recent-mb-transfer', walletControllers.getRecentMBTransfer);
+
+router.get('/get-my-wallet', walletControllers.getMyWallet);
 router.post('/add-card', walletControllers.addCardToMyWallet);
 router.delete('/delete-card', walletControllers.deleteCardFromMyWallet);
 router.patch(

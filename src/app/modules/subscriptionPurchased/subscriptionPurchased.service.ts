@@ -17,6 +17,10 @@ import {
   TUsage,
 } from './subscriptionPurchased.interface';
 import { SubscriptionPurchased } from './subscriptionPurchased.model';
+import { updateWallet } from '../wallet/wallet.utils';
+import { Wallet } from '../wallet/wallet.model';
+import { Transaction } from '../transaction/transaction.model';
+import { TPayment } from '../transaction/transaction.interface';
 
 const createSubscription = async ({
   user,
@@ -87,15 +91,90 @@ const createSubscription = async ({
     totalPrice: totalPrice,
   };
   const expDate: Date = addDays(subscriptionData?.validity);
-  const subscriptionPurchaseData = await SubscriptionPurchased.create({
-    subscription: subscriptionData,
-    user,
-    isActive: true,
-    usage,
-    expDate,
-    price,
-  });
-  return subscriptionPurchaseData;
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const subscriptionPurchaseDataArray = await SubscriptionPurchased.create(
+      [
+        {
+          subscription: subscriptionData,
+          user,
+          isActive: true,
+          usage,
+          expDate,
+          price,
+        },
+      ],
+      { session },
+    );
+    const subscriptionPurchaseData = subscriptionPurchaseDataArray[0];
+    if (!subscriptionPurchaseData) {
+      {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          'Something went wrong, please try again',
+        );
+      }
+    }
+    const walletData = await Wallet.findOne({ user, ownerType: 'user' }).select(
+      'balance',
+    );
+
+    if (totalPrice > walletData?.balance) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'You have not enough money to purchase, please add fund first',
+      );
+    }
+    const updatedWallet = await updateWallet({
+      session: session,
+      wallet: walletData?._id,
+      balance: -totalPrice,
+    });
+    if (!updatedWallet) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Something went wrong, please try again',
+      );
+    }
+    const payment: TPayment = {
+      type: 'subscriptionPurchase',
+      subscriptionPurchase: {
+        user: user,
+        subscriptionPurchased: subscriptionPurchaseData?._id,
+        price: price,
+      },
+    };
+    const createdTransactionArray = await Transaction.create(
+      [
+        {
+          type: 'payment',
+          payment: payment,
+          status: 'completed',
+        },
+      ],
+      { session },
+    );
+    const createdTransaction = createdTransactionArray[0];
+    if (!createdTransaction) {
+      {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          'Something went wrong, please try again',
+        );
+      }
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return subscriptionPurchaseData;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 
 const getAllMySubscriptions = async (userId: mongoose.Types.ObjectId) => {

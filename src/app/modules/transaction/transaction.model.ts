@@ -9,6 +9,7 @@ import {
   TWalletInterchange,
   TWalletStatus,
 } from './transaction.interface';
+import { purchasedPriceSchema } from '../subscriptionPurchased/subscriptionPurchased.model';
 
 const BonusSchema: Schema<TBonus> = new Schema<TBonus>(
   {
@@ -75,7 +76,20 @@ const PaymentSchema: Schema<TPayment> = new Schema<TPayment>(
       enum: ['productPurchase', 'subscriptionPurchase'],
     },
     productPurchase: Schema.Types.Mixed,
-    subscriptionPurchase: Schema.Types.Mixed,
+    subscriptionPurchase: {
+      type: new Schema({
+        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        subscriptionPurchased: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        price: {
+          type: purchasedPriceSchema,
+          required: true,
+        },
+      }),
+    },
   },
   {
     timestamps: false,

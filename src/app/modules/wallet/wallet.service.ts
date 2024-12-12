@@ -149,7 +149,12 @@ import { Wallet } from './wallet.model';
 
 
 
-
+const getMyWallet = async ({ user }: { user: Types.ObjectId }) => {
+  const wallet = await Wallet.findOne({
+    user,
+  });
+  return wallet;
+};
 
 const addCardToMyWallet = async ({
   userId,
@@ -236,6 +241,7 @@ export const walletServices = {
   // payWithWallet,
   // payWithCard,
   // createPaymentIntent,
+  getMyWallet,
   addCardToMyWallet,
   deleteCardFromMyWallet,
   editWallet,
