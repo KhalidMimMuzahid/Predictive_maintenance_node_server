@@ -151,7 +151,7 @@ const webhookForStripe = async ({
 
     const updatedTransaction = await Transaction.findOneAndUpdate(
       {
-        'addFund.card.stripeSessionId': session.id,
+        'addFund.card.stripeSessionId': sessionForStripe.id,
       },
       updatedTransactionData,
       {
