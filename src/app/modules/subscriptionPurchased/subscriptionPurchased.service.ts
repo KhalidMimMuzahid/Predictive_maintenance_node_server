@@ -118,8 +118,9 @@ const createSubscription = async ({
         );
       }
     }
+
     const walletData = await Wallet.findOne({ user, ownerType: 'user' }).select(
-      'balance',
+      'balance point showaMB',
     );
 
     if (totalPrice > walletData?.balance) {
@@ -132,6 +133,7 @@ const createSubscription = async ({
       session: session,
       wallet: walletData?._id,
       balance: -totalPrice,
+      point: Math.ceil(totalPrice / 100),
     });
     if (!updatedWallet) {
       throw new AppError(
@@ -145,6 +147,18 @@ const createSubscription = async ({
         user: user,
         subscriptionPurchased: subscriptionPurchaseData?._id,
         price: price,
+      },
+      walletStatus: {
+        previous: {
+          balance: walletData?.balance,
+          point: walletData?.point,
+          showaMB: walletData?.showaMB,
+        },
+        next: {
+          balance: walletData?.balance - totalPrice,
+          point: walletData?.point + Math.ceil(totalPrice / 100),
+          showaMB: walletData?.showaMB,
+        },
       },
     };
     const createdTransactionArray = await Transaction.create(

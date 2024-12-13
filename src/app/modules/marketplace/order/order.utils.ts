@@ -61,8 +61,10 @@ export const orderProducts = async ({
     totalAmount: productData?.salePrice * quantity + transferFee,
   };
   order.paidStatus = {
-    isPaid: false,
+    isPaid: true,
   };
+
+  // transaction
 
   //   try {
   // session.startTransaction();

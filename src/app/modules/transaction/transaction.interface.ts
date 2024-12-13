@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { TIsDeleted } from '../common/common.interface';
 import { TPurchasedPrice } from '../subscriptionPurchased/subscriptionPurchased.interface';
+
 export type TWalletStatus = {
   previous: {
     balance: number; //
@@ -40,13 +41,24 @@ export type TWalletInterchange = {
 export type TPayment = {
   type: 'productPurchase' | 'subscriptionPurchase';
   productPurchase?: {
-    //
+    user: Types.ObjectId;
+    // products: Types.ObjectId;
+    costs: {
+      product: Types.ObjectId;
+      price: number;
+      quantity: number;
+      // tax?: number; // percentage of tax ; by default 0%
+      transferFee: number;
+      totalAmount: number;
+    }[];
+    amount: number;
   };
   subscriptionPurchase?: {
     user: Types.ObjectId;
     subscriptionPurchased: Types.ObjectId;
     price: TPurchasedPrice;
   };
+  walletStatus: TWalletStatus;
 };
 export type TFundTransfer = {
   requestType: 'send' | 'receive';

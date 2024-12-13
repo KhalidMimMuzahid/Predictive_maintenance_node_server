@@ -12,6 +12,10 @@ import {
 } from './order.interface';
 import Order from './order.model';
 import { orderProducts } from './order.utils';
+import { Wallet } from '../../wallet/wallet.model';
+import { updateWallet } from '../../wallet/wallet.utils';
+import { TPayment } from '../../transaction/transaction.interface';
+import { Transaction } from '../../transaction/transaction.model';
 
 const orderProduct = async ({
   auth,
@@ -52,7 +56,96 @@ const orderProduct = async ({
     } else {
       // order success. now create a transaction later. where it includes all orders array details
       // now remove all carts
+      const productPurchase: {
+        user: mongoose.Types.ObjectId;
+        costs: {
+          product: mongoose.Types.ObjectId;
+          price: number;
+          quantity: number;
+          // tax?: number; // percentage of tax ; by default 0%
+          transferFee: number;
+          totalAmount: number;
+        }[];
+        amount: number;
+      } = ordersDataArray?.reduce(
+        (productPurchase, currentOrder) => {
+          productPurchase?.costs?.push({
+            product: currentOrder?.product,
+            price: currentOrder?.cost?.price,
+            quantity: currentOrder?.cost?.quantity,
+            // tax?: number; // percentage of tax ; by default 0%
+            transferFee: currentOrder?.cost?.transferFee,
+            totalAmount: currentOrder?.cost?.totalAmount,
+          });
+          productPurchase.amount += currentOrder?.cost?.totalAmount;
+          return productPurchase;
+        },
+        { costs: [], amount: 0, user: auth?._id },
+      );
+      productPurchase.user = auth?._id;
 
+      // ---------------------------------------------
+
+      const walletData = await Wallet.findOne({ user: auth?._id }).select(
+        'balance point showaMB',
+      );
+
+      if (productPurchase?.amount > walletData?.balance) {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          'You have not enough money to purchase, please add fund first',
+        );
+      }
+      const updatedWallet = await updateWallet({
+        session: session,
+        wallet: walletData?._id,
+        balance: -productPurchase?.amount,
+        point: Math.ceil(productPurchase?.amount / 100),
+      });
+      if (!updatedWallet) {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          'Something went wrong, please try again',
+        );
+      }
+      const payment: TPayment = {
+        type: 'productPurchase',
+        productPurchase: productPurchase,
+        walletStatus: {
+          previous: {
+            balance: walletData?.balance,
+            point: walletData?.point,
+            showaMB: walletData?.showaMB,
+          },
+          next: {
+            balance: walletData?.balance - productPurchase?.amount,
+            point: walletData?.point + Math.ceil(productPurchase?.amount / 100),
+            showaMB: walletData?.showaMB,
+          },
+        },
+      };
+
+      const createdTransactionArray = await Transaction.create(
+        [
+          {
+            type: 'payment',
+            payment: payment,
+            status: 'completed',
+          },
+        ],
+        { session },
+      );
+      const createdTransaction = createdTransactionArray[0];
+      if (!createdTransaction) {
+        {
+          throw new AppError(
+            httpStatus.NOT_FOUND,
+            'Something went wrong, please try again',
+          );
+        }
+      }
+
+      // ---------------------------------------------
       await Cart.deleteMany({ user: auth?._id });
       await session.commitTransaction();
       await session.endSession();

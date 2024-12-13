@@ -3,6 +3,13 @@ import { Types } from 'mongoose';
 export type TPaymentType = 'cash-on-delivery' | 'showa-balance';
 export type TActionType = 'cancel' | 'accept';
 export type TActionTypeForChangesStatus = 'inprogress' | 'shipped';
+export type OrderCost = {
+  price: number;
+  quantity: number;
+  // tax?: number; // percentage of tax ; by default 0%
+  transferFee: number;
+  totalAmount: number;
+};
 export type TOrder = {
   //
   orderId: string;
@@ -31,13 +38,7 @@ export type TOrder = {
     customDate?: Date;
   };
   paymentType: TPaymentType;
-  cost: {
-    price: number;
-    quantity: number;
-    // tax?: number; // percentage of tax ; by default 0%
-    transferFee: number;
-    totalAmount: number;
-  };
+  cost: OrderCost;
   paidStatus: {
     isPaid: boolean;
     paidAt?: Date;
