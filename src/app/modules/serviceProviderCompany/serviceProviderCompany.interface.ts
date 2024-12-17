@@ -13,6 +13,7 @@ export type TServiceProviderCompany = {
   companyName: string;
   photoUrl?: string; // company  profile photo
   address: TAddress;
+  hasSpecialContactWithShowa?: boolean;
   representativeName: string; // it should be a reference of real user
   fax: string;
   corporateNo: string;

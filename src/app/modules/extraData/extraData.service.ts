@@ -64,10 +64,12 @@ const addFeedback = async ({
 const createCoupon = async ({
   numberOfCoupon,
   subscription,
+  specialContactServiceProviderCompany,
   expireIn,
 }: {
   numberOfCoupon: number;
   subscription: string;
+  specialContactServiceProviderCompany: mongoose.Types.ObjectId;
   expireIn: Date;
 }) => {
   // return {
@@ -94,6 +96,8 @@ const createCoupon = async ({
       coupon: {
         couponFor: subscriptionData?.package?.packageFor,
         expireIn,
+        specialContactServiceProviderCompany:
+          specialContactServiceProviderCompany || undefined,
         subscription: new mongoose.Types.ObjectId(subscription),
       },
     };
@@ -238,9 +242,14 @@ const activateCoupon = async ({
     );
   }
   const couponData = predefinedValueForCouponData?.coupon;
+  // couponData.specialContactServiceProviderCompany=
+
   const result = await subscriptionPurchasedServices.createSubscription({
     subscription: couponData?.subscription?.toString(),
     user: auth?._id,
+    specialContactServiceProviderCompany:
+      predefinedValueForCouponData?.coupon
+        ?.specialContactServiceProviderCompany,
   });
 
   return result;

@@ -54,6 +54,11 @@ const SubscriptionPurchasedSchema: Schema = new Schema<TSubscriptionPurchased>(
       ),
       required: true,
     },
+    specialContactServiceProviderCompany: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ServiceProviderCompany',
+      required: false,
+    },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     isActive: {
       type: Boolean,

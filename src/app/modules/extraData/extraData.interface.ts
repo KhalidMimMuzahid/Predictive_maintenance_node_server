@@ -65,6 +65,7 @@ export type TInviteMember = {
 export type TCoupon = {
   couponFor: 'showaUser' | 'serviceProviderCompany';
   subscription: Types.ObjectId; // _id of subscription model
+  specialContactServiceProviderCompany?: Types.ObjectId; // if this coupon is for special contact with service provider
   expireIn: Date;
 };
 export type TFaq = {

@@ -25,7 +25,7 @@ export type TSubscriptionPurchased = {
     createdAt: Date;
     updatedAt: Date;
   };
-
+  specialContactServiceProviderCompany?: mongoose.Types.ObjectId; // if this coupon is for special contact with service provider
   user: mongoose.Types.ObjectId;
   isActive: boolean;
   usage: TUsage;

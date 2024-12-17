@@ -35,6 +35,10 @@ export const serviceProviderCompanySchema = new Schema<TServiceProviderCompany>(
     },
     photoUrl: String,
     address: { type: AddressSchema, required: true },
+    hasSpecialContactWithShowa: {
+      type: Boolean,
+      default: false,
+    },
     representativeName: {
       type: String,
       required: true,

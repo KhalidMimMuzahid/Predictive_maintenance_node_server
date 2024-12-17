@@ -8,6 +8,7 @@ import { cronFunctions } from '../../utils/cronFunctions/cronFunctions';
 import sendResponse from '../../utils/sendResponse';
 import { TFaq, TFeedback, TInviteMember } from './extraData.interface';
 import { extraDataServices } from './extraData.service';
+import mongoose from 'mongoose';
 
 const deleteMyAccount: RequestHandler = catchAsync(async (req, res) => {
   const emailOrPhone: string = req?.query?.emailOrPhone as string;
@@ -54,6 +55,10 @@ const createCoupon: RequestHandler = catchAsync(async (req, res) => {
 
   const subscription = req?.query?.subscription as string;
   const expireInString = req?.query?.expireIn as string;
+
+  const specialContactServiceProviderCompany = req?.query
+    ?.specialContactServiceProviderCompany as string;
+
   if (!numberOfCoupon || !subscription || !expireInString) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -78,6 +83,9 @@ const createCoupon: RequestHandler = catchAsync(async (req, res) => {
   const result = await extraDataServices.createCoupon({
     numberOfCoupon,
     subscription,
+    specialContactServiceProviderCompany: new mongoose.Types.ObjectId(
+      specialContactServiceProviderCompany,
+    ),
     expireIn,
   });
   // send response

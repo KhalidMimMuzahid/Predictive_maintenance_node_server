@@ -169,6 +169,11 @@ const CouponSchema = new Schema<TCoupon>({
     ref: 'Subscription',
     required: true,
   },
+  specialContactServiceProviderCompany: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ServiceProviderCompany',
+    required: false,
+  },
   expireIn: {
     type: Date,
     required: true,

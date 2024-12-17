@@ -25,9 +25,11 @@ import { TPayment } from '../transaction/transaction.interface';
 const createSubscription = async ({
   user,
   subscription,
+  specialContactServiceProviderCompany,
 }: {
   user: mongoose.Types.ObjectId;
   subscription: string;
+  specialContactServiceProviderCompany: mongoose.Types.ObjectId;
 }) => {
   const subscriptionData = await Subscription.findById(
     new mongoose.Types.ObjectId(subscription),
@@ -101,6 +103,8 @@ const createSubscription = async ({
         {
           subscription: subscriptionData,
           user,
+          specialContactServiceProviderCompany:
+            specialContactServiceProviderCompany || undefined,
           isActive: true,
           usage,
           expDate,
