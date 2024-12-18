@@ -6,7 +6,7 @@ export const WalletSchema = new Schema<TWallet>(
   {
     ownerType: {
       type: String,
-      enum: ['user', 'serviceProviderCompany', 'serviceProviderBranch'],
+      enum: ['user', 'serviceProviderCompany', 'serviceProviderBranch', 'shop'],
       required: true,
     },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -15,9 +15,14 @@ export const WalletSchema = new Schema<TWallet>(
       type: Schema.Types.ObjectId,
       ref: 'ServiceProviderCompany',
     },
+
     serviceProviderBranch: {
       type: Schema.Types.ObjectId,
       ref: 'ServiceProviderBranch',
+    },
+    shop: {
+      type: Schema.Types.ObjectId,
+      ref: 'Shop',
     },
     cards: {
       type: [

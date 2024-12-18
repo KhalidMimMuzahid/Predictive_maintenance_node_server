@@ -109,7 +109,11 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       ref: 'SubscriptionPurchased',
       required: false,
     },
-
+    specialContactServiceProviderCompany: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceProviderCompany',
+      required: false,
+    },
     isDeleted: {
       type: IsDeletedSchema,
       required: true,

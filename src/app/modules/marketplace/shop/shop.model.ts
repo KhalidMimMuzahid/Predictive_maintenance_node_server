@@ -52,6 +52,10 @@ const shopSchema = new Schema<TShop>(
         title: String,
       },
     ],
+    wallet: {
+      type: Schema.Types.ObjectId,
+      ref: 'Wallet',
+    },
   },
   {
     timestamps: true,

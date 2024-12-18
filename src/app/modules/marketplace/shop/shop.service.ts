@@ -9,6 +9,7 @@ import Order from '../order/order.model';
 import Product from '../product/product.model';
 import { TShop } from './shop.interface';
 import Shop from './shop.model';
+import { Wallet } from '../../wallet/wallet.model';
 
 const createShop = async ({
   auth,
@@ -45,6 +46,36 @@ const createShop = async ({
     }
 
     const createdShop = createdShopArray[0];
+    const createdWalletArrayForShop = await Wallet.create(
+      [
+        {
+          ownerType: 'shop',
+          shop: createdShop?._id,
+          cards: [],
+          balance: 0,
+          point: 0,
+          showaMB: 0,
+        },
+      ],
+      {
+        session: session,
+      },
+    );
+
+    if (!createdWalletArrayForShop?.length) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'failed to create shop');
+    }
+
+    const createdWalletForShop = createdWalletArrayForShop[0];
+    createdShop.wallet = createdWalletForShop?._id;
+
+    const updatedShop = await createdShop.save({ session });
+    if (!updatedShop) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'something went wrong, please try again',
+      );
+    }
     const updatedServiceProviderAdmin =
       await ServiceProviderAdmin.findOneAndUpdate(
         { user: auth?._id },

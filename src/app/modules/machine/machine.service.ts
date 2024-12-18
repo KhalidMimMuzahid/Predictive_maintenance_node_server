@@ -35,7 +35,7 @@ const addNonConnectedMachineInToDB = async ({
   const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
     _id: new mongoose.Types.ObjectId(subscriptionPurchased),
     user: machineData?.user,
-  }).select('isActive usage expDate');
+  }).select('isActive usage specialContactServiceProviderCompany expDate');
 
   if (!subscriptionPurchasedData) {
     throw new AppError(
@@ -81,6 +81,11 @@ const addNonConnectedMachineInToDB = async ({
     5,
   );
   machineData.subscriptionPurchased = subscriptionPurchasedData?._id;
+
+  if (subscriptionPurchasedData?.specialContactServiceProviderCompany) {
+    machineData.specialContactServiceProviderCompany =
+      subscriptionPurchasedData?.specialContactServiceProviderCompany;
+  }
 
   // implement session here
   const session = await mongoose.startSession();
@@ -135,7 +140,7 @@ const addSensorConnectedMachineInToDB = async ({
   const subscriptionPurchasedData = await SubscriptionPurchased.findOne({
     _id: new mongoose.Types.ObjectId(subscriptionPurchased),
     user: machineData?.user,
-  }).select('isActive usage expDate');
+  }).select('isActive usage specialContactServiceProviderCompany expDate');
 
   if (!subscriptionPurchasedData) {
     throw new AppError(
@@ -277,6 +282,11 @@ const addSensorConnectedMachineInToDB = async ({
       Number(lastAddedMachine?.machineNo || '00000') + 1,
       5,
     );
+
+    if (subscriptionPurchasedData?.specialContactServiceProviderCompany) {
+      machineData.specialContactServiceProviderCompany =
+        subscriptionPurchasedData?.specialContactServiceProviderCompany;
+    }
 
     const machineArray = await Machine.create([machineData], {
       session: session,

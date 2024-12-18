@@ -14,4 +14,5 @@ export type TShop = {
   phone?: string;
   photoUrl?: string; // company  profile photo
   registrationDocument?: { photoUrl: string; title: string }[]; //
+  wallet: Types.ObjectId;
 };

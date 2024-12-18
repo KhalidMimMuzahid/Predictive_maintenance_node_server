@@ -41,6 +41,7 @@ export type TMachine = {
   environment: 'indoor' | 'outdoor'; // as mentioned in figma  like  "indoor" or "outdoor"
   sensorModulesAttached?: Types.ObjectId[]; // objectId of SensorModuleAttached
   subscriptionPurchased: Types.ObjectId;
+  specialContactServiceProviderCompany?: Types.ObjectId; // if this coupon is for special contact with service provider
   isDeleted: TIsDeleted;
 };
 

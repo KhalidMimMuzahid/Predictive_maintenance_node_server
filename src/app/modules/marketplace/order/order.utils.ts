@@ -6,6 +6,8 @@ import { padNumberWithZeros } from '../../../utils/padNumberWithZeros';
 import Product from '../product/product.model';
 import { TOrder, TPaymentType } from './order.interface';
 import Order from './order.model';
+import { Wallet } from '../../wallet/wallet.model';
+import { updateWallet } from '../../wallet/wallet.utils';
 
 export const orderProducts = async ({
   auth,
@@ -23,7 +25,7 @@ export const orderProducts = async ({
   session: mongoose.mongo.ClientSession;
 }) => {
   const productData = await Product.findById(product).select(
-    'salePrice stockManagement shop ownedBy',
+    'salePrice stockManagement shop ownedBy shop ownedBy',
   );
 
   if (!productData) {
@@ -78,6 +80,26 @@ export const orderProducts = async ({
   }
 
   const createdOrder = createdOrderArray[0];
+
+  if (productData?.ownedBy === 'serviceProviderCompany' && productData?.shop) {
+    const walletData = await Wallet.findOne({ shop: productData?.shop }).select(
+      'balance point showaMB',
+    );
+    const updatedWallet = await updateWallet({
+      session: session,
+      wallet: walletData?._id,
+      balance: productData?.salePrice * quantity,
+    });
+    if (!updatedWallet) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Something went wrong, please try again',
+      );
+    }
+  } else if (productData?.ownedBy === 'showa') {
+    //  do i for showa products (posted by showa )
+  }
+  // add amount to shop wallet
 
   productData.stockManagement.availableStock -= quantity;
   productData.stockManagement.soldCount = productData.stockManagement.soldCount
