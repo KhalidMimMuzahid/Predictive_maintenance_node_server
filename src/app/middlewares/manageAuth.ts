@@ -24,7 +24,8 @@ export const manageAuth: RequestHandler = catchAsync(async (req, res, next) => {
       pathname?.endsWith('get-thresholds') ||
       pathname?.endsWith('get-ai-data') ||
       pathname?.endsWith('delete-my-account') ||
-      pathname?.endsWith('webhook-for-stripe')
+      pathname?.endsWith('webhook-for-stripe') ||
+      pathname?.endsWith('testing')
     ) {
       return next();
     } else {

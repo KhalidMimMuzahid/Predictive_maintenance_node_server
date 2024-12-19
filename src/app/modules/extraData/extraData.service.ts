@@ -442,6 +442,9 @@ const deleteFaq = async (faqId: string) => {
 
   return;
 };
+const testing = async () => {
+  return null;
+};
 
 export const extraDataServices = {
   deleteMyAccount,
@@ -457,4 +460,5 @@ export const extraDataServices = {
   getAllFaq,
   editFaq,
   deleteFaq,
+  testing,
 };

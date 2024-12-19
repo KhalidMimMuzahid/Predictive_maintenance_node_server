@@ -35,5 +35,7 @@ router.post('/upload-photo', extraDataController.uploadPhoto);
 
 // those router is only for testings
 router.get('/send-iot-data-ai-server', extraDataController.sendIotDataAiServer);
+// those router is only for testings
+router.get('/testing', extraDataController.testing);
 
 export const extraDataRoutes = router;

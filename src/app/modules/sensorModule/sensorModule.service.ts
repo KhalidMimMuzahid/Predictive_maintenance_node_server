@@ -5,6 +5,7 @@ import { SensorModule } from './sensorModule.model';
 import { SensorModuleAttached } from '../sensorModuleAttached/sensorModuleAttached.model';
 import mongoose from 'mongoose';
 import { Machine } from '../machine/machine.model';
+import { SubscriptionPurchased } from '../subscriptionPurchased/subscriptionPurchased.model';
 
 const addSensorModuleIntoDB = async (sensorModule: TSensorModule) => {
   const isMacAddressExists = await SensorModule.isMacAddressExists(
@@ -98,6 +99,30 @@ const deleteSensorModule = async (macAddress: string) => {
             'something went wrong, please try again',
           );
         }
+
+        const updatedSubscriptionPurchased =
+          await SubscriptionPurchased.findByIdAndUpdate(
+            sensorModuleAttached?.subscriptionPurchased?.toString(),
+            {
+              $pull: {
+                'usage.showaUser.IOTs': sensorModuleAttached?._id,
+              },
+              $inc: {
+                'usage.showaUser.totalAvailableIOT': 1,
+              },
+            },
+            {
+              session,
+            },
+          );
+
+        if (!updatedSubscriptionPurchased) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Machine could not be deleted',
+          );
+        }
+
         const deletedSensorModuleAttached =
           await SensorModuleAttached.deleteOne(
             {

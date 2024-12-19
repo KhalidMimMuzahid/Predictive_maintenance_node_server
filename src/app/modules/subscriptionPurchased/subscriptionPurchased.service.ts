@@ -29,7 +29,7 @@ const createSubscription = async ({
 }: {
   user: mongoose.Types.ObjectId;
   subscription: string;
-  specialContactServiceProviderCompany: mongoose.Types.ObjectId;
+  specialContactServiceProviderCompany?: mongoose.Types.ObjectId;
 }) => {
   const subscriptionData = await Subscription.findById(
     new mongoose.Types.ObjectId(subscription),

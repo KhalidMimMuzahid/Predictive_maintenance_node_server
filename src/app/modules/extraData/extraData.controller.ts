@@ -373,6 +373,17 @@ const deleteFaq: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const testing: RequestHandler = catchAsync(async (req, res) => {
+  const result = await extraDataServices.testing();
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'success',
+    data: result,
+  });
+});
+
 export const extraDataController = {
   deleteMyAccount,
   addFeedback,
@@ -388,4 +399,5 @@ export const extraDataController = {
   getAllFaq,
   editFaq,
   deleteFaq,
+  testing,
 };
