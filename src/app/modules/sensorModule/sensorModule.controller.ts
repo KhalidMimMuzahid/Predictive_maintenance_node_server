@@ -2,7 +2,7 @@ import { RequestHandler } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { TAuth } from '../../interface/error';
 import { sensorModuleServices } from './sensorModule.service';
-import { TSensorModule, TStatus } from './sensorModule.interface';
+import { TModuleType, TSensorModule, TStatus } from './sensorModule.interface';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
@@ -24,6 +24,62 @@ const addSensorModule: RequestHandler = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'sensorModule has added successfully',
+    data: result,
+  });
+});
+const editSensorModule: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+
+  // we are checking the permission of this api
+  checkUserAccessApi({ auth, accessUsers: ['showaAdmin'] });
+  const macAddress = req?.query?.macAddress as string;
+
+  if (!macAddress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'macAddress is required to edit sensor module',
+    );
+  }
+  const name = req?.query?.name as string;
+  const moduleType = req?.query?.moduleType as TModuleType;
+  if (!moduleType && !name) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'at least one of moduleType or name is required to edit sensor module',
+    );
+  }
+  if (
+    moduleType &&
+    moduleType !== 'module-1' &&
+    moduleType !== 'module-2' &&
+    moduleType !== 'module-3' &&
+    moduleType !== 'module-4'
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'module pe ust be any of module-1, module-2, module-3 or module-4',
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const iotUpdateData: any = {};
+
+  if (name) {
+    iotUpdateData.name = name;
+  }
+  if (moduleType) {
+    iotUpdateData.modelType = moduleType;
+  }
+
+  const result = await sensorModuleServices.editSensorModule({
+    macAddress,
+    iotUpdateData,
+  });
+  // send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'sensorModule has updated successfully',
     data: result,
   });
 });
@@ -103,6 +159,7 @@ const deleteSensorModule: RequestHandler = catchAsync(async (req, res) => {
 });
 export const sensorModuleControllers = {
   addSensorModule,
+  editSensorModule,
   getAllSensorModules,
   getSensorModuleByMacAddress,
   deleteSensorModule,

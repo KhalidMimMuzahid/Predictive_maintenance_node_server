@@ -14,8 +14,13 @@ const getAllOfferedSubscriptionsForShowaUser = async () => {
 
   return offeredSubscriptions;
 };
+const getSubscriptionsById = async (subscription: string) => {
+  const result = await Subscription.findById(subscription);
 
+  return result;
+};
 export const subscriptionServices = {
   createSubscription,
   getAllOfferedSubscriptionsForShowaUser,
+  getSubscriptionsById,
 };

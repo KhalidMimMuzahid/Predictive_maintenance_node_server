@@ -11,6 +11,11 @@ router.post(
   subscriptionControllers.createSubscription,
 );
 router.get(
+  '/get-subscriptions-by-id',
+  subscriptionControllers.getSubscriptionsById,
+);
+
+router.get(
   '/get-all-offered-subscriptions-for-showaUser',
   subscriptionControllers.getAllOfferedSubscriptionsForShowaUser,
 );

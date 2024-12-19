@@ -24,6 +24,29 @@ const addSensorModuleIntoDB = async (sensorModule: TSensorModule) => {
 
   return createdSensorModule;
 };
+const editSensorModule = async ({
+  macAddress,
+  iotUpdateData,
+}: {
+  macAddress: string;
+  iotUpdateData: Record<string, string>;
+}) => {
+  const updatedIOT = await SensorModule.findOneAndUpdate(
+    {
+      macAddress: macAddress,
+    },
+    iotUpdateData,
+  );
+
+  if (!updatedIOT) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'something went wrong, please try again',
+    );
+  }
+
+  return null;
+};
 const getAllSensorModules = async (status: TStatus) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filterQuery: any = {};
@@ -196,6 +219,7 @@ const deleteSensorModule = async (macAddress: string) => {
 };
 export const sensorModuleServices = {
   addSensorModuleIntoDB,
+  editSensorModule,
   getAllSensorModules,
   getSensorModuleByMacAddress,
   deleteSensorModule,

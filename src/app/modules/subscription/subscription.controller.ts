@@ -73,8 +73,21 @@ const getAllOfferedSubscriptionsForShowaUser: RequestHandler = catchAsync(
     });
   },
 );
+const getSubscriptionsById: RequestHandler = catchAsync(async (req, res) => {
+  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+  checkUserAccessApi({ auth, accessUsers: 'all' });
+  const subscription = req?.query?.subscription as string;
+  const result = await subscriptionServices.getSubscriptionsById(subscription);
 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'subscription has retrieved successfully',
+    data: result,
+  });
+});
 export const subscriptionControllers = {
   createSubscription,
   getAllOfferedSubscriptionsForShowaUser, //(customer app)
+  getSubscriptionsById,
 };
