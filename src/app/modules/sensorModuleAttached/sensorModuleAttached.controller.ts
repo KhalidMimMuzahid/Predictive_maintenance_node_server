@@ -200,6 +200,39 @@ const getSensorData: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 
+const toggleSwitchSensorModuleAttached: RequestHandler = catchAsync(
+  async (req, res) => {
+    // const sensorModuleAttached: Partial<TSensorModuleAttached> = req?.body;
+
+    const macAddress: string = req?.query?.macAddress as string;
+    if (!macAddress) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'macAddress is required to stop iot',
+      );
+    }
+    const actionType = req?.query?.switch as 'on' | 'off';
+    if (actionType !== 'on' && actionType !== 'off') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'actionType must be any of on or off',
+      );
+    }
+    const result =
+      await sensorAttachedModuleServices.toggleSwitchSensorModuleAttached({
+        macAddress,
+        actionType,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensor has stopped successfully',
+      data: result,
+    });
+  },
+);
+
 const getSensorModuleAttachedByMacAddress: RequestHandler = catchAsync(
   async (req, res) => {
     const macAddress: string = req?.query?.macAddress as string;
@@ -227,6 +260,7 @@ export const sensorModuleAttachedControllers = {
   addSensorData,
 
   getSensorData,
+  toggleSwitchSensorModuleAttached,
 
   getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,

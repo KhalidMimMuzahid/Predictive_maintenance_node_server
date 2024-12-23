@@ -5,7 +5,7 @@ import { TAuth } from '../../interface/error';
 import catchAsync from '../../utils/catchAsync';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
-import { TSubscription } from './subscription.interface';
+import { TPackage, TSubscription } from './subscription.interface';
 import { subscriptionServices } from './subscription.service';
 
 const createSubscription: RequestHandler = catchAsync(async (req, res) => {
@@ -28,24 +28,27 @@ const createSubscription: RequestHandler = catchAsync(async (req, res) => {
       'package, price, features are required for adding subscription  ',
     );
   }
-  const { packageFor, showaUser } = packageData;
-  const { packageType } = showaUser;
+  const { packageFor, showaUser, serviceProviderCompany } = packageData;
+  const packageTemp: TPackage = {} as unknown as TPackage;
 
+  packageTemp.packageFor = packageFor;
+  if (packageFor === 'showaUser') {
+    const { packageType } = showaUser;
+    packageTemp.showaUser = {
+      packageType,
+      [packageType]: showaUser[packageType],
+    };
+  } else if (packageFor === 'serviceProviderCompany') {
+    packageTemp.serviceProviderCompany = serviceProviderCompany;
+  }
   const subscriptionData: Partial<TSubscription> = {
     subscriptionTitle,
     bannerUrl,
-    package: {
-      packageFor,
-      showaUser: {
-        packageType,
-        [packageType]: showaUser[packageType],
-      },
-    },
+    package: packageTemp,
     price,
     validity,
     features,
   };
-
   const result =
     await subscriptionServices.createSubscription(subscriptionData);
   // send response

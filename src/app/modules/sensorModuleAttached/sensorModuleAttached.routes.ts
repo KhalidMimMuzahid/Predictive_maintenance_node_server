@@ -17,6 +17,10 @@ router.patch(
   '/add-sensor-data-relocated-to-another-server',
   sensorModuleAttachedControllers.addSensorData,
 );
+router.patch(
+  '/toggle-switch-sensor-module-attached',
+  sensorModuleAttachedControllers.toggleSwitchSensorModuleAttached,
+);
 
 router.get(
   '/get-sensor-module-attached-by-user',

@@ -30,6 +30,7 @@ import {
 } from './reservation.interface';
 import { ReservationRequest } from './reservation.model';
 import { countLifeCycle } from './reservation.utils';
+import { TPostBiddingProcess } from '../reservationGroup/reservationGroup.interface';
 
 const createReservationRequestIntoDB = async ({
   user,
@@ -123,30 +124,194 @@ const createReservationRequestIntoDB = async ({
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    if (schedule?.category === 'custom-date-picked') {
-      if (schedule?.schedules?.length !== 1) {
+
+    if (!machineData?.specialContactServiceProviderCompany) {
+      if (schedule?.category === 'custom-date-picked') {
+        if (schedule?.schedules?.length !== 1) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "you've chosen custom-date-picked but you have not sent it ",
+          );
+        }
+        const dateString = schedule?.schedules[0];
+        if (new Date() > new Date(dateString)) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'The date you have chosen is past date, please select future date',
+          );
+        }
+      } else if (schedule?.category === 'within-one-week') {
+        // from now, add 7 days;  set schedule?.schedules[0]
+        schedule.schedules = [];
+        schedule.schedules.push(addDays(7));
+      } else if (schedule?.category === 'within-two-week') {
+        // from now, add 14 days;  set schedule?.schedules[0]
+        schedule.schedules = [];
+        schedule.schedules.push(addDays(14));
+      } else if (schedule?.category === 'on-demand') {
+        reservationRequest.schedule.schedules = undefined;
+        const createdReservationRequestArray = await ReservationRequest.create(
+          [reservationRequest],
+          {
+            session,
+          },
+        );
+        if (!createdReservationRequestArray?.length) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'could not create reservation request, please try again',
+          );
+        }
+
+        const createdReservationRequest = createdReservationRequestArray[0];
+        // console.log({ result });
+        // return result;
+
+        const groupForMachineType: TMachineType =
+          createdReservationRequest.isSensorConnected
+            ? 'connected'
+            : 'non-connected';
+
+        const lastAddedReservationGroup = await ReservationRequestGroup.findOne(
+          {},
+          { groupId: 1 },
+        ).sort({ _id: -1 });
+
+        const groupId = padNumberWithZeros(
+          Number(lastAddedReservationGroup?.groupId || '00000') + 1,
+          5,
+        );
+
+        const reservationGroupArray = await ReservationRequestGroup.create(
+          [
+            {
+              reservationRequests: [createdReservationRequest?._id],
+              groupForMachineType,
+              groupId: groupId,
+              groupName: 'Automated-grouped',
+              isOnDemand: true,
+              taskStatus: 'pending',
+            },
+          ],
+          { session: session },
+        );
+
+        if (!reservationGroupArray?.length) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'failed to create reservation group',
+          );
+        }
+        const reservationGroup = reservationGroupArray[0];
+
+        createdReservationRequest.reservationRequestGroup =
+          reservationGroup?._id;
+        const updatedReservationRequest = await createdReservationRequest.save({
+          session,
+        });
+
+        if (updatedReservationRequest) {
+          if (!reservationGroupArray?.length) {
+            throw new AppError(
+              httpStatus.BAD_REQUEST,
+              'failed to create reservation request',
+            );
+          }
+        }
+
+        await countLifeCycle({ machineData, session });
+        // TODO: for sending notification to the branch
+        const nearestLocation =
+          await predefinedValueServices.getReservationRequestNearestLocation();
+
+        const radiusInKm = nearestLocation?.selectedRadius || 500; // if not set, then it will be applied
+
+        const location = machineData?.usedFor?.address?.location;
+
+        if (!location) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'this machine must have location',
+          );
+        }
+        // console.log(location);
+        // console.log({ ...location, radiusInKm });
+        const { latitude, longitude } = getLatLngBounds({
+          latitude: location?.latitude,
+          longitude: location?.longitude,
+          radiusInKm,
+        });
+        // console.log({ latitude, longitude });
+        const serviceProviderBranches = await ServiceProviderBranch.find({
+          'address.location.latitude': {
+            $lt: latitude?.max,
+            $gt: latitude?.min,
+          },
+          'address.location.longitude': {
+            $lt: longitude.max,
+            $gt: longitude.min,
+          },
+        });
+
+        await session.commitTransaction();
+        await session.endSession();
+        serviceProviderBranches?.forEach((branch) => {
+          req.io.emit(branch?._id?.toString(), {
+            data: reservationGroup,
+            type: 'on-demand-raised',
+          });
+        });
+        await countLifeCycle({ machineData, session });
+        return updatedReservationRequest;
+      }
+      // const result = await ReservationRequest.create(reservationRequest);
+      const createdReservationRequestArray = await ReservationRequest.create(
+        [reservationRequest],
+        {
+          session,
+        },
+      );
+      if (!createdReservationRequestArray?.length) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          "you've chosen custom-date-picked but you have not sent it ",
+          'could not create reservation request, please try again',
         );
       }
-      const dateString = schedule?.schedules[0];
-      if (new Date() > new Date(dateString)) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          'The date you have chosen is past date, please select future date',
-        );
+
+      const createdReservationRequest = createdReservationRequestArray[0];
+
+      await countLifeCycle({ machineData, session });
+
+      await session.commitTransaction();
+      await session.endSession();
+      return createdReservationRequest;
+    } else {
+      if (schedule?.category === 'custom-date-picked') {
+        if (schedule?.schedules?.length !== 1) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "you've chosen custom-date-picked but you have not sent it ",
+          );
+        }
+        const dateString = schedule?.schedules[0];
+        if (new Date() > new Date(dateString)) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'The date you have chosen is past date, please select future date',
+          );
+        }
+      } else if (schedule?.category === 'within-one-week') {
+        // from now, add 7 days;  set schedule?.schedules[0]
+        schedule.schedules = [];
+        schedule.schedules.push(addDays(7));
+      } else if (schedule?.category === 'within-two-week') {
+        // from now, add 14 days;  set schedule?.schedules[0]
+        schedule.schedules = [];
+        schedule.schedules.push(addDays(14));
+      } else if (schedule?.category === 'on-demand') {
+        reservationRequest.schedule.schedules = undefined;
       }
-    } else if (schedule?.category === 'within-one-week') {
-      // from now, add 7 days;  set schedule?.schedules[0]
-      schedule.schedules = [];
-      schedule.schedules.push(addDays(7));
-    } else if (schedule?.category === 'within-two-week') {
-      // from now, add 14 days;  set schedule?.schedules[0]
-      schedule.schedules = [];
-      schedule.schedules.push(addDays(14));
-    } else if (schedule?.category === 'on-demand') {
-      reservationRequest.schedule.schedules = undefined;
+      reservationRequest.status = 'accepted';
       const createdReservationRequestArray = await ReservationRequest.create(
         [reservationRequest],
         {
@@ -178,7 +343,11 @@ const createReservationRequestIntoDB = async ({
         Number(lastAddedReservationGroup?.groupId || '00000') + 1,
         5,
       );
-
+      let postBiddingProcess: Partial<TPostBiddingProcess> = {};
+      postBiddingProcess = {
+        serviceProviderCompany:
+          machineData?.specialContactServiceProviderCompany,
+      };
       const reservationGroupArray = await ReservationRequestGroup.create(
         [
           {
@@ -187,7 +356,8 @@ const createReservationRequestIntoDB = async ({
             groupId: groupId,
             groupName: 'Automated-grouped',
             isOnDemand: true,
-            taskStatus: 'pending',
+            postBiddingProcess,
+            taskStatus: 'accepted',
           },
         ],
         { session: session },
@@ -215,71 +385,53 @@ const createReservationRequestIntoDB = async ({
         }
       }
 
-      await countLifeCycle({ machineData, session });
-      // TODO: for sending notification to the branch
-      const nearestLocation =
-        await predefinedValueServices.getReservationRequestNearestLocation();
-
-      const radiusInKm = nearestLocation?.selectedRadius || 500; // if not set, then it will be applied
-
-      const location = machineData?.usedFor?.address?.location;
-
-      if (!location) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          'this machine must have location',
-        );
-      }
-      // console.log(location);
-      // console.log({ ...location, radiusInKm });
-      const { latitude, longitude } = getLatLngBounds({
-        latitude: location?.latitude,
-        longitude: location?.longitude,
-        radiusInKm,
-      });
-      // console.log({ latitude, longitude });
-      const serviceProviderBranches = await ServiceProviderBranch.find({
-        'address.location.latitude': {
-          $lt: latitude?.max,
-          $gt: latitude?.min,
-        },
-        'address.location.longitude': {
-          $lt: longitude.max,
-          $gt: longitude.min,
-        },
-      });
-
       await session.commitTransaction();
       await session.endSession();
-      serviceProviderBranches?.forEach((branch) => {
-        req.io.emit(branch?._id?.toString(), {
-          data: reservationGroup,
-          type: 'on-demand-raised',
+      if (schedule?.category === 'on-demand') {
+        // TODO: for sending notification to the branch
+        const nearestLocation =
+          await predefinedValueServices.getReservationRequestNearestLocation();
+
+        const radiusInKm = nearestLocation?.selectedRadius || 500; // if not set, then it will be applied
+
+        const location = machineData?.usedFor?.address?.location;
+
+        if (!location) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'this machine must have location',
+          );
+        }
+        // console.log(location);
+        // console.log({ ...location, radiusInKm });
+        const { latitude, longitude } = getLatLngBounds({
+          latitude: location?.latitude,
+          longitude: location?.longitude,
+          radiusInKm,
         });
-      });
+        // console.log({ latitude, longitude });
+        const serviceProviderBranches = await ServiceProviderBranch.find({
+          'address.location.latitude': {
+            $lt: latitude?.max,
+            $gt: latitude?.min,
+          },
+          'address.location.longitude': {
+            $lt: longitude.max,
+            $gt: longitude.min,
+          },
+        });
+
+        serviceProviderBranches?.forEach((branch) => {
+          req.io.emit(branch?._id?.toString(), {
+            data: reservationGroup,
+            type: 'on-demand-raised',
+          });
+        });
+      }
+
+      await countLifeCycle({ machineData, session });
       return updatedReservationRequest;
     }
-    // const result = await ReservationRequest.create(reservationRequest);
-    const createdReservationRequestArray = await ReservationRequest.create(
-      [reservationRequest],
-      {
-        session,
-      },
-    );
-    if (!createdReservationRequestArray?.length) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'could not create reservation request, please try again',
-      );
-    }
-
-    const createdReservationRequest = createdReservationRequestArray[0];
-
-    await countLifeCycle({ machineData, session });
-
-    await session.commitTransaction();
-    await session.endSession();
-    return createdReservationRequest;
   } catch (error) {
     await session.abortTransaction();
     await session.endSession();

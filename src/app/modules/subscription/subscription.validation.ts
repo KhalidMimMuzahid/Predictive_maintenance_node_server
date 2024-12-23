@@ -60,10 +60,31 @@ const showaUserSchema = z.object({
     .optional(),
 });
 
+const serviceProviderCompanySchema = z.object({
+  packageType: z.enum(['standard', 'enterprise']),
+  totalReservationAllowed: z
+    .any()
+    .refine((val) => val === 'unlimited' || !isNaN(val), {
+      message: 'Required for basic package',
+      path: ['totalReservationAllowed'],
+    }),
+  totalReservationAcceptable: z
+    .any()
+    .refine((val) => val === 'unlimited' || !isNaN(val), {
+      message: 'Required for basic package',
+      path: ['totalReservationAcceptable'],
+    }),
+  totalBranch: z.number(),
+  totalVendor: z.number(),
+  teamSize: z.number(),
+  hasMarketplaceAccess: z.boolean(),
+});
+
 // Define the zod schema for package
 const packageSchema = z.object({
   packageFor: z.enum(['showaUser', 'serviceProviderCompany']),
   showaUser: showaUserSchema.optional(),
+  serviceProviderCompany: serviceProviderCompanySchema.optional(),
   // Uncomment and define serviceProviderCompany schema if needed
   // serviceProviderCompany: z.object({
   //   totalEngineer: z.number(),

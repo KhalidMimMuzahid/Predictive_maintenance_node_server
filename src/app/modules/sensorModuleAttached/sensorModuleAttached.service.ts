@@ -189,7 +189,7 @@ const addSensorDataInToDB = async ({
     },
   )
     .select(
-      'subscriptionPurchased moduleType sectionName shockEventsCount machine',
+      'subscriptionPurchased moduleType sectionName shockEventsCount machine isSwitchedOn',
     )
     .populate({
       path: 'subscriptionPurchased',
@@ -212,6 +212,12 @@ const addSensorDataInToDB = async ({
     );
   }
 
+  if (!sensorModuleAttached?.isSwitchedOn) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'now thi sensor module attached is switched off',
+    );
+  }
   // we are validating sensor data here according to its module type
   const isValid = await validateSensorData({
     moduleType: sensorModuleAttached?.moduleType,
@@ -393,6 +399,31 @@ const addSensorDataInToDB = async ({
   //   Shock Events (Washing Tank): Number of excessive temperature events
   // }
   return sensorData;
+};
+
+const toggleSwitchSensorModuleAttached = async ({
+  macAddress,
+  actionType,
+}: {
+  macAddress: string;
+  actionType: 'on' | 'off';
+}) => {
+  const updatedSensorModuleAttached =
+    await SensorModuleAttached.findOneAndUpdate(
+      {
+        macAddress: macAddress,
+      },
+      {
+        isSwitchedOn: actionType === 'on' ? true : false,
+      },
+    );
+  if (!updatedSensorModuleAttached) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'something went wrong, please try again',
+    );
+  }
+  return null;
 };
 
 const getAttachedSensorModulesByUser = async ({
@@ -691,6 +722,7 @@ const getSensorModuleAttachedByMacAddress = async (macAddress: string) => {
 export const sensorAttachedModuleServices = {
   addSensorAttachedModuleIntoDB, //  to do
   addSensorDataInToDB,
+  toggleSwitchSensorModuleAttached,
   getAttachedSensorModulesByUser,
   getAttachedSensorModulesByMachine,
   getAllAttachedSensorModulesByMachine,

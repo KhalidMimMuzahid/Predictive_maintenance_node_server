@@ -9,8 +9,19 @@ export type TShowaUserForUses = {
   totalAvailableShowaMB?: number;
 };
 
+export type TServiceProviderCompanyForUses = {
+  totalAvailableBranch: number;
+  totalAvailableVendor: number;
+  totalAvailableReservationAllowed: 'unlimited' | number;
+  totalAvailableReservationAcceptable: 'unlimited' | number;
+
+  serviceProviderBranches?: mongoose.Types.ObjectId[];
+  serviceProviderBranchesAsVendor?: mongoose.Types.ObjectId[];
+};
+
 export type TUsage = {
   showaUser?: TShowaUserForUses;
+  serviceProviderCompany?: TServiceProviderCompanyForUses;
   // serviceProviderAdmin?: { engineers: mongoose.Types.ObjectId[] };
 };
 
@@ -25,8 +36,17 @@ export type TSubscriptionPurchased = {
     createdAt: Date;
     updatedAt: Date;
   };
+
+  // this field is available when type is showaUser
+  // --------------------------- XXXX ---------------------------
   specialContactServiceProviderCompany?: mongoose.Types.ObjectId; // if this coupon is for special contact with service provider
-  user: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId; // user id of showa user
+  // --------------------------- XXXX ---------------------------
+  // this field is available when type is serviceProviderCompany
+  // --------------------------- XXXX ---------------------------
+  serviceProviderCompany?: mongoose.Types.ObjectId; // if this coupon is for special contact with service provider
+  // --------------------------- XXXX ---------------------------
+
   isActive: boolean;
   usage: TUsage;
   expDate: Date;

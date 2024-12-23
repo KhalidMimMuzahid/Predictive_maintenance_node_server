@@ -19,7 +19,7 @@ const SensorModuleAttachedSchema: Schema = new Schema<TSensorModuleAttached>(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     purpose: { type: String },
 
-    isSwitchedOn: { type: Boolean, required: true },
+    isSwitchedOn: { type: Boolean, required: true, default: true },
 
     moduleType: {
       type: String,

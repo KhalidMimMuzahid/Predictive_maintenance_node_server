@@ -443,6 +443,7 @@ const deleteFaq = async (faqId: string) => {
   return;
 };
 const testing = async () => {
+  // Do all tests here
   return null;
 };
 

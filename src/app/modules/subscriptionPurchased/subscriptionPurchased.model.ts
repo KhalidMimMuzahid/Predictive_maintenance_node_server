@@ -1,19 +1,61 @@
 import mongoose, { Schema } from 'mongoose';
 import {
   TPurchasedPrice,
+  TServiceProviderCompanyForUses,
+  TShowaUserForUses,
   TSubscriptionPurchased,
   TUsage,
 } from './subscriptionPurchased.interface';
 import { SubscriptionSchema } from '../subscription/subscription.model';
 
 const usageSchema = new Schema<TUsage>({
-  showaUser: {
-    machines: [{ type: Schema.Types.ObjectId, ref: 'Machine' }],
-    IOTs: [{ type: Schema.Types.ObjectId, ref: 'SensorModuleAttached' }],
-    totalAvailableMachine: Number,
-    totalAvailableIOT: Number,
-    totalAvailableShowaMB: Number,
-  },
+  showaUser: new Schema<TShowaUserForUses>(
+    {
+      machines: [{ type: Schema.Types.ObjectId, ref: 'Machine' }],
+      IOTs: [{ type: Schema.Types.ObjectId, ref: 'SensorModuleAttached' }],
+      totalAvailableMachine: Number,
+      totalAvailableIOT: Number,
+      totalAvailableShowaMB: Number,
+    },
+
+    {
+      timestamps: false,
+      _id: false,
+    },
+  ),
+  serviceProviderCompany: new Schema<TServiceProviderCompanyForUses>(
+    {
+      totalAvailableBranch: {
+        type: Number,
+        required: true,
+      },
+      totalAvailableVendor: {
+        type: Number,
+        required: true,
+      },
+
+      totalAvailableReservationAllowed: {
+        type: Schema.Types.Mixed,
+        required: true,
+      },
+      totalAvailableReservationAcceptable: {
+        type: Schema.Types.Mixed,
+        required: true,
+      },
+      serviceProviderBranches: [
+        { type: Schema.Types.ObjectId, ref: 'ServiceProviderBranches' },
+      ],
+
+      serviceProviderBranchesAsVendor: [
+        { type: Schema.Types.ObjectId, ref: 'ServiceProviderBranches' },
+      ],
+    },
+
+    {
+      timestamps: false,
+      _id: false,
+    },
+  ),
   // Uncomment and define serviceProviderAdmin if needed
   // serviceProviderAdmin: {
   //   engineers: [{ type: Types.ObjectId, ref: 'Engineer' }],
@@ -60,6 +102,12 @@ const SubscriptionPurchasedSchema: Schema = new Schema<TSubscriptionPurchased>(
       required: false,
     },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    serviceProviderCompany: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceProviderCompany',
+      required: true,
+    },
+
     isActive: {
       type: Boolean,
       required: true,

@@ -6,6 +6,7 @@ import {
   TPackage,
   TPremium,
   TPrice,
+  TServiceProviderCompany,
   TShowaUser,
   TStandard,
   TSubscription,
@@ -103,6 +104,38 @@ const showaUserSchema = new Schema<TShowaUser>({
     },
   },
 });
+
+const serviceProviderCompanySchema = new Schema<TServiceProviderCompany>({
+  packageType: {
+    type: String,
+    enum: ['standard', 'enterprise'],
+    required: true,
+  },
+  totalBranch: {
+    type: Number,
+    required: true,
+  },
+  totalReservationAllowed: {
+    type: Schema.Types.Mixed,
+    required: true,
+  },
+  totalReservationAcceptable: {
+    type: Schema.Types.Mixed,
+    required: true,
+  },
+  totalVendor: {
+    type: Number,
+    required: true,
+  },
+  teamSize: {
+    type: Number,
+    required: true,
+  },
+  hasMarketplaceAccess: {
+    type: Boolean,
+    required: true,
+  },
+});
 const packageSchema = new Schema<TPackage>({
   packageFor: {
     type: String,
@@ -111,9 +144,7 @@ const packageSchema = new Schema<TPackage>({
   },
   showaUser: showaUserSchema,
   // Uncomment and define serviceProviderCompany schema if needed
-  // serviceProviderCompany: {
-  //   totalEngineer: Number,
-  // },
+  serviceProviderCompany: serviceProviderCompanySchema,
 });
 
 export const SubscriptionSchema: Schema = new Schema<TSubscription>(
