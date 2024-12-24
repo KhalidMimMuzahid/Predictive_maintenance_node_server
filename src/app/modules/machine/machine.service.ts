@@ -723,6 +723,28 @@ const getAllMachinesListByUser = async ({
   }).select('_id machineNo category name brand model');
   return result;
 };
+
+const getAllMachinesListByUserSensorTypeWise = async ({
+  user,
+  category,
+}: {
+  user: mongoose.Types.ObjectId;
+  category: 'connected' | 'non-connected';
+}) => {
+  if (category === 'connected') {
+    const result = await Machine.find({
+      user,
+      sensorModulesAttached: { $ne: [] },
+    }).select('_id machineNo category name brand model');
+    return result;
+  } else if (category === 'non-connected') {
+    const result = await Machine.find({
+      user,
+      sensorModulesAttached: { $size: 0 },
+    }).select('_id machineNo category name brand model');
+    return result;
+  }
+};
 const deleteMachineService = async (
   machineId: Types.ObjectId,
   userId: Types.ObjectId,
@@ -1477,6 +1499,7 @@ export const machineServices = {
   getMyGeneralMachineService,
   getUserNonConnectedGeneralMachineService,
   getAllMachinesListByUser,
+  getAllMachinesListByUserSensorTypeWise,
   getAllMachineBy_id,
   getAllSensorSectionWiseByMachine,
   getMachineBy_id,

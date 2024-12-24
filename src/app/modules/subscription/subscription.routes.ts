@@ -20,4 +20,10 @@ router.get(
   subscriptionControllers.getAllOfferedSubscriptionsForShowaUser,
 );
 
+
+router.get(
+  '/get-all-offered-subscriptions-for-service-provider-company',
+  subscriptionControllers.getAllOfferedSubscriptionsForServiceProviderCompany,
+);
+
 export const subscriptionRoutes = router;

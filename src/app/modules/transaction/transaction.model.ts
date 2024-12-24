@@ -97,10 +97,15 @@ const PaymentSchema: Schema<TPayment> = new Schema<TPayment>(
     },
     subscriptionPurchase: {
       type: new Schema({
-        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        user: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+        serviceProviderCompany: {
+          type: Schema.Types.ObjectId,
+          ref: 'ServiceProviderCompany',
+          required: false,
+        },
         subscriptionPurchased: {
           type: Schema.Types.ObjectId,
-          ref: 'User',
+          ref: 'SubscriptionPurchased',
           required: true,
         },
         price: {

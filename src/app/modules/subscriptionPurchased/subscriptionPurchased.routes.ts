@@ -5,7 +5,11 @@ const router: Router = express.Router();
 
 router.post(
   '/purchased-subscription',
-  subscriptionPurchasedControllers.purchaseSubscription,
+  subscriptionPurchasedControllers.purchaseSubscriptionForCustomer,
+);
+router.post(
+  '/purchased-subscription-for-service-provider-company',
+  subscriptionPurchasedControllers.purchaseSubscriptionForServiceProviderCompany,
 );
 router.get(
   '/get-my-all-subscriptions', // all active subscriptions

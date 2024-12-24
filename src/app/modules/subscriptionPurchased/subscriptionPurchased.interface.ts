@@ -10,10 +10,10 @@ export type TShowaUserForUses = {
 };
 
 export type TServiceProviderCompanyForUses = {
-  totalAvailableBranch: number;
-  totalAvailableVendor: number;
-  totalAvailableReservationAllowed: 'unlimited' | number;
-  totalAvailableReservationAcceptable: 'unlimited' | number;
+  totalAvailableBranch?: number;
+  totalAvailableVendor?: number;
+  totalAvailableReservationAllowed?: 'unlimited' | number;
+  totalAvailableReservationAcceptable?: 'unlimited' | number;
 
   serviceProviderBranches?: mongoose.Types.ObjectId[];
   serviceProviderBranchesAsVendor?: mongoose.Types.ObjectId[];

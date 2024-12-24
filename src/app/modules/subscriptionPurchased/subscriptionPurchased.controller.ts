@@ -9,31 +9,64 @@ import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import sendResponse from '../../utils/sendResponse';
 import { subscriptionPurchasedServices } from './subscriptionPurchased.service';
 
-const purchaseSubscription: RequestHandler = catchAsync(async (req, res) => {
-  const auth: TAuth = req?.headers?.auth as unknown as TAuth;
-  checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
+const purchaseSubscriptionForCustomer: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
 
-  const subscription = req?.query?.subscription as string;
+    const subscription = req?.query?.subscription as string;
 
-  if (!subscription) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'subscription is required to purchase it',
-    );
-  }
+    if (!subscription) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'subscription is required to purchase it',
+      );
+    }
 
-  const result = await subscriptionPurchasedServices.createSubscription({
-    user: auth?._id,
-    subscription,
+    const result =
+      await subscriptionPurchasedServices.purchaseSubscriptionForCustomer({
+        user: auth?._id,
+        subscription,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Subscription has purchased successfully',
+      data: result,
+    });
+  },
+);
+
+const purchaseSubscriptionForServiceProviderCompany: RequestHandler =
+  catchAsync(async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: ['serviceProviderAdmin'] });
+
+    const subscription = req?.query?.subscription as string;
+
+    if (!subscription) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'subscription is required to purchase it',
+      );
+    }
+
+    const result =
+      await subscriptionPurchasedServices.purchaseSubscriptionForServiceProviderCompany(
+        {
+          user: auth?._id,
+          subscription,
+        },
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Subscription has purchased successfully',
+      data: result,
+    });
   });
-  // send response
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Subscription has purchased successfully',
-    data: result,
-  });
-});
 
 const getAllMySubscriptions: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -128,7 +161,8 @@ const getAllSubscriptionPurchasedHistoryByUser: RequestHandler = catchAsync(
 );
 
 export const subscriptionPurchasedControllers = {
-  purchaseSubscription,
+  purchaseSubscriptionForCustomer,
+  purchaseSubscriptionForServiceProviderCompany,
   getAllMySubscriptions, //(customer app)
   renewSubscription, //extend subscription  (customer app)
   getAllSubscriptionPurchasedHistoryByUser,

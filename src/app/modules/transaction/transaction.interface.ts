@@ -53,11 +53,14 @@ export type TPayment = {
     }[];
     amount: number;
   };
+
   subscriptionPurchase?: {
-    user: Types.ObjectId;
+    user?: Types.ObjectId;
+    serviceProviderCompany?: Types.ObjectId;
     subscriptionPurchased: Types.ObjectId;
     price: TPurchasedPrice;
   };
+
   walletStatus: TWalletStatus;
 };
 export type TFundTransfer = {

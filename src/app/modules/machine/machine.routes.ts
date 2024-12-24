@@ -49,6 +49,10 @@ router.get(
   machineController.getAllMachinesListByUser,
 );
 router.get(
+  '/get-all-machines-list-by-user-sensor-type-wise',
+  machineController.getAllMachinesListByUserSensorTypeWise,
+);
+router.get(
   '/general-machine/non-connected/user',
   machineController.getUserNonConnectedGeneralMachine,
 );

@@ -236,6 +236,32 @@ const getMyGeneralMachine: RequestHandler = catchAsync(async (req, res) => {
     data: results,
   });
 });
+
+const getAllMachinesListByUserSensorTypeWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+    const category = req?.query?.category as 'connected' | 'non-connected';
+    if (category !== 'connected' && category !== 'non-connected') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of connected or non-connected',
+      );
+    }
+    const results =
+      await machineServices.getAllMachinesListByUserSensorTypeWise({
+        user: auth?._id,
+        category,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'all machines lists have been retrieved',
+      data: results,
+    });
+  },
+);
 const getAllMachinesListByUser: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -504,6 +530,7 @@ export const machineController = {
   updateMachinePackageStatus,
   getMyWashingMachine,
   getMyGeneralMachine,
+  getAllMachinesListByUserSensorTypeWise,
   getAllMachinesListByUser,
   getUserConnectedMachine,
   getUserNonConnectedGeneralMachine,

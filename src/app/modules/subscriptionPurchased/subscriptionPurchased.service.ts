@@ -6,12 +6,14 @@ import {
   TBasic,
   TDiscount,
   TPremium,
+  TServiceProviderCompany,
   TShowaUser,
   TStandard,
 } from '../subscription/subscription.interface';
 import { Subscription } from '../subscription/subscription.model';
 import {
   TPurchasedPrice,
+  TServiceProviderCompanyForUses,
   TShowaUserForUses,
   TSubscriptionPurchased,
   TUsage,
@@ -21,8 +23,9 @@ import { updateWallet } from '../wallet/wallet.utils';
 import { Wallet } from '../wallet/wallet.model';
 import { Transaction } from '../transaction/transaction.model';
 import { TPayment } from '../transaction/transaction.interface';
+import { ServiceProviderAdmin } from '../user/usersModule/serviceProviderAdmin/serviceProviderAdmin.model';
 
-const createSubscription = async ({
+const purchaseSubscriptionForCustomer = async ({
   user,
   subscription,
   specialContactServiceProviderCompany,
@@ -31,9 +34,10 @@ const createSubscription = async ({
   subscription: string;
   specialContactServiceProviderCompany?: mongoose.Types.ObjectId;
 }) => {
-  const subscriptionData = await Subscription.findById(
-    new mongoose.Types.ObjectId(subscription),
-  );
+  const subscriptionData = await Subscription.findOne({
+    _id: new mongoose.Types.ObjectId(subscription),
+    'package.packageFor': 'showaUser',
+  });
   if (!subscriptionData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -195,6 +199,183 @@ const createSubscription = async ({
   }
 };
 
+const purchaseSubscriptionForServiceProviderCompany = async ({
+  user,
+  subscription,
+}: {
+  user: mongoose.Types.ObjectId;
+  subscription: string;
+}) => {
+  const subscriptionData = await Subscription.findOne({
+    _id: new mongoose.Types.ObjectId(subscription),
+    'package.packageFor': 'serviceProviderCompany',
+  });
+  if (!subscriptionData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'no subscription has found with this subscription',
+    );
+  }
+
+  const serviceProviderAdminData = await ServiceProviderAdmin.findOne({
+    user,
+  }).select('serviceProviderCompany');
+  if (!serviceProviderAdminData?.serviceProviderCompany) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'somethingWent wrong, please try again later',
+    );
+  }
+  const usage: TUsage = {};
+
+  const serviceProviderCompanyForUses: TServiceProviderCompanyForUses = {};
+  const serviceProviderCompany: TServiceProviderCompany =
+    subscriptionData?.package?.serviceProviderCompany;
+  // const premium: TPremium = showaUser?.premium;
+  // showaUserForUses.totalAvailableMachine = premium?.totalMachine;
+  // showaUserForUses.machines = [];
+  // showaUserForUses.totalAvailableIOT = premium?.totalIOT;
+  // showaUserForUses.IOTs = [];
+  serviceProviderCompanyForUses.totalAvailableBranch =
+    serviceProviderCompany.totalBranch;
+  serviceProviderCompanyForUses.totalAvailableVendor =
+    serviceProviderCompany.totalVendor;
+  serviceProviderCompanyForUses.totalAvailableReservationAllowed =
+    serviceProviderCompany.totalReservationAllowed;
+  serviceProviderCompanyForUses.totalAvailableReservationAcceptable =
+    serviceProviderCompany.totalReservationAcceptable;
+  serviceProviderCompanyForUses.serviceProviderBranches = [];
+  serviceProviderCompanyForUses.serviceProviderBranchesAsVendor = [];
+
+  usage.serviceProviderCompany = serviceProviderCompanyForUses;
+
+  let applicablePrice: number = subscriptionData?.price?.netAmount;
+
+  if (subscriptionData?.price?.discount) {
+    const discount: TDiscount = subscriptionData?.price?.discount;
+    if (discount?.type === 'flat-rate') {
+      applicablePrice = discount?.amount;
+    } else if (discount?.type === 'percentage') {
+      applicablePrice =
+        applicablePrice - (discount?.amount * applicablePrice) / 100;
+    }
+  }
+
+  const tax: number = 0; //assume this tax quantity is coming frm database set by  showa admin; for now it's zero
+  const totalPrice: number = applicablePrice + (tax * applicablePrice) / 100;
+
+  const price: TPurchasedPrice = {
+    tax: tax,
+    applicablePrice: applicablePrice,
+    totalPrice: totalPrice,
+  };
+  const expDate: Date = addDays(subscriptionData?.validity);
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const subscriptionPurchaseDataArray = await SubscriptionPurchased.create(
+      [
+        {
+          subscription: subscriptionData,
+          user,
+          serviceProviderCompany:
+            serviceProviderAdminData?.serviceProviderCompany,
+          isActive: true,
+          usage,
+          expDate,
+          price,
+        },
+      ],
+      { session },
+    );
+    const subscriptionPurchaseData = subscriptionPurchaseDataArray[0];
+    if (!subscriptionPurchaseData) {
+      {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          'Something went wrong, please try again',
+        );
+      }
+    }
+
+    const walletData = await Wallet.findOne({
+      serviceProviderCompany: serviceProviderAdminData?.serviceProviderCompany,
+      ownerType: 'serviceProviderCompany',
+    }).select('balance point showaMB');
+
+    if (totalPrice > walletData?.balance) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'You have not enough money to purchase, please add fund first',
+      );
+    }
+    const updatedWallet = await updateWallet({
+      session: session,
+      wallet: walletData?._id,
+      balance: -totalPrice,
+      point: Math.ceil(totalPrice / 100),
+    });
+    if (!updatedWallet) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Something went wrong, please try again',
+      );
+    }
+    const payment: TPayment = {
+      type: 'subscriptionPurchase',
+      subscriptionPurchase: {
+        // user: user,
+        serviceProviderCompany:
+          serviceProviderAdminData?.serviceProviderCompany,
+        subscriptionPurchased: subscriptionPurchaseData?._id,
+        price: price,
+      },
+      walletStatus: {
+        previous: {
+          balance: walletData?.balance,
+          point: walletData?.point,
+          showaMB: walletData?.showaMB,
+        },
+        next: {
+          balance: walletData?.balance - totalPrice,
+          point: walletData?.point + Math.ceil(totalPrice / 100),
+          showaMB: walletData?.showaMB,
+        },
+      },
+    };
+    const createdTransactionArray = await Transaction.create(
+      [
+        {
+          type: 'payment',
+          payment: payment,
+          status: 'completed',
+        },
+      ],
+      { session },
+    );
+    const createdTransaction = createdTransactionArray[0];
+
+    if (!createdTransaction) {
+      {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          'Something went wrong, please try again',
+        );
+      }
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return subscriptionPurchaseData;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+};
+
 const getAllMySubscriptions = async (userId: mongoose.Types.ObjectId) => {
   const purchases: TSubscriptionPurchased[] = await SubscriptionPurchased.find({
     user: userId,
@@ -260,7 +441,8 @@ const getAllSubscriptionPurchasedHistoryByUser = async (userId: string) => {
 };
 
 export const subscriptionPurchasedServices = {
-  createSubscription,
+  purchaseSubscriptionForCustomer,
+  purchaseSubscriptionForServiceProviderCompany,
   getAllMySubscriptions,
   renewSubscription,
   getAllSubscriptionPurchasedHistoryByUser,
