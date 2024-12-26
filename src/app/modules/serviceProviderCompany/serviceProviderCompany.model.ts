@@ -18,6 +18,20 @@ export const serviceProviderCompanySchema = new Schema<TServiceProviderCompany>(
       enum: ['pending', 'success', 'suspended'],
       required: true,
     },
+    level: new Schema(
+      {
+        current: {
+          type: Number,
+        },
+        progression: {
+          type: Number,
+        },
+      },
+      {
+        _id: false,
+        timestamps: false,
+      },
+    ),
     serviceProviderAdmin: {
       type: Schema.Types.ObjectId,
       ref: 'User',

@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
-import { THealthStatus } from '../machine/machine.interface';
+import { THealthStatus, TMachineCategory } from '../machine/machine.interface';
 
 export type TThreshold = {
+  category: TMachineCategory;
+  type: string;
+  brand: string;
+  model: string;
   sectionName: string; // threshold name
   temperature: number;
   vibrations: number;

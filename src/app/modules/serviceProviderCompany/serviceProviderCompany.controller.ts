@@ -208,6 +208,55 @@ const getMainDashboardFirstSectionSummary: RequestHandler = catchAsync(
   },
 );
 
+const getMainDashboardReportCardSummary: RequestHandler = catchAsync(
+  async (req, res) => {
+    const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    checkUserAccessApi({ auth, accessUsers: 'all' });
+
+    const serviceProviderCompany: string = req?.query
+      ?.serviceProviderCompany as string;
+    const serviceProviderBranch: string = req?.query
+      ?.serviceProviderBranch as string;
+
+    if (!serviceProviderCompany && !serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `serviceProviderCompany or serviceProviderBranch is required`,
+      );
+    } else if (serviceProviderCompany && serviceProviderBranch) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        ` one of these serviceProviderCompany or serviceProviderBranch is required at a time, not both`,
+      );
+    }
+
+    const numberOfCardString: string = req?.query?.numberOfCard as string;
+
+    const numberOfCard = parseInt(numberOfCardString);
+
+    if (!numberOfCard) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        `numberOfCard is required to get report card`,
+      );
+    }
+    const result =
+      await serviceProviderCompanyServices.getMainDashboardReportCardSummary({
+        serviceProviderCompany,
+        serviceProviderBranch,
+        numberOfCard,
+      });
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        'All Members For ServiceProviderCompany has retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const serviceProviderCompanyControllers = {
   getServiceProviderCompanyForAdmin,
   editServiceProviderCompany,
@@ -216,4 +265,5 @@ export const serviceProviderCompanyControllers = {
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
   getMainDashboardFirstSectionSummary, // Service Provider CXO/Branch manager Main dashboard screen
+  getMainDashboardReportCardSummary, // report card in CXO screen
 };

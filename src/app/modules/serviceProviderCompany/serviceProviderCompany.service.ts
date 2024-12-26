@@ -369,6 +369,138 @@ const getMainDashboardFirstSectionSummary = async ({
   };
 };
 
+
+const getMainDashboardReportCardSummary = async ({
+  serviceProviderCompany,
+  serviceProviderBranch,
+  numberOfCard,
+}: {
+  serviceProviderCompany: string;
+  serviceProviderBranch: string;
+  numberOfCard: number;
+}) => {
+  // const result = [];
+
+  // for (let i = 0; i < numberOfCard; i++) {
+  //   // Get the start of the current month and subtract months
+  //   const startOfMonth = new Date(today.getFullYear(), today.getMonth() - i, 1);
+  //   // Get the end of the current month
+  //   const endOfMonth = new Date(
+  //     startOfMonth.getFullYear(),
+  //     startOfMonth.getMonth() + 1,
+  //     0,
+  //   );
+
+  //   result.push({
+  //     startDateOfThisMonth: startOfMonth,
+  //     endDateOfThisMonth: endOfMonth,
+  //   });
+  // }
+
+  const reportCardsArray = Array.from(
+    { length: numberOfCard },
+    (_, i) => i + 1,
+  );
+
+  const today = new Date();
+  const reportCards = await Promise.all(
+    reportCardsArray?.map(async (serialNo) => {
+      // Get the start of the current month and subtract months
+      const startOfThisMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() - serialNo - 1,
+        1,
+      );
+      // Get the end of the current month
+      const endOfThisMonth = new Date(
+        startOfThisMonth.getFullYear(),
+        startOfThisMonth.getMonth() + 1,
+        0,
+      );
+
+      const allInvoicesForThisMonth = await Invoice.find({
+        createdAt: {
+          $gt: startOfThisMonth,
+          $lt: endOfThisMonth,
+        },
+        $or: [
+          {
+            'postBiddingProcess.serviceProviderCompany':
+              new mongoose.Types.ObjectId(serviceProviderCompany),
+          },
+          {
+            'postBiddingProcess.serviceProviderBranch':
+              new mongoose.Types.ObjectId(serviceProviderBranch),
+          },
+        ],
+        taskStatus: 'completed',
+        'additionalProducts.isPaid': true,
+      });
+
+      const totalForThisMonth = allInvoicesForThisMonth.reduce((acc, item) => {
+        return (acc =
+          acc +
+          (item?.additionalProducts?.totalAmount || 0) +
+          (item?.inspection?.serviceFee || 0));
+      }, 0);
+      // console.log({ totalForThisMonth });
+      const startOfPreviousMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() - (serialNo + 1) - 1,
+        1,
+      );
+      // Get the end of the current month
+      const endOfPreviousMonth = new Date(
+        startOfPreviousMonth.getFullYear(),
+        startOfPreviousMonth.getMonth() + 1,
+        0,
+      );
+      const allInvoicesForPreviousMonth = await Invoice.find({
+        createdAt: {
+          $gt: startOfPreviousMonth,
+          $lt: endOfPreviousMonth,
+        },
+        $or: [
+          {
+            'postBiddingProcess.serviceProviderCompany':
+              new mongoose.Types.ObjectId(serviceProviderCompany),
+          },
+          {
+            'postBiddingProcess.serviceProviderBranch':
+              new mongoose.Types.ObjectId(serviceProviderBranch),
+          },
+        ],
+        taskStatus: 'completed',
+        'additionalProducts.isPaid': true,
+      });
+
+      const totalForPreviousMonth = allInvoicesForPreviousMonth.reduce(
+        (acc, item) => {
+          return (acc =
+            acc +
+            (item?.additionalProducts?.totalAmount || 0) +
+            (item?.inspection?.serviceFee || 0));
+        },
+        0,
+      );
+      // console.log({ totalForPreviousMonth });
+      // const temp = {} as any;
+      // temp[`startDateOfMonth${serialNo}`] = '';
+      // temp[`endDateOfMonth${serialNo}`] = '';
+
+      const incrementInPercentage =
+        ((totalForThisMonth - totalForPreviousMonth) / totalForThisMonth) * 100;
+      return {
+        incrementInPercentage: incrementInPercentage,
+        total: totalForThisMonth,
+        description: `compare to ${
+          totalForPreviousMonth / 1000
+        }k previous months`,
+      };
+    }),
+  );
+  return reportCards;
+};
 export const serviceProviderCompanyServices = {
   getServiceProviderCompanyForAdmin,
   editServiceProviderCompany,
@@ -377,4 +509,5 @@ export const serviceProviderCompanyServices = {
   getAllServiceProviderCompanies,
   getAllMembersForServiceProviderCompany,
   getMainDashboardFirstSectionSummary,
+  getMainDashboardReportCardSummary,
 };

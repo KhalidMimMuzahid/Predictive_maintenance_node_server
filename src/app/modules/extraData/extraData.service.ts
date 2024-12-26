@@ -244,13 +244,14 @@ const activateCoupon = async ({
   const couponData = predefinedValueForCouponData?.coupon;
   // couponData.specialContactServiceProviderCompany=
 
-  const result = await subscriptionPurchasedServices.createSubscription({
-    subscription: couponData?.subscription?.toString(),
-    user: auth?._id,
-    specialContactServiceProviderCompany:
-      predefinedValueForCouponData?.coupon
-        ?.specialContactServiceProviderCompany,
-  });
+  const result =
+    await subscriptionPurchasedServices.purchaseSubscriptionForCustomer({
+      subscription: couponData?.subscription?.toString(),
+      user: auth?._id,
+      specialContactServiceProviderCompany:
+        predefinedValueForCouponData?.coupon
+          ?.specialContactServiceProviderCompany,
+    });
 
   return result;
 };
@@ -444,6 +445,13 @@ const deleteFaq = async (faqId: string) => {
 };
 const testing = async () => {
   // Do all tests here
+
+  // if (true) {
+  //   throw new AppError(
+  //     httpStatus.NOT_FOUND,
+  //     'something went wrong, please try again',
+  //   );
+  // }
   return null;
 };
 

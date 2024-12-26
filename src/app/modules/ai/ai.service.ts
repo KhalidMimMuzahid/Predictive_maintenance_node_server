@@ -27,6 +27,10 @@ const addThreshold = async ({
 
   const previousThresholdData = await AI.findOne({
     type: 'threshold',
+    'threshold.category': thresholdData.category,
+    'threshold.type': thresholdData.type,
+    'threshold.brand': thresholdData.brand,
+    'threshold.model': thresholdData.model,
     'threshold.sectionName': thresholdData?.sectionName,
   });
 
@@ -65,7 +69,17 @@ const addThreshold = async ({
   }
 };
 
-const getThresholds = async () => {
+const getThresholds = async ({
+  category,
+  type,
+  brand,
+  model,
+}: {
+  category: string;
+  type: string;
+  brand: string;
+  model: string;
+}) => {
   const sections = await predefinedValueServices.getIotSectionNames();
   // console.log(sections);
 
@@ -73,10 +87,18 @@ const getThresholds = async () => {
     sections?.map(async (sectionName) => {
       const thresholdData = await AI.findOne({
         type: 'threshold',
+        'threshold.category': category,
+        'threshold.type': type,
+        'threshold.brand': brand,
+        'threshold.model': model,
         'threshold.sectionName': sectionName,
       });
 
       return {
+        category,
+        type,
+        brand,
+        model,
         sectionName: sectionName,
         temperature: thresholdData?.threshold?.temperature || null,
         vibrations: thresholdData?.threshold?.vibrations || null,

@@ -48,7 +48,28 @@ const getAiData: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getThresholds: RequestHandler = catchAsync(async (req, res) => {
-  const result = await aiServices.getThresholds();
+
+  const category = req?.query?.category as string;
+  const type = req?.query?.type as string;
+  const brand = req?.query?.brand as string;
+  const model = req?.query?.model as string;
+
+  if (!category || !type || !brand || !model) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'category, type, brand and model are required to get threshold data',
+    );
+  }
+  const result = await aiServices.getThresholds({
+    category,
+    type,
+    brand,
+    model,
+  });
+
+
+
+
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

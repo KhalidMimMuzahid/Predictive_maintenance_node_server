@@ -37,5 +37,9 @@ router.get(
   '/get-main-dashboard-first-section-summary',
   serviceProviderCompanyControllers.getMainDashboardFirstSectionSummary,
 );
+router.get(
+  '/get-main-dashboard-report-card-summary',
+  serviceProviderCompanyControllers.getMainDashboardReportCardSummary,
+);
 
 export const serviceProviderCompanyRoutes = router;

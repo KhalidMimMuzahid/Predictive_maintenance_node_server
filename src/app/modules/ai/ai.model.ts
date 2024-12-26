@@ -3,6 +3,14 @@ import { TAI, TAiData, TMachineForAI, TThreshold } from './ai.interface';
 
 const ThresholdSchema: Schema = new Schema<TThreshold>(
   {
+    category: {
+      type: String,
+      enum: ['washing-machine', 'general-machine'],
+      required: true,
+    },
+    type: { type: String },
+    brand: { type: String, required: true },
+    model: { type: String, required: true },
     sectionName: {
       type: String,
       trim: true,

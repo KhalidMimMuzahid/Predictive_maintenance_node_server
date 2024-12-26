@@ -9,7 +9,10 @@ export type TServiceProviderCompany = {
   serviceProviderAdmin: Types.ObjectId; // objectId of user, who is admin/owner of this company
   status: TCompanyStatus;
   // language?: TLanguage;
-
+  level?: {
+    current: number;
+    progression: number; // from zero to 100
+  };
   companyName: string;
   photoUrl?: string; // company  profile photo
   address: TAddress;
