@@ -12,6 +12,10 @@ export type TThreshold = {
 };
 export type TAiData = {
   machine: mongoose.Types.ObjectId;
+  category: TMachineCategory;
+  type: string;
+  brand: string;
+  model: string;
   sectionName: string;
   sensorData: {
     vibration: number;

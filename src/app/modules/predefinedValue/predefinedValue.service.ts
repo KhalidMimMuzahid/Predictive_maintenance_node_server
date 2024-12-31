@@ -193,17 +193,17 @@ const addIotSectionName = async ({
   type: string;
   sectionName: string;
 }) => {
-  const previousSectionNames2 = await PredefinedValue.findOne(
+  const previousSectionNames = await PredefinedValue.findOne(
     {
       type: 'sensorModuleAttached',
     },
-    { 'sensorModuleAttached.sectionNames2': 1 },
+    { 'sensorModuleAttached.sectionNames': 1 },
   );
 
   let isDifferentCategoryAndType = true;
-  if (previousSectionNames2) {
+  if (previousSectionNames) {
     const sectionNamesList =
-      previousSectionNames2?.sensorModuleAttached?.sectionNames?.map((each) => {
+      previousSectionNames?.sensorModuleAttached?.sectionNames?.map((each) => {
         if (each?.category === category && each?.type === type) {
           const sectionNamesList =
             each?.sectionNames?.map((each) => each) || [];
@@ -232,9 +232,9 @@ const addIotSectionName = async ({
         sectionNames: [sectionName],
       });
     }
-    previousSectionNames2.sensorModuleAttached.sectionNames = sectionNamesList;
+    previousSectionNames.sensorModuleAttached.sectionNames = sectionNamesList;
     const updatedPreviousIOTsectionNamesList =
-      await previousSectionNames2.save();
+      await previousSectionNames.save();
     if (!updatedPreviousIOTsectionNamesList) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -1304,26 +1304,7 @@ const addReservationRequestIssue = async (issue: string) => {
   }
 };
 
-const getIotSectionNames = async () => {
-  const previousSectionNames = await PredefinedValue.findOne(
-    {
-      type: 'sensorModuleAttached',
-    },
-    { 'sensorModuleAttached.sectionNames': 1 },
-  );
-  return previousSectionNames?.sensorModuleAttached?.sectionNames || [];
-
-  // const x = await Machine.updateMany(
-  //   {},
-  //   {
-  //     $unset: { healthStatus: '' },
-  //   },
-  // );
-
-  // return x;
-};
-
-const getIotSectionNames2 = async ({
+const getIotSectionNames = async ({
   category,
   type,
 }: {
@@ -1337,11 +1318,11 @@ const getIotSectionNames2 = async ({
       },
     },
     {
-      $unwind: '$sensorModuleAttached.sectionNames2',
+      $unwind: '$sensorModuleAttached.sectionNames',
     },
     {
       $replaceRoot: {
-        newRoot: '$sensorModuleAttached.sectionNames2',
+        newRoot: '$sensorModuleAttached.sectionNames',
       },
     },
     {
@@ -1351,8 +1332,8 @@ const getIotSectionNames2 = async ({
       },
     },
   ]);
-
-  return iotSectionNamesList[0]?.sectionNames || [];
+  const sectionNames: string[] = iotSectionNamesList[0]?.sectionNames || [];
+  return sectionNames;
 };
 const getProductCategories = async () => {
   const productCategories = await PredefinedValue.findOne(
@@ -1528,7 +1509,6 @@ export const predefinedValueServices = {
   getProductCategories,
   getShopCategories,
   getIotSectionNames,
-  getIotSectionNames2,
   getMachineBrands,
   getMachineModels,
   getAllMachineIssuesBrandAndModelWise,

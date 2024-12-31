@@ -31,6 +31,80 @@ const ThresholdSchema: Schema = new Schema<TThreshold>(
   },
 );
 
+const AIDataSchema: Schema = new Schema<TAiData>(
+  {
+    machine: {
+      type: Schema.Types.ObjectId,
+      ref: 'Machine',
+      required: true,
+    },
+    category: {
+      type: String,
+      enum: ['washing-machine', 'general-machine'],
+      required: true,
+    },
+    type: { type: String, required: true },
+    brand: { type: String, required: true },
+    model: { type: String, required: true },
+    sectionName: {
+      type: String,
+      required: true,
+    },
+    healthStatus: {
+      type: String,
+      enum: ['bad', 'good', 'moderate', 'unknown'],
+      required: false,
+    },
+    sensorData: {
+      type: new mongoose.Schema(
+        {
+          vibration: { type: Number, required: true },
+          temperature: { type: Number, required: true },
+        },
+        {
+          _id: false,
+        },
+      ),
+      required: true,
+    },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
+const MachineSchema: Schema = new Schema<TMachineForAI>(
+  {
+    lifeCycle: {
+      type: new Schema(
+        {
+          totalCycle: Number,
+          totalMachine: Number,
+        },
+        {
+          timestamps: false,
+          _id: false,
+        },
+      ),
+    },
+    reservationCycle: {
+      type: new Schema(
+        {
+          totalCycle: Number,
+          totalReservation: Number,
+        },
+        {
+          timestamps: false,
+          _id: false,
+        },
+      ),
+    },
+  },
+  {
+    timestamps: false,
+    _id: false,
+  },
+);
 const AISchema = new Schema<TAI>(
   {
     type: {
@@ -43,76 +117,11 @@ const AISchema = new Schema<TAI>(
       required: false,
     },
     aiData: {
-      type: new Schema<TAiData>(
-        {
-          machine: {
-            type: Schema.Types.ObjectId,
-            ref: 'Machine',
-            required: true,
-          },
-
-          sectionName: {
-            type: String,
-            required: true,
-          },
-          healthStatus: {
-            type: String,
-            enum: ['bad', 'good', 'moderate', 'unknown'],
-            required: false,
-          },
-          sensorData: {
-            type: new mongoose.Schema(
-              {
-                vibration: { type: Number, required: true },
-                temperature: { type: Number, required: true },
-              },
-              {
-                _id: false,
-              },
-            ),
-            required: true,
-          },
-        },
-        {
-          timestamps: false,
-          _id: false,
-        },
-      ),
+      type: AIDataSchema,
       required: false,
     },
     machine: {
-      type: new Schema<TMachineForAI>(
-        {
-          lifeCycle: {
-            type: new Schema(
-              {
-                totalCycle: Number,
-                totalMachine: Number,
-              },
-              {
-                timestamps: false,
-                _id: false,
-              },
-            ),
-          },
-          reservationCycle: {
-            type: new Schema(
-              {
-                totalCycle: Number,
-                totalReservation: Number,
-              },
-              {
-                timestamps: false,
-                _id: false,
-              },
-            ),
-          },
-        },
-        {
-          timestamps: false,
-          _id: false,
-        },
-      ),
+      type: MachineSchema,
       required: false,
     },
   },

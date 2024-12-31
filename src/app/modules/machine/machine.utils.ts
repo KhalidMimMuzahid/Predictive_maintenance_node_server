@@ -3,23 +3,23 @@ import AppError from '../../errors/AppError';
 import { TMachine } from './machine.interface';
 import { predefinedValueServices } from '../predefinedValue/predefinedValue.service';
 
-export const checkMachineData = async (payload: Partial<TMachine>) => {
-  if (payload?.washingMachine && payload?.generalMachine) {
+export const checkMachineData = async (machineData: Partial<TMachine>) => {
+  if (machineData?.washingMachine && machineData?.generalMachine) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'This machine must have only one of washingMachine or generalMachine, but you have provided both of them',
     );
   } else if (
-    payload?.category === 'washing-machine' &&
-    !payload?.washingMachine
+    machineData?.category === 'washing-machine' &&
+    !machineData?.washingMachine
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'washing machine must have washingMachine data',
     );
   } else if (
-    payload?.category === 'general-machine' &&
-    !payload?.generalMachine
+    machineData?.category === 'general-machine' &&
+    !machineData?.generalMachine
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -27,10 +27,15 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
     );
   }
 
-  const brandsData = await predefinedValueServices.getMachineBrands();
-  const brandsList = brandsData?.brands?.map((each) => each?.brand);
+  const brandsList = await predefinedValueServices.getMachineBrands({
+    category: machineData?.category,
+    type:
+      machineData?.category === 'general-machine'
+        ? machineData?.generalMachine?.type
+        : machineData?.washingMachine?.type,
+  });
 
-  if (!brandsList.some((each) => each === payload?.brand)) {
+  if (!brandsList.some((each) => each === machineData?.brand)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       `brand must be any of ${brandsList.reduce((total, current) => {
@@ -40,11 +45,16 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
     );
   }
 
-  const models = brandsData?.brands?.find(
-    (each) => each?.brand === payload?.brand,
-  )?.models;
+  const models = await predefinedValueServices.getMachineModels({
+    category: machineData?.category,
+    type:
+      machineData?.category === 'general-machine'
+        ? machineData?.generalMachine?.type
+        : machineData?.washingMachine?.type,
+    brand: machineData?.brand,
+  });
 
-  if (!models.some((each) => each === payload?.model)) {
+  if (!models.some((each) => each === machineData?.model)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       `model Name must be any of ${models.reduce((total, current) => {
@@ -55,17 +65,17 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
   }
 
   const machineType =
-    payload?.category === 'washing-machine'
-      ? payload?.washingMachine?.type
-      : payload?.generalMachine?.type;
+    machineData?.category === 'washing-machine'
+      ? machineData?.washingMachine?.type
+      : machineData?.generalMachine?.type;
   const machineTypes =
     await predefinedValueServices.getAllMachineTypesCategoryWise({
-      category: payload?.category,
+      category: machineData?.category,
     });
   if (!machineTypes.some((each) => each === machineType)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `${payload?.category} type must be any of ${machineTypes.reduce(
+      `${machineData?.category} type must be any of ${machineTypes.reduce(
         (total, current) => {
           total = total + `${current}, `;
           return total;
@@ -74,6 +84,4 @@ export const checkMachineData = async (payload: Partial<TMachine>) => {
       )}`,
     );
   }
-
-
 };

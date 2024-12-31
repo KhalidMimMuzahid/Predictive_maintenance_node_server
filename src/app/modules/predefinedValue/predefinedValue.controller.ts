@@ -634,7 +634,7 @@ const getIotSectionNames: RequestHandler = catchAsync(async (req, res) => {
       'category and type names are required to get all machine issue model wise',
     );
   }
-  const result = await predefinedValueServices.getIotSectionNames2({
+  const result = await predefinedValueServices.getIotSectionNames({
     category,
     type,
   });

@@ -445,8 +445,8 @@ const deleteFaq = async (faqId: string) => {
 };
 const testing = async () => {
   // Do all tests here
-
-  // if (true) {
+  // const x = await AI.deleteMany({ type: 'threshold' });
+  // if (!x) {
   //   throw new AppError(
   //     httpStatus.NOT_FOUND,
   //     'something went wrong, please try again',

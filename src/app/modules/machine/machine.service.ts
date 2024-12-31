@@ -201,7 +201,13 @@ const addSensorConnectedMachineInToDB = async ({
     );
   }
 
-  const sectionNames = await predefinedValueServices.getIotSectionNames();
+  const sectionNames = await predefinedValueServices.getIotSectionNames({
+    category: machineData?.category,
+    type:
+      machineData?.category === 'general-machine'
+        ? machineData?.generalMachine?.type
+        : machineData?.washingMachine?.type,
+  });
 
   sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {
     const isSectionNameValid = sectionNames.some(
@@ -508,6 +514,12 @@ const addSensorAttachedModuleInToMachineIntoDB = async ({
   sensorModuleAttached_id: Types.ObjectId;
   sensorModuleAttachedData: Partial<TSensorModuleAttached>;
 }) => {
+  const machineData = await Machine.findById(machine_id, {
+    category: 1,
+    generalMachine: 1,
+    washingMachine: 1,
+  });
+
   const sensorModuleAttached = await SensorModuleAttached.findById(
     sensorModuleAttached_id,
   );
@@ -532,7 +544,13 @@ const addSensorAttachedModuleInToMachineIntoDB = async ({
   }
 
   // here we need to get IOT section names with machine category and type
-  const sectionNames = await predefinedValueServices.getIotSectionNames();
+  const sectionNames = await predefinedValueServices.getIotSectionNames({
+    category: machineData?.category,
+    type:
+      machineData?.category === 'general-machine'
+        ? machineData?.generalMachine?.type
+        : machineData?.washingMachine?.type,
+  });
 
   sensorModuleAttached?.sectionName?.vibration?.forEach((sectionName) => {
     const isSectionNameValid = sectionNames.some(
@@ -993,6 +1011,11 @@ const machineHealthStatus = async ({
     healthStatus: 1,
     issues: 1,
     cycleCount: 1,
+    category: 1,
+    generalMachine: 1,
+    washingMachine: 1,
+    brand: 1,
+    model: 1,
     // sensorModulesAttached: 1,
   });
   if (!machineData) {
@@ -1089,7 +1112,14 @@ const machineHealthStatus = async ({
         type: 'aiData',
         aiData: {
           machine: machineData?._id,
-          sectionName: each?.sectionName,
+          category: machineData?.category,
+          type:
+            machineData?.category === 'general-machine'
+              ? machineData?.generalMachine?.type
+              : machineData?.washingMachine?.type,
+          brand: machineData?.brand,
+          model: machineData?.model,
+          // sectionName: each?.sectionName,
           healthStatus: each?.healthStatus,
           sensorData: each?.sensorData,
         },
@@ -1338,13 +1368,20 @@ const machineReport = async ({
   };
 };
 
-const machinePerformanceBrandWise = async () => {
-  const brandsData = await predefinedValueServices.getMachineBrands();
-  const brandsList = brandsData?.brands?.map((each) => each?.brand);
-  // return brandsList;
+const machinePerformanceBrandWise = async ({
+  category,
+  type,
+}: {
+  category: TMachineCategory;
+  type: string;
+}) => {
+  const brandsData = await predefinedValueServices.getMachineBrands({
+    category,
+    type,
+  });
 
   const machineBrandNamePerformanceArray = await Promise.all(
-    brandsList.map(async (brandName) => {
+    brandsData.map(async (brandName) => {
       const machineCount = await Machine.countDocuments({
         brand: brandName,
       });
@@ -1392,18 +1429,30 @@ const machinePerformanceBrandWise = async () => {
   return machineBrandNamePerformanceArray;
 };
 
-const machinePerformanceModelWise = async () => {
-  const brandsData = await predefinedValueServices.getMachineBrands();
+const machinePerformanceModelWise = async ({
+  category,
+  type,
+  brand,
+}: {
+  category: TMachineCategory;
+  type: string;
+  brand: string;
+}) => {
+  const modelsList = await predefinedValueServices.getMachineModels({
+    category,
+    type,
+    brand,
+  });
 
   // console.log(brandsData);
-  const modelsList: string[] = [];
+  // const modelsList: string[] = [];
 
-  brandsData?.brands?.forEach((each) => {
-    if (each?.models?.length > 0) {
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      modelsList.push(...each?.models);
-    }
-  });
+  // brandsData?.brands?.forEach((each) => {
+  //   if (each?.models?.length > 0) {
+  //     // eslint-disable-next-line no-unsafe-optional-chaining
+  //     modelsList.push(...each?.models);
+  //   }
+  // });
 
   const machineModelNamePerformanceArray = await Promise.all(
     modelsList.map(async (modelName) => {

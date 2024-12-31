@@ -7,6 +7,7 @@ import { aiServices } from './ai.service';
 import { TAuth } from '../../interface/error';
 import { checkUserAccessApi } from '../../utils/checkUserAccessApi';
 import AppError from '../../errors/AppError';
+import { TMachineCategory } from '../machine/machine.interface';
 
 const addThreshold: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -37,8 +38,13 @@ const aiPerformance: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getAiData: RequestHandler = catchAsync(async (req, res) => {
-  const result = await aiServices.getAiData();
+  const timePeriodInDaysString = req?.query?.timePeriodInDays as string;
+  const timePeriodInDays = parseInt(timePeriodInDaysString);
 
+  if (!timePeriodInDays) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'timePeriodInDays is required');
+  }
+  const result = await aiServices.getAiData({ timePeriodInDays });
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -48,8 +54,7 @@ const getAiData: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getThresholds: RequestHandler = catchAsync(async (req, res) => {
-
-  const category = req?.query?.category as string;
+  const category = req?.query?.category as TMachineCategory;
   const type = req?.query?.type as string;
   const brand = req?.query?.brand as string;
   const model = req?.query?.model as string;
@@ -66,10 +71,6 @@ const getThresholds: RequestHandler = catchAsync(async (req, res) => {
     brand,
     model,
   });
-
-
-
-
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

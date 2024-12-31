@@ -7,13 +7,17 @@ import { ReservationRequest } from '../reservation/reservation.model';
 import { addDays } from '../../utils/addDays';
 import { Machine } from '../machine/machine.model';
 import mongoose from 'mongoose';
+import { TMachineCategory } from '../machine/machine.interface';
 
 const addThreshold = async ({
   thresholdData,
 }: {
   thresholdData: TThreshold;
 }) => {
-  const sectionNames = await predefinedValueServices.getIotSectionNames();
+  const sectionNames = await predefinedValueServices.getIotSectionNames({
+    category: thresholdData?.category,
+    type: thresholdData?.type,
+  });
   const isSectionNameValid = sectionNames.some(
     (each) => each === thresholdData?.sectionName,
   );
@@ -75,12 +79,15 @@ const getThresholds = async ({
   brand,
   model,
 }: {
-  category: string;
+  category: TMachineCategory;
   type: string;
   brand: string;
   model: string;
 }) => {
-  const sections = await predefinedValueServices.getIotSectionNames();
+  const sections = await predefinedValueServices.getIotSectionNames({
+    category,
+    type,
+  });
   // console.log(sections);
 
   const processedData = await Promise.all(
@@ -108,8 +115,12 @@ const getThresholds = async ({
 
   return processedData;
 };
-const getAiData = async () => {
-  const startDate = addDays(-7);
+const getAiData = async ({
+  timePeriodInDays,
+}: {
+  timePeriodInDays: number;
+}) => {
+  const startDate = addDays(-timePeriodInDays);
   const thresholdData = await AI.aggregate([
     {
       $match: {
@@ -128,6 +139,10 @@ const getAiData = async () => {
     },
     {
       $project: {
+        category: 1,
+        type: 1,
+        brand: 1,
+        model: 1,
         sectionName: 1,
         healthStatus: 1,
         sensorData: 1,
@@ -201,7 +216,16 @@ const getLifeCycleByMachine = async (machine: string) => {
 };
 
 const getMachineBadSections = async (machine: string) => {
-  const sectionNames = await predefinedValueServices.getIotSectionNames();
+  const machineData = await Machine.findById(machine).select(
+    'category washingMachine generalMachine',
+  );
+  const sectionNames = await predefinedValueServices.getIotSectionNames({
+    category: machineData?.category,
+    type:
+      machineData?.category === 'general-machine'
+        ? machineData?.generalMachine?.type
+        : machineData?.washingMachine?.type,
+  });
 
   const badSectionNames = await Promise.all(
     sectionNames?.map(async (sectionName) => {

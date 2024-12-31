@@ -463,7 +463,28 @@ const machinePerformanceBrandWise: RequestHandler = catchAsync(
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
     checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
-    const result = await machineServices.machinePerformanceBrandWise();
+
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+    const type: string = req?.query?.type as string;
+
+    if (!category || !type) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category and type are required ',
+      );
+    }
+
+    if (category !== 'general-machine' && category !== 'washing-machine') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of general-machine or washing-machine',
+      );
+    }
+
+    const result = await machineServices.machinePerformanceBrandWise({
+      category,
+      type,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -479,7 +500,30 @@ const machinePerformanceModelWise: RequestHandler = catchAsync(
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
     checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
-    const result = await machineServices.machinePerformanceModelWise();
+
+
+
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+    const type: string = req?.query?.type as string;
+    const brand: string = req?.query?.brand as string;
+    if (!category || !type || !brand) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category, type and brand are required get brandName',
+      );
+    }
+
+    if (category !== 'general-machine' && category !== 'washing-machine') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of general-machine or washing-machine',
+      );
+    }
+    const result = await machineServices.machinePerformanceModelWise({
+      category,
+      type,
+      brand,
+    });
     // send response
     sendResponse(res, {
       statusCode: httpStatus.OK,
