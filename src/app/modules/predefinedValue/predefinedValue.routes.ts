@@ -21,27 +21,35 @@ router.get(
 );
 router.get('/get-shop-categories', predefinedValueController.getShopCategories);
 //  sensorModuleAttached ---------------******---------------
+// router.post(
+//   '/add-iot-section-name',
+//   predefinedValueController.addIotSectionName,
+// );
+// router.post(
+//   '/add-iot-section-name2',
+//   predefinedValueController.addIotSectionName2,
+// );
 router.post(
   '/add-iot-section-name',
   predefinedValueController.addIotSectionName,
 );
-router.post(
-  '/add-iot-section-name2',
-  predefinedValueController.addIotSectionName2,
-);
 router.delete(
-  '/delete-iot-section-name2',
-  predefinedValueController.deleteIotSectionNames2,
+  '/delete-iot-section-name',
+  predefinedValueController.deleteIotSectionNames,
 );
+// router.get(
+//   '/get-iot-section-names',
+//   predefinedValueController.getIotSectionNames,
+// );
+// router.get(
+//   '/get-iot-section-names2',
+//   predefinedValueController.getIotSectionNames2,
+// );
+
 router.get(
   '/get-iot-section-names',
   predefinedValueController.getIotSectionNames,
 );
-router.get(
-  '/get-iot-section-names2',
-  predefinedValueController.getIotSectionNames2,
-);
-
 //  reservationRequest ---------------******---------------
 router.post(
   '/add-reservation-request-status',
@@ -79,6 +87,7 @@ router.get(
   '/get-transaction-fee-for-wallet',
   predefinedValueController.getTransactionFeeForWallet,
 );
+
 //  machine ---------------******---------------
 router.post(
   '/add-machine-brand-name',
@@ -88,6 +97,7 @@ router.post(
   '/add-machine-model-name',
   predefinedValueController.addMachineModelName,
 );
+
 router.post('/add-machine-issue', predefinedValueController.addMachineIssue);
 router.post(
   '/add-general-or-washing-machine-type',
@@ -97,6 +107,10 @@ router.post(
 router.get(
   '/get-all-machine-brands',
   predefinedValueController.getMachineBrands,
+);
+router.get(
+  '/get-all-machine-models',
+  predefinedValueController.getMachineModels,
 );
 router.get(
   '/get-all-machine-issues-brand-and-model-wise',

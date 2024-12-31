@@ -44,8 +44,7 @@ const marketplaceSchema = new Schema<TMarketplace>({
   shop: shopSchema,
 });
 const sensorModuleAttachedSchema = new Schema<TSensorModuleAttached>({
-  sectionNames: [String],
-  sectionNames2: [
+  sectionNames: [
     new Schema<TSectionName>({
       category: {
         type: String,
@@ -95,6 +94,15 @@ const machineSchema = new Schema<TMachine>({
   ],
   brands: [
     new Schema<TBrands>({
+      category: {
+        type: String,
+        enum: ['washing-machine', 'general-machine'],
+        required: true,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
       brand: String,
       models: [String],
     }),

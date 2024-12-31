@@ -143,48 +143,48 @@ const addShopCategories = async (category: string) => {
     }
   }
 };
-const addIotSectionName = async (sectionName: string) => {
-  const previousSectionNames = await PredefinedValue.findOne(
-    {
-      type: 'sensorModuleAttached',
-    },
-    { 'sensorModuleAttached.sectionNames': 1 },
-  );
+// const addIotSectionName = async (sectionName: string) => {
+//   const previousSectionNames = await PredefinedValue.findOne(
+//     {
+//       type: 'sensorModuleAttached',
+//     },
+//     { 'sensorModuleAttached.sectionNames': 1 },
+//   );
 
-  if (previousSectionNames) {
-    previousSectionNames?.sensorModuleAttached?.sectionNames?.push(sectionName);
+//   if (previousSectionNames) {
+//     previousSectionNames?.sensorModuleAttached?.sectionNames?.push(sectionName);
 
-    const updatedPreviousSectionNames = await previousSectionNames.save();
+//     const updatedPreviousSectionNames = await previousSectionNames.save();
 
-    if (!updatedPreviousSectionNames) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'Something went wrong, please try again',
-      );
-    } else {
-      return null;
-    }
-  } else {
-    const newSections: TPredefinedValue = {
-      type: 'sensorModuleAttached',
-      sensorModuleAttached: {
-        sectionNames: [sectionName],
-        sectionNames2: [],
-      },
-    };
+//     if (!updatedPreviousSectionNames) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Something went wrong, please try again',
+//       );
+//     } else {
+//       return null;
+//     }
+//   } else {
+//     const newSections: TPredefinedValue = {
+//       type: 'sensorModuleAttached',
+//       sensorModuleAttached: {
+//         sectionNames: [sectionName],
+//         sectionNames2: [],
+//       },
+//     };
 
-    const createdNewSections = await PredefinedValue.create(newSections);
-    if (!createdNewSections) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'Something went wrong, please try again',
-      );
-    } else {
-      return null;
-    }
-  }
-};
-const addIotSectionName2 = async ({
+//     const createdNewSections = await PredefinedValue.create(newSections);
+//     if (!createdNewSections) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Something went wrong, please try again',
+//       );
+//     } else {
+//       return null;
+//     }
+//   }
+// };
+const addIotSectionName = async ({
   category,
   type,
   sectionName,
@@ -203,30 +203,28 @@ const addIotSectionName2 = async ({
   let isDifferentCategoryAndType = true;
   if (previousSectionNames2) {
     const sectionNamesList =
-      previousSectionNames2?.sensorModuleAttached?.sectionNames2?.map(
-        (each) => {
-          if (each?.category === category && each?.type === type) {
-            const sectionNamesList =
-              each?.sectionNames?.map((each) => each) || [];
+      previousSectionNames2?.sensorModuleAttached?.sectionNames?.map((each) => {
+        if (each?.category === category && each?.type === type) {
+          const sectionNamesList =
+            each?.sectionNames?.map((each) => each) || [];
 
-            if (
-              sectionNamesList?.findIndex((each) => each === sectionName) !== -1
-            ) {
-              throw new AppError(
-                httpStatus.BAD_REQUEST,
-                `sectionName cannot be duplicated in a single model`,
-              );
-            } else {
-              each?.sectionNames?.push(sectionName);
-              isDifferentCategoryAndType = false;
-              return each;
-            }
+          if (
+            sectionNamesList?.findIndex((each) => each === sectionName) !== -1
+          ) {
+            throw new AppError(
+              httpStatus.BAD_REQUEST,
+              `sectionName cannot be duplicated in a single model`,
+            );
           } else {
-            // that means its a different brand and model
+            each?.sectionNames?.push(sectionName);
+            isDifferentCategoryAndType = false;
             return each;
           }
-        },
-      ) || [];
+        } else {
+          // that means its a different brand and model
+          return each;
+        }
+      }) || [];
     if (isDifferentCategoryAndType || sectionNamesList?.length === 0) {
       sectionNamesList?.push({
         category: category,
@@ -234,7 +232,7 @@ const addIotSectionName2 = async ({
         sectionNames: [sectionName],
       });
     }
-    previousSectionNames2.sensorModuleAttached.sectionNames2 = sectionNamesList;
+    previousSectionNames2.sensorModuleAttached.sectionNames = sectionNamesList;
     const updatedPreviousIOTsectionNamesList =
       await previousSectionNames2.save();
     if (!updatedPreviousIOTsectionNamesList) {
@@ -249,8 +247,7 @@ const addIotSectionName2 = async ({
     const newIOTsectionNamesList: TPredefinedValue = {
       type: 'sensorModuleAttached',
       sensorModuleAttached: {
-        sectionNames: [],
-        sectionNames2: [
+        sectionNames: [
           {
             category: category,
             type: type,
@@ -273,7 +270,7 @@ const addIotSectionName2 = async ({
     }
   }
 };
-const deleteIotSectionNames2 = async ({
+const deleteIotSectionNames = async ({
   category,
   type,
   sectionName,
@@ -286,12 +283,12 @@ const deleteIotSectionNames2 = async ({
   const result = await PredefinedValue.updateOne(
     {
       type: 'sensorModuleAttached', // Ensure we target the right type
-      'sensorModuleAttached.sectionNames2.category': category,
-      'sensorModuleAttached.sectionNames2.type': type,
+      'sensorModuleAttached.sectionNames.category': category,
+      'sensorModuleAttached.sectionNames.type': type,
     },
     {
       $pull: {
-        'sensorModuleAttached.sectionNames2.$.sectionNames': sectionName,
+        'sensorModuleAttached.sectionNames.$.sectionNames': sectionName,
       },
     },
   );
@@ -302,7 +299,16 @@ const deleteIotSectionNames2 = async ({
 
   return null;
 };
-const addMachineBrandName = async (brandName: string) => {
+const addMachineBrandName = async ({
+  category,
+  type,
+  brandName,
+}: {
+  category: TMachineCategory;
+  type: string;
+  brandName: string;
+}) => {
+  console.log({ category, type, brandName });
   const previousMachineBrands = await PredefinedValue.findOne(
     {
       type: 'machine',
@@ -310,12 +316,25 @@ const addMachineBrandName = async (brandName: string) => {
     { 'machine.brands': 1 },
   );
   const brandsList =
-    previousMachineBrands?.machine?.brands?.map((each) => each?.brand) || [];
+    previousMachineBrands?.machine?.brands?.map((each) => {
+      return {
+        category: each?.category,
+        type: each?.type,
+        brand: each?.brand,
+      };
+    }) || [];
 
-  if (brandsList?.findIndex((each) => each === brandName) !== -1) {
+  if (
+    brandsList?.findIndex(
+      (each) =>
+        each?.category === category &&
+        each?.type === type &&
+        each?.brand === brandName,
+    ) !== -1
+  ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `brand Name cannot be duplicated`,
+      `brand Name cannot be duplicated in a single category and type`,
     );
   }
 
@@ -329,6 +348,8 @@ const addMachineBrandName = async (brandName: string) => {
     const previousMachineBrandsNames =
       previousMachineBrands?.machine?.brands || [];
     previousMachineBrandsNames.push({
+      category,
+      type,
       brand: brandName,
       models: [],
     });
@@ -350,6 +371,8 @@ const addMachineBrandName = async (brandName: string) => {
       machine: {
         brands: [
           {
+            category,
+            type,
             brand: brandName,
             models: [],
           },
@@ -373,25 +396,50 @@ const addMachineBrandName = async (brandName: string) => {
 };
 
 const addMachineModelName = async ({
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   predefinedValue,
+
+  category,
+  type,
   brand,
   modelName,
 }: {
   predefinedValue: string;
+
+  category: TMachineCategory;
+  type: string;
   brand: string;
   modelName: string;
 }) => {
-  const updatedPredefinedValue = await PredefinedValue.findOneAndUpdate(
+  const updatedPredefinedValue = await PredefinedValue.updateOne(
     {
-      _id: new mongoose.Types.ObjectId(predefinedValue),
-      'machine.brands._id': new mongoose.Types.ObjectId(brand),
+      type: 'machine', // Ensure we are working with the correct type
     },
     {
-      $push: {
-        'machine.brands.$.models': modelName,
-      },
+      $addToSet: { 'machine.brands.$[brandElem].models': modelName },
+    },
+    {
+      arrayFilters: [
+        {
+          'brandElem.category': category,
+          'brandElem.type': type,
+          'brandElem.brand': brand,
+        },
+      ],
     },
   );
+
+  // .updateOne(
+  //   {
+  //     type: 'machine', // Find the predefined value for machines
+  //     'machine.brands.category': category, // Match the category
+  //     'machine.brands.type': type, // Match the type
+  //     'machine.brands.brand': brand, // Match the brand
+  //   },
+  //   {
+  //     $addToSet: { 'machine.brands.$.models': modelName }, // Add modelName only if it doesn't already exist
+  //   },
+  // );
 
   if (!updatedPredefinedValue) {
     throw new AppError(
@@ -512,7 +560,7 @@ const addGeneralOrWashingMachineType = async ({
 
     { 'machine.types': 1 },
   );
-  let isDifferentCategory = false;
+  let isDifferentCategory = true;
   if (previousMachineTypes) {
     const typesList =
       previousMachineTypes?.machine?.types?.map((each) => {
@@ -526,11 +574,12 @@ const addGeneralOrWashingMachineType = async ({
             );
           } else {
             each?.types?.push(type);
+            isDifferentCategory = false;
             return each;
           }
         } else {
           // that means its a different brand and model
-          isDifferentCategory = true;
+          // isDifferentCategory = true;
           return each;
         }
       }) || [];
@@ -1329,16 +1378,58 @@ const getShopCategories = async () => {
   // return productCategories;
 };
 
-const getMachineBrands = async () => {
+const getMachineBrands = async ({
+  category,
+  type,
+}: {
+  category: TMachineCategory;
+  type: string;
+}) => {
   const machineBrands = await PredefinedValue.findOne(
     {
       type: 'machine',
+      'machine.brands.category': category,
+      'machine.brands.type': type,
     },
     { 'machine.brands': 1 },
   );
   return machineBrands?.machine?.brands
-    ? { brands: machineBrands?.machine?.brands, _id: machineBrands?._id }
-    : null;
+    ? machineBrands?.machine?.brands?.map((each) => each?.brand)
+    : [];
+
+  // return productCategories;
+};
+
+const getMachineModels = async ({
+  category,
+  type,
+  brand,
+}: {
+  category: TMachineCategory;
+  type: string;
+  brand: string;
+}) => {
+  const predefinedValue = await PredefinedValue.findOne(
+    {
+      type: 'machine',
+      'machine.brands': {
+        $elemMatch: {
+          category: category,
+          type: type,
+          brand: brand,
+        },
+      },
+    },
+    {
+      'machine.brands.$': 1, // Project only the matching brand element
+    },
+  );
+
+  return predefinedValue?.machine?.brands[0]?.models;
+
+  // return machineBrands?.machine?.brands
+  //   ? machineBrands?.machine?.brands?.map((each) => each?.brand)
+  //   : [];
 
   // return productCategories;
 };
@@ -1414,9 +1505,10 @@ export const predefinedValueServices = {
   addProductSubCategories,
   addShopCategories,
 
+  // addIotSectionName,
+  // addIotSectionName2,
   addIotSectionName,
-  addIotSectionName2,
-  deleteIotSectionNames2,
+  deleteIotSectionNames,
 
   addMachineBrandName,
   addMachineModelName,
@@ -1438,6 +1530,7 @@ export const predefinedValueServices = {
   getIotSectionNames,
   getIotSectionNames2,
   getMachineBrands,
+  getMachineModels,
   getAllMachineIssuesBrandAndModelWise,
   getAllMachineTypesCategoryWise,
 }; 

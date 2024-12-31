@@ -23,8 +23,9 @@ export type TSectionName = {
 };
 
 export type TSensorModuleAttached = {
-  sectionNames?: string[];
-  sectionNames2?: TSectionName[];
+  // sectionNames?: string[];
+  // sectionNames2?: TSectionName[];
+  sectionNames?: TSectionName[];
 };
 export type TCustomer = {
   occupation?: string[];
@@ -40,6 +41,8 @@ export type TReservationRequest = {
   issues?: string[];
 };
 export type TBrands = {
+  category: TMachineCategory; // machine type
+  type: string;
   brand: string;
   models?: string[];
 };
