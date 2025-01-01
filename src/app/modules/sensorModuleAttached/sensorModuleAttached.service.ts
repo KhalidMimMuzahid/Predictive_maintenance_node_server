@@ -273,72 +273,100 @@ const addSensorDataInToDB = async ({
   //     },
   //   );
   // }
-
+  //
   sensorModuleAttached?.sectionName?.temperature?.forEach(
     (sectionName, index) => {
-      if (sectionName === 'washingtank') {
-        const shockEventForTemperatureValueMax = 80;
-        if (
-          sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
-            shockEventForTemperatureValueMax &&
-          sensorData?.temperature[index] > shockEventForTemperatureValueMax
-        ) {
-          shockEventsCount.temperature[index] += 1;
-        }
+      if (sectionName === 'supplywater') {
+        //  //shockEvent
+        // const shockEventForTemperatureValueMax = 80;
+        // if (
+        //   sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
+        //     shockEventForTemperatureValueMax &&
+        //   sensorData?.temperature[index] > shockEventForTemperatureValueMax
+        // ) {
+        //   shockEventsCount.temperature[index] += 1;
+        // }
 
-        // sending shock events count
-        req.io.emit(
-          `machine=${sensorModuleAttached?.machine?.toString()}&category=shockEvents&sensorType=temperature&sectionName=${sensorModuleAttached
-            ?.sectionName?.temperature[index]}`,
-          { value: shockEventsCount.temperature[index], createdAt: now },
-        );
+        // // sending shock events count
+        // req.io.emit(
+        //   `machine=${sensorModuleAttached?.machine?.toString()}&category=shockEvents&sensorType=temperature&sectionName=${sensorModuleAttached
+        //     ?.sectionName?.temperature[index]}`,
+        //   { value: shockEventsCount.temperature[index], createdAt: now },
+        // );
         //sending sensor reading
         req.io.emit(
           `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=temperature&sectionName=${sensorModuleAttached
             ?.sectionName?.temperature[index]}`,
           { value: sensorData?.temperature[index], createdAt: now },
         );
-      } else if (sectionName === 'rincetank') {
-        const shockEventForTemperatureValueMax = 50;
-        if (
-          sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
-            shockEventForTemperatureValueMax &&
-          sensorData?.temperature[index] > shockEventForTemperatureValueMax
-        ) {
-          shockEventsCount.temperature[index] += 1;
-        }
-        // sending shock events count
-        req.io.emit(
-          `machine=${sensorModuleAttached?.machine?.toString()}&category=shockEvents&sensorType=temperature&sectionName=${sensorModuleAttached
-            ?.sectionName?.temperature[index]}`,
-          { value: shockEventsCount.temperature[index], createdAt: now },
-        );
+      } else if (sectionName === 'tank') {
         //sending sensor reading
         req.io.emit(
           `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=temperature&sectionName=${sensorModuleAttached
             ?.sectionName?.temperature[index]}`,
           { value: sensorData?.temperature[index], createdAt: now },
         );
-      } else if (sectionName === 'recycletank') {
-        const shockEventForTemperatureValueMax = 50;
-        if (
-          sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
-            shockEventForTemperatureValueMax &&
-          sensorData?.temperature[index] > shockEventForTemperatureValueMax
-        ) {
-          shockEventsCount.temperature[index] += 1;
-        }
-        // sending shock events count
-        req.io.emit(
-          `machine=${sensorModuleAttached?.machine?.toString()}&category=shockEvents&sensorType=temperature&sectionName=${sensorModuleAttached
-            ?.sectionName?.temperature[index]}`,
-          { value: shockEventsCount.temperature[index], createdAt: now },
-        );
+      } else if (sectionName === 'wastewater') {
         //sending sensor reading
         req.io.emit(
           `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=temperature&sectionName=${sensorModuleAttached
             ?.sectionName?.temperature[index]}`,
           { value: sensorData?.temperature[index], createdAt: now },
+        );
+      } else if (sectionName === 'recyclewater') {
+        //sending sensor reading
+        req.io.emit(
+          `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=temperature&sectionName=${sensorModuleAttached
+            ?.sectionName?.temperature[index]}`,
+          { value: sensorData?.temperature[index], createdAt: now },
+        );
+      } else if (sectionName === 'heatrecoveryunit') {
+        //sending sensor reading
+        req.io.emit(
+          `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=temperature&sectionName=${sensorModuleAttached
+            ?.sectionName?.temperature[index]}`,
+          { value: sensorData?.temperature[index], createdAt: now },
+        );
+      }
+      // for other section name now it's pending
+      // else {
+      //   if (
+      //     sensorModuleAttached?.sensorData[0]?.temperature[index] + 3 <
+      //       shockEventForTemperatureValueMax &&
+      //     sensorData?.temperature[index] > shockEventForTemperatureValueMax
+      //   ) {
+      //     shockEventsCount.temperature[index] += 1;
+      //   }
+      // }
+    },
+  );
+
+  // --------------------------------------------------
+  //
+  sensorModuleAttached?.sectionName?.vibration?.forEach(
+    (sectionName, index) => {
+      if (sectionName === 'supplywater') {
+        //  //shockEvent
+        // const shockEventForVibrationValueMax = 80;
+        // if (
+        //   sensorModuleAttached?.sensorData[0]?.vibration[index] + 3 <
+        //     shockEventForVibrationValueMax &&
+        //   sensorData?.vibration[index] > shockEventForVibrationValueMax
+        // ) {
+        //   shockEventsCount.vibration[index] += 1;
+        // }
+
+        // // sending shock events count
+        // req.io.emit(
+        //   `machine=${sensorModuleAttached?.machine?.toString()}&category=shockEvents&sensorType=vibration&sectionName=${sensorModuleAttached
+        //     ?.sectionName?.vibration[index]}`,
+        //   { value: shockEventsCount.vibration[index], createdAt: now },
+        // );
+        //sending sensor reading
+        req.io.emit(
+          `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=vibration&sectionName=${sensorModuleAttached
+            ?.sectionName?.vibration[index]}`,
+          { value: sensorData?.vibration[index], createdAt: now },
         );
       }
       // for other section name now it's pending

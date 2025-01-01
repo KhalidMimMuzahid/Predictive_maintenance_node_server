@@ -1405,13 +1405,11 @@ const getMachineModels = async ({
       'machine.brands.$': 1, // Project only the matching brand element
     },
   );
-
   return predefinedValue?.machine?.brands[0]?.models || [];
 
   // return machineBrands?.machine?.brands
   //   ? machineBrands?.machine?.brands?.map((each) => each?.brand)
   //   : [];
-
   // return productCategories;
 };
 

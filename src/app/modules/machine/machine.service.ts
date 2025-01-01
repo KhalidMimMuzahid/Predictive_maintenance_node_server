@@ -1097,9 +1097,33 @@ const machineHealthStatus = async ({
   if (machineHealthData?.thermalScore) {
     machineData.thermalScore = machineHealthData?.thermalScore;
     req.io.emit(`machine=${machine?.toString()}&category=thermalScore`, {
-      energyScore: machineHealthData?.thermalScore,
+      thermalScore: machineHealthData?.thermalScore,
       createdAt: now,
     });
+  }
+  if (machineHealthData?.co2Emissions) {
+    machineData.co2Emissions = machineHealthData?.co2Emissions;
+    req.io.emit(`machine=${machine?.toString()}&category=co2Emissions`, {
+      co2Emissions: machineHealthData?.co2Emissions,
+      createdAt: now,
+    });
+  }
+  if (machineHealthData?.waterConsumption) {
+    machineData.waterConsumption = machineHealthData?.waterConsumption;
+    req.io.emit(`machine=${machine?.toString()}&category=waterConsumption`, {
+      waterConsumption: machineHealthData?.waterConsumption,
+      createdAt: now,
+    });
+  }
+  if (machineHealthData?.heatExchangeCapacity) {
+    machineData.heatExchangeCapacity = machineHealthData?.heatExchangeCapacity;
+    req.io.emit(
+      `machine=${machine?.toString()}&category=heatExchangeCapacity`,
+      {
+        heatExchangeCapacity: machineHealthData?.heatExchangeCapacity,
+        createdAt: now,
+      },
+    );
   }
 
   await machineData.save();

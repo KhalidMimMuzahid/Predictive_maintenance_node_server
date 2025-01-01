@@ -15,10 +15,16 @@ export type TMachine = {
   healthStatus: {
     health: THealthStatus;
   }; // based oon what ?????????
+
   packageStatus: 'Pending' | 'Running' | 'Expired'; // based oon what ?????????
   operatingStatus?: 'running' | 'idle' | 'off';
   thermalScore?: number;
   energyScore?: number;
+
+  co2Emissions?: number;
+  waterConsumption?: number;
+  heatExchangeCapacity?: number;
+
   cycleCount?: TCycleCount;
   category: TMachineCategory;
   name: string;
@@ -51,7 +57,9 @@ export type TMachineHealthStatus = {
   operatingStatus?: 'running' | 'idle' | 'off';
   thermalScore?: number;
   energyScore?: number;
-
+  co2Emissions?: number;
+  waterConsumption?: number;
+  heatExchangeCapacity?: number;
   healthStatuses: {
     // timeStamp: string;
     sectionName: string;

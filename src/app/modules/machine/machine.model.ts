@@ -44,6 +44,20 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       type: Number,
       required: false,
     },
+
+    co2Emissions: {
+      type: Number,
+      required: false,
+    },
+    waterConsumption: {
+      type: Number,
+      required: false,
+    },
+    heatExchangeCapacity: {
+      type: Number,
+      required: false,
+    },
+
     cycleCount: {
       type: new Schema<TCycleCount>(
         {
@@ -120,6 +134,7 @@ export const MachineSchema: Schema = new Schema<TMachine>(
       default: { value: false },
     },
   },
+
   {
     timestamps: true,
   },

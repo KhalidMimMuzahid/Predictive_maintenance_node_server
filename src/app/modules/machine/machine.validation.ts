@@ -51,6 +51,10 @@ const machineHealthStatusSchema = z.object({
   operatingStatus: z.enum(['running', 'idle', 'off']).nullable(),
   thermalScore: z.number().optional().nullable(),
   energyScore: z.number().optional().nullable(),
+  co2Emissions: z.number().optional().nullable(),
+  waterConsumption: z.number().optional().nullable(),
+  heatExchangeCapacity: z.number().optional().nullable(),
+
   healthStatuses: z.array(healthStatusesSchema),
 });
 
