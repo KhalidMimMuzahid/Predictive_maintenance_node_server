@@ -15,6 +15,7 @@ import {
   attachedWithArray,
   sensorTypeArray,
 } from './sensorModuleAttached.const';
+import { TMachineCategory } from '../machine/machine.interface';
 
 const addSensorAttachedModule: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -199,6 +200,48 @@ const getSensorData: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getSensorDataByCategoryTypeBrandModelWise: RequestHandler = catchAsync(
+  async (req, res) => {
+    const category: TMachineCategory = req?.query?.category as TMachineCategory;
+
+    const type: string = req?.query?.type as string;
+    const brand: string = req?.query?.brand as string;
+    const model: string = req?.query?.model as string;
+    const timePeriodInDaysString = req?.query?.timePeriodInDays as string;
+    const timePeriodInDays = parseInt(timePeriodInDaysString);
+
+    if (!timePeriodInDays || !category || !type || !brand || !model) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'timePeriodInDays, category, type, brand and model are required to get sensor data',
+      );
+    }
+    if (category !== 'general-machine' && category !== 'washing-machine') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'category must be any of general-machine or washing-machine',
+      );
+    }
+
+    const result =
+      await sensorAttachedModuleServices.getSensorDataByCategoryTypeBrandModelWise(
+        {
+          category,
+          type,
+          brand,
+          model,
+          timePeriodInDays,
+        },
+      );
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensor data has retrieved successfully',
+      data: result,
+    });
+  },
+);
 
 const toggleSwitchSensorModuleAttached: RequestHandler = catchAsync(
   async (req, res) => {
@@ -260,6 +303,7 @@ export const sensorModuleAttachedControllers = {
   addSensorData,
 
   getSensorData,
+  getSensorDataByCategoryTypeBrandModelWise,
   toggleSwitchSensorModuleAttached,
 
   getAttachedSensorModulesByUser,

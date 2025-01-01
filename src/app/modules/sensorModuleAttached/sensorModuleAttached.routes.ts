@@ -49,4 +49,8 @@ router.get(
 // );
 
 router.get('/get-sensor-data', sensorModuleAttachedControllers.getSensorData);
+router.get(
+  '/get-sensor-data-by-category-type-brand-model-wise',
+  sensorModuleAttachedControllers.getSensorDataByCategoryTypeBrandModelWise,
+);
 export const sensorModuleAttachedRoutes = router;
