@@ -1406,7 +1406,7 @@ const getMachineModels = async ({
     },
   );
 
-  return predefinedValue?.machine?.brands[0]?.models;
+  return predefinedValue?.machine?.brands[0]?.models || [];
 
   // return machineBrands?.machine?.brands
   //   ? machineBrands?.machine?.brands?.map((each) => each?.brand)
