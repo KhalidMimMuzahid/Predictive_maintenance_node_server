@@ -49,8 +49,10 @@ router.get(
 // );
 
 router.get('/get-sensor-data', sensorModuleAttachedControllers.getSensorData);
+// this endpoint is not used in this server
+// -relocated-to-another-server
 router.get(
-  '/get-sensor-data-by-category-type-brand-model-wise',
+  '/get-sensor-data-by-category-type-brand-model-wise-relocated-to-another-server',
   sensorModuleAttachedControllers.getSensorDataByCategoryTypeBrandModelWise,
 );
 export const sensorModuleAttachedRoutes = router;
