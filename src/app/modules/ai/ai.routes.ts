@@ -11,7 +11,8 @@ router.post(
   aiController.addThreshold,
 );
 router.get('/ai-performance', aiController.aiPerformance);
-router.get('/get-ai-data', aiController.getAiData);
+// -relocated-to-another-server
+router.get('/get-ai-data-relocated-to-another-server', aiController.getAiData);
 router.get(
   '/get-maintenance-due-by-machine',
   aiController.getMaintenanceDueByMachine,
