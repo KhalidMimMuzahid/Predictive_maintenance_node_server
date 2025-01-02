@@ -206,8 +206,8 @@ const addMachineBrandName: RequestHandler = catchAsync(async (req, res) => {
     );
   }
   const result = await predefinedValueServices.addMachineBrandName({
-    category,
-    type,
+    category: category,
+    type: type.toLowerCase(),
     brandName: brandName.toLowerCase(),
   });
   // send response

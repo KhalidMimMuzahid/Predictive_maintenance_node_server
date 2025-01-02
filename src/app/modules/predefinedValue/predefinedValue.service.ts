@@ -1367,12 +1367,25 @@ const getMachineBrands = async ({
   type: string;
 }) => {
   const machineBrands = await PredefinedValue.findOne(
+    // {
+    //   type: 'machine',
+    //   'machine.brands.category': category,
+    //   'machine.brands.type': type,
+    // },
+    // { 'machine.brands': 1 },
     {
       type: 'machine',
-      'machine.brands.category': category,
-      'machine.brands.type': type,
+      'machine.brands': {
+        $elemMatch: {
+          category: category,
+          type: type,
+          // brand: brand,
+        },
+      },
     },
-    { 'machine.brands': 1 },
+    {
+      'machine.brands.$': 1, // Project only the matching brand element
+    },
   );
   return machineBrands?.machine?.brands
     ? machineBrands?.machine?.brands?.map((each) => each?.brand)
