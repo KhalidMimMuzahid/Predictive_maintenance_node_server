@@ -1138,12 +1138,12 @@ const machineHealthStatus = async ({
           machine: machineData?._id,
           category: machineData?.category,
           type:
-            machineData?.category === 'general-machine'
+            (machineData?.category === 'general-machine'
               ? machineData?.generalMachine?.type
-              : machineData?.washingMachine?.type,
+              : machineData?.washingMachine?.type) || 'unknown',
           brand: machineData?.brand,
           model: machineData?.model,
-          // sectionName: each?.sectionName,
+          sectionName: each?.sectionName,
           healthStatus: each?.healthStatus,
           sensorData: each?.sensorData,
         },
