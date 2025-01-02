@@ -308,7 +308,6 @@ const addMachineBrandName = async ({
   type: string;
   brandName: string;
 }) => {
-  console.log({ category, type, brandName });
   const previousMachineBrands = await PredefinedValue.findOne(
     {
       type: 'machine',
