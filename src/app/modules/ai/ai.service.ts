@@ -152,17 +152,11 @@ const getAiData = async ({
   return aiData;
 };
 
-const getAllThresholds = async ({
-  timePeriodInDays,
-}: {
-  timePeriodInDays: number;
-}) => {
-  const startDate = addDays(-timePeriodInDays);
+const getAllThresholds = async () => {
   const thresholdData = await AI.aggregate([
     {
       $match: {
         type: 'threshold',
-        $and: [{ createdAt: { $gte: startDate } }],
       },
     },
     {

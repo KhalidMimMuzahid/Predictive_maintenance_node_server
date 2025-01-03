@@ -81,15 +81,7 @@ const getThresholds: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const getAllThresholds: RequestHandler = catchAsync(async (req, res) => {
-  const timePeriodInDaysString = req?.query?.timePeriodInDays as string;
-  const timePeriodInDays = parseInt(timePeriodInDaysString);
-
-  if (!timePeriodInDays) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'timePeriodInDays is required');
-  }
-  const result = await aiServices.getAllThresholds({
-    timePeriodInDays,
-  });
+  const result = await aiServices.getAllThresholds();
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
