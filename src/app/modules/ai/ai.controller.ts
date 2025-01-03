@@ -79,6 +79,25 @@ const getThresholds: RequestHandler = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getAllThresholds: RequestHandler = catchAsync(async (req, res) => {
+  const timePeriodInDaysString = req?.query?.timePeriodInDays as string;
+  const timePeriodInDays = parseInt(timePeriodInDaysString);
+
+  if (!timePeriodInDays) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'timePeriodInDays is required');
+  }
+  const result = await aiServices.getAllThresholds({
+    timePeriodInDays,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'threshold data has retrieved successfully',
+    data: result,
+  });
+});
 const getMaintenanceDueByMachine: RequestHandler = catchAsync(
   async (req, res) => {
     const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -149,6 +168,7 @@ export const aiController = {
   aiPerformance,
   getAiData,
   getThresholds,
+  getAllThresholds,
   getMaintenanceDueByMachine,
   getLifeCycleByMachine,
   getMachineBadSections,

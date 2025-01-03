@@ -121,7 +121,7 @@ const getAiData = async ({
   timePeriodInDays: number;
 }) => {
   const startDate = addDays(-timePeriodInDays);
-  const thresholdData = await AI.aggregate([
+  const aiData = await AI.aggregate([
     {
       $match: {
         type: 'aiData',
@@ -148,6 +148,43 @@ const getAiData = async ({
         sensorData: 1,
       },
     },
+  ]);
+  return aiData;
+};
+
+const getAllThresholds = async ({
+  timePeriodInDays,
+}: {
+  timePeriodInDays: number;
+}) => {
+  const startDate = addDays(-timePeriodInDays);
+  const thresholdData = await AI.aggregate([
+    {
+      $match: {
+        type: 'threshold',
+        $and: [{ createdAt: { $gte: startDate } }],
+      },
+    },
+    {
+      $unwind: '$threshold',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$threshold',
+      },
+    },
+    // {
+    //   $project: {
+    //     category: 1,
+    //     type: 1,
+    //     brand: 1,
+    //     model: 1,
+    //     sectionName: 1,
+    //     healthStatus: 1,
+    //     sensorData: 1,
+    //   },
+    // },
   ]);
   return thresholdData;
 };
@@ -246,6 +283,7 @@ const getMachineBadSections = async (machine: string) => {
 export const aiServices = {
   addThreshold,
   getThresholds,
+  getAllThresholds,
   getAiData,
   aiPerformance,
   getMaintenanceDueByMachine,

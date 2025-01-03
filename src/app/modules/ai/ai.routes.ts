@@ -23,5 +23,5 @@ router.get('/get-machine-bad-sections', aiController.getMachineBadSections);
 
 
 router.get('/get-thresholds', aiController.getThresholds);
-
+router.get('/get-all-thresholds', aiController.getAllThresholds);
 export const aiRoutes = router;
