@@ -1016,6 +1016,9 @@ const machineHealthStatus = async ({
     washingMachine: 1,
     brand: 1,
     model: 1,
+    co2Emissions: 1,
+    waterConsumption: 1,
+    heatExchangeCapacity: 1,
     // sensorModulesAttached: 1,
   });
   if (!machineData) {
@@ -1102,25 +1105,29 @@ const machineHealthStatus = async ({
     });
   }
   if (machineHealthData?.co2Emissions) {
-    machineData.co2Emissions = machineHealthData?.co2Emissions;
+    machineData.co2Emissions =
+      (machineData.co2Emissions || 0) + machineHealthData?.co2Emissions;
     req.io.emit(`machine=${machine?.toString()}&category=co2Emissions`, {
-      co2Emissions: machineHealthData?.co2Emissions,
+      co2Emissions: machineData?.co2Emissions,
       createdAt: now,
     });
   }
   if (machineHealthData?.waterConsumption) {
-    machineData.waterConsumption = machineHealthData?.waterConsumption;
+    machineData.waterConsumption =
+      (machineData.waterConsumption || 0) + machineHealthData?.waterConsumption;
     req.io.emit(`machine=${machine?.toString()}&category=waterConsumption`, {
-      waterConsumption: machineHealthData?.waterConsumption,
+      waterConsumption: machineData?.waterConsumption,
       createdAt: now,
     });
   }
   if (machineHealthData?.heatExchangeCapacity) {
-    machineData.heatExchangeCapacity = machineHealthData?.heatExchangeCapacity;
+    machineData.heatExchangeCapacity =
+      (machineData.heatExchangeCapacity || 0) +
+      machineHealthData?.heatExchangeCapacity;
     req.io.emit(
       `machine=${machine?.toString()}&category=heatExchangeCapacity`,
       {
-        heatExchangeCapacity: machineHealthData?.heatExchangeCapacity,
+        heatExchangeCapacity: machineData?.heatExchangeCapacity,
         createdAt: now,
       },
     );

@@ -217,7 +217,7 @@ const addSensorDataInToDB = async ({
   if (!sensorModuleAttached?.isSwitchedOn) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'now thi sensor module attached is switched off',
+      'now the sensor module attached is switched off',
     );
   }
   // we are validating sensor data here according to its module type
@@ -301,7 +301,7 @@ const addSensorDataInToDB = async ({
             ?.sectionName?.temperature[index]}`,
           { value: sensorData?.temperature[index], createdAt: now },
         );
-      } else if (sectionName === 'tank') {
+      } else if (sectionName === 'tanksupplyline') {
         //sending sensor reading
         req.io.emit(
           `machine=${sensorModuleAttached?.machine?.toString()}&category=sensorData&sensorType=temperature&sectionName=${sensorModuleAttached
