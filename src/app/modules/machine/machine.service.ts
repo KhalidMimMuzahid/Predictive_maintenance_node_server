@@ -1016,11 +1016,14 @@ const machineHealthStatus = async ({
     washingMachine: 1,
     brand: 1,
     model: 1,
+    thermalScore: 1,
+    energyScore: 1,
     co2Emissions: 1,
     waterConsumption: 1,
     heatExchangeCapacity: 1,
     // sensorModulesAttached: 1,
   });
+
   if (!machineData) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
@@ -1091,14 +1094,17 @@ const machineHealthStatus = async ({
     }
   }
   if (machineHealthData?.energyScore) {
-    machineData.energyScore = machineHealthData?.energyScore;
+    machineData.energyScore =
+      (machineData.energyScore || 0) + machineHealthData?.energyScore;
+
     req.io.emit(`machine=${machine?.toString()}&category=energyScore`, {
       energyScore: machineHealthData?.energyScore,
       createdAt: now,
     });
   }
   if (machineHealthData?.thermalScore) {
-    machineData.thermalScore = machineHealthData?.thermalScore;
+    machineData.thermalScore =
+      (machineData.thermalScore || 0) + machineHealthData?.thermalScore;
     req.io.emit(`machine=${machine?.toString()}&category=thermalScore`, {
       thermalScore: machineHealthData?.thermalScore,
       createdAt: now,
@@ -1121,6 +1127,7 @@ const machineHealthStatus = async ({
     });
   }
   if (machineHealthData?.heatExchangeCapacity) {
+    
     machineData.heatExchangeCapacity =
       (machineData.heatExchangeCapacity || 0) +
       machineHealthData?.heatExchangeCapacity;
@@ -1131,6 +1138,7 @@ const machineHealthStatus = async ({
         createdAt: now,
       },
     );
+   
   }
 
   await machineData.save();
