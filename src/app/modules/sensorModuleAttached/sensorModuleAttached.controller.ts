@@ -258,7 +258,7 @@ const toggleSwitchSensorModuleAttached: RequestHandler = catchAsync(
     if (actionType !== 'on' && actionType !== 'off') {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'actionType must be any of on or off',
+        "switch must be any of 'on' or 'off'",
       );
     }
     const result =
