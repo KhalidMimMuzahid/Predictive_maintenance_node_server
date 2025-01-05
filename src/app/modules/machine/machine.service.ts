@@ -989,6 +989,84 @@ const getAllSensorSectionWiseByMachine = async (machine: string) => {
     result,
   };
 };
+
+const getAllSensorSectionNamesByMachine = async (machine: string) => {
+  // const machineData = await Machine.findById(machine);
+  // TODO:  "machine="
+  // {
+  //   machine: "machine_id",
+  //   sensorModuleAttached: "sensorModuleAttached_id",
+  //   sensorType: "temperature" or "vibration",
+  //   sensorId: "index no of this sensor"
+  // }
+
+  const sensorModuleAttachedData = await Machine.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(machine),
+      },
+    },
+    {
+      $lookup: {
+        from: 'sensormoduleattacheds',
+        localField: 'sensorModulesAttached',
+        foreignField: '_id',
+        as: 'sensorModulesAttached',
+      },
+    },
+    {
+      $unwind: '$sensorModulesAttached',
+    },
+
+    {
+      $replaceRoot: {
+        newRoot: '$sensorModulesAttached',
+      },
+    },
+
+    // 66de94702cb33950bc34853c
+    {
+      $project: {
+        _id: 0,
+        sectionName: 1,
+      },
+    },
+  ]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sectionNames: {
+    temperature: string[];
+    vibration: string[];
+    all: string[];
+  } = {
+    temperature: [],
+    vibration: [],
+    all: [],
+  };
+  // console.log(sensorModuleAttachedData);
+  sensorModuleAttachedData?.forEach((currentValue) => {
+    // console.log(currentValue);
+    currentValue?.sectionName?.temperature?.forEach((item: string) => {
+      if (
+        sectionNames?.temperature?.findIndex((name) => name === item) === -1
+      ) {
+        sectionNames?.temperature?.push(item);
+      }
+      if (sectionNames?.all?.findIndex((name) => name === item) === -1) {
+        sectionNames?.all?.push(item);
+      }
+    });
+    currentValue?.sectionName?.vibration?.forEach((item: string) => {
+      if (sectionNames?.vibration?.findIndex((name) => name === item) === -1) {
+        sectionNames?.vibration?.push(item);
+      }
+      if (sectionNames?.all?.findIndex((name) => name === item) === -1) {
+        sectionNames?.all?.push(item);
+      }
+    });
+  });
+  return sectionNames;
+};
 const getMachineBy_id = async (machine: string) => {
   const machineData = await Machine.findById({
     _id: new mongoose.Types.ObjectId(machine),
@@ -1127,7 +1205,6 @@ const machineHealthStatus = async ({
     });
   }
   if (machineHealthData?.heatExchangeCapacity) {
-    
     machineData.heatExchangeCapacity =
       (machineData.heatExchangeCapacity || 0) +
       machineHealthData?.heatExchangeCapacity;
@@ -1138,7 +1215,6 @@ const machineHealthStatus = async ({
         createdAt: now,
       },
     );
-   
   }
 
   await machineData.save();
@@ -1590,6 +1666,7 @@ export const machineServices = {
   getAllMachinesListByUserSensorTypeWise,
   getAllMachineBy_id,
   getAllSensorSectionWiseByMachine,
+  getAllSensorSectionNamesByMachine,
   getMachineBy_id,
   deleteMachineService,
   addModuleToMachineInToDB,

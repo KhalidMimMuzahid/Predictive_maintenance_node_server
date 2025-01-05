@@ -388,6 +388,28 @@ const getAllSensorSectionWiseByMachine: RequestHandler = catchAsync(
     });
   },
 );
+
+const getAllSensorSectionNamesByMachine: RequestHandler = catchAsync(
+  async (req, res) => {
+    const machine: string = req.query?.machine as string;
+    // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
+    if (!machine) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'machine is required to get all sensor section names',
+      );
+    }
+    const result =
+      await machineServices.getAllSensorSectionNamesByMachine(machine);
+    // send response
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'sensors section names have retrieved successfully',
+      data: result,
+    });
+  },
+);
 const getMachineBy_id: RequestHandler = catchAsync(async (req, res) => {
   const machine: string = req.query?.machine as string;
   // const auth: TAuth = req?.headers?.auth as unknown as TAuth;
@@ -501,8 +523,6 @@ const machinePerformanceModelWise: RequestHandler = catchAsync(
 
     checkUserAccessApi({ auth, accessUsers: ['showaAdmin', 'showaSubAdmin'] });
 
-
-
     const category: TMachineCategory = req?.query?.category as TMachineCategory;
     const type: string = req?.query?.type as string;
     const brand: string = req?.query?.brand as string;
@@ -580,6 +600,7 @@ export const machineController = {
   getUserNonConnectedGeneralMachine,
   getAllMachineBy_id, // its user_id
   getAllSensorSectionWiseByMachine,
+  getAllSensorSectionNamesByMachine,
   getMachineBy_id,
 
   deleteMachine, //showa super admin->customer->machine status
