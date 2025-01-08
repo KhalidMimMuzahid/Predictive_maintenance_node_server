@@ -105,7 +105,7 @@ const SubscriptionPurchasedSchema: Schema = new Schema<TSubscriptionPurchased>(
     serviceProviderCompany: {
       type: Schema.Types.ObjectId,
       ref: 'ServiceProviderCompany',
-      required: true,
+      // required: true,
     },
 
     isActive: {

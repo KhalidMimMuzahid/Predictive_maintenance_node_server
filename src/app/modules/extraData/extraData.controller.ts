@@ -107,7 +107,7 @@ const createCoupon: RequestHandler = catchAsync(async (req, res) => {
 const activateCoupon: RequestHandler = catchAsync(async (req, res) => {
   const auth: TAuth = req?.headers?.auth as unknown as TAuth;
 
-  checkUserAccessApi({ auth, accessUsers: 'all' });
+  checkUserAccessApi({ auth, accessUsers: ['showaUser'] });
 
   const coupon = req?.query?.coupon as string;
   if (!coupon) {
