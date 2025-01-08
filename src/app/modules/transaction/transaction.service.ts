@@ -182,7 +182,7 @@ const createStripeCheckoutSession = async ({
             // we should send mail to user email
 
             req.io.emit(
-              `user=${walletData?.user?.toString()}&type=refetchWallet`,
+              `user=${transactionData?.addFund?.user?.toString()}&type=refetchWallet`,
               { shouldRefetchWallet: true },
             );
             return null;
