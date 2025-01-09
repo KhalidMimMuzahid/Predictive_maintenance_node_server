@@ -22,7 +22,9 @@ const server = createServer(app);
 export const users = new Map();
 async function main() {
   try {
-    const io = new Server(server, { cors: { origin: '*' } });
+    const io = new Server(server, {
+      cors: { origin: '*' },
+    });
     io.on('connection', (socket) => {
       const socketId = socket?.id;
       // console.log(`${socket.id} socket just connected!`);
@@ -197,7 +199,7 @@ async function main() {
       //   // }
       // }
       res.status(200).json({
-        message: 'Welcome to Showa home version 2.0.30',
+        message: 'Welcome to Showa home version 2.0.31',
       });
     };
     app.use('/', showWelcome);
